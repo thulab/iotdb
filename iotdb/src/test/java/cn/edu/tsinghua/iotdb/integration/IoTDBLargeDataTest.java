@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -67,7 +68,9 @@ public class IoTDBLargeDataTest {
         tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
+
         EnvironmentUtils.cleanEnv();
+        OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
 
     }
 

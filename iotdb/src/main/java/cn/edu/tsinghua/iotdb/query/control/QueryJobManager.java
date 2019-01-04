@@ -8,13 +8,13 @@ public class QueryJobManager {
 
     /** to store all queryJobs in one query **/
     private static ThreadLocal<Set<Long>> queryJobIds = new ThreadLocal<>();
-    private FileStreamManager fileStreamManager;
+    private OpenedFileStreamManager openedFileStreamManager;
 
     private AtomicLong jobId;
 
     private QueryJobManager(){
         jobId = new AtomicLong(0L);
-        fileStreamManager = FileStreamManager.getInstance();
+        openedFileStreamManager = OpenedFileStreamManager.getInstance();
     }
 
     private static class QueryJobManagerHolder {
@@ -40,19 +40,9 @@ public class QueryJobManager {
      * Always invoking this method when jdbc connection close.
      */
     public void closeOneJobForOneQuery(long jobId) throws IOException {
-        if (queryJobIds.get() == null && queryJobIds.get().contains(jobId)) {
-            fileStreamManager.closeAll(jobId);
-        }
     }
 
     public void closeAllJobForOneQuery() throws IOException {
-        if (queryJobIds.get() != null) {
-            for (long jobId : queryJobIds.get()) {
-                fileStreamManager.closeAll(jobId);
-            }
-            queryJobIds.get().clear();
-            queryJobIds.remove();
-        }
     }
 
 }

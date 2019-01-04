@@ -26,18 +26,15 @@ import java.util.List;
  */
 public class EngineExecutorWithTimeGenerator {
 
-    private long jobId;
-
     private QueryExpression queryExpression;
 
-    EngineExecutorWithTimeGenerator(long jobId, QueryExpression queryExpression) {
-        this.jobId = jobId;
+    EngineExecutorWithTimeGenerator(QueryExpression queryExpression) {
         this.queryExpression = queryExpression;
     }
 
     public QueryDataSet execute() throws IOException, FileNodeManagerException {
 
-        EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(jobId, queryExpression.getExpression());
+        EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(queryExpression.getExpression());
 
         List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(queryExpression.getSelectedSeries());
 
@@ -51,7 +48,7 @@ public class EngineExecutorWithTimeGenerator {
             }
 
         }
-        return new EngineDataSetWithTimeGenerator(jobId, queryExpression.getSelectedSeries(), dataTypes,
+        return new EngineDataSetWithTimeGenerator(queryExpression.getSelectedSeries(), dataTypes,
                 timestampGenerator, readersOfSelectedSeries);
     }
 
@@ -66,12 +63,12 @@ public class EngineExecutorWithTimeGenerator {
             PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
 
             // reader for sequence data
-            SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), null);
+            SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), null);
             mergeReaderByTimestamp.addReaderWithPriority(tsFilesReader, 1);
 
             // reader for unSequence data
             PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-                    createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), null);
+                    createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), null);
             mergeReaderByTimestamp.addReaderWithPriority(unSeqMergeReader, 2);
 
             readersOfSelectedSeries.add(mergeReaderByTimestamp);

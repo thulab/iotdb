@@ -23,16 +23,7 @@ public class EngineQueryRouter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EngineQueryRouter.class);
 
-    /**
-     * Each unique jdbc request(query, aggregation or others job) has an unique job id.
-     * This job id will always be maintained until the request is closed.
-     * In each job, the unique file will be only opened once to avoid too many opened files error.
-     */
-    private AtomicLong jobId = new AtomicLong();
-
     public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
-
-        long currentJobId = getNextJobId();
 
         if (queryExpression.hasQueryFilter()) {
             try {
@@ -42,10 +33,10 @@ public class EngineQueryRouter {
                 queryExpression.setExpression(optimizedExpression);
 
                 if (optimizedExpression.getType() == GLOBAL_TIME) {
-                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(currentJobId, queryExpression);
+                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(queryExpression);
                     return engineExecutor.executeWithGlobalTimeFilter();
                 } else {
-                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(currentJobId, queryExpression);
+                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(queryExpression);
                     return engineExecutor.execute();
                 }
 
@@ -54,15 +45,11 @@ public class EngineQueryRouter {
             }
         } else {
             try {
-                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(currentJobId, queryExpression);
+                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(queryExpression);
                 return engineExecutor.executeWithoutFilter();
             } catch (PathErrorException e) {
                 throw new IOException(e);
             }
         }
-    }
-
-    private synchronized long getNextJobId() {
-        return jobId.incrementAndGet();
     }
 }

@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import cn.edu.tsinghua.iotdb.query.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -81,6 +82,7 @@ public class IoTDBEngineTimeGeneratorTest {
         tsFileConfig.groupSizeInByte = groupSizeInByte;
 
         EnvironmentUtils.cleanEnv();
+        OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
     }
 
 
@@ -96,7 +98,7 @@ public class IoTDBEngineTimeGeneratorTest {
         TimeFilter.TimeGt timeGt = TimeFilter.gt(500);
 
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
-        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(1, singleSeriesExpression);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(singleSeriesExpression);
 
         int cnt = 0;
         while (timeGenerator.hasNext()) {
@@ -106,8 +108,6 @@ public class IoTDBEngineTimeGeneratorTest {
             // System.out.println("cnt =" + cnt + "; time = " + time);
         }
         assertEquals(count, cnt);
-
-        timeGenerator.clear();
     }
 
     /**
@@ -121,15 +121,13 @@ public class IoTDBEngineTimeGeneratorTest {
         ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(5);
 
         IExpression singleSeriesExpression = new SingleSeriesExpression(pd1s0, valueGtEq);
-        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(1, singleSeriesExpression);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(singleSeriesExpression);
 
         int cnt = 0;
         while (timeGenerator.hasNext()) {
             cnt++;
         }
         assertEquals(0, cnt);
-
-        timeGenerator.clear();
     }
 
     /**
@@ -150,7 +148,7 @@ public class IoTDBEngineTimeGeneratorTest {
         IExpression singleSeriesExpression2 = new SingleSeriesExpression(pd0s2, FilterFactory.or(valueGtEq11, timeGt));
         IExpression andExpression = BinaryExpression.and(singleSeriesExpression1, singleSeriesExpression2);
 
-        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(1, andExpression);
+        EngineTimeGenerator timeGenerator = new EngineTimeGenerator(andExpression);
         int cnt = 0;
         while (timeGenerator.hasNext()) {
             long time = timeGenerator.next();
@@ -159,8 +157,6 @@ public class IoTDBEngineTimeGeneratorTest {
             //System.out.println("cnt =" + cnt + "; time = " + time);
         }
         assertEquals(count2, cnt);
-
-        timeGenerator.clear();
     }
 
     private static void insertData() throws ClassNotFoundException, SQLException {

@@ -8,6 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import org.junit.After;
 import org.junit.Assert;
@@ -41,6 +42,7 @@ public class IoTDBCompleteTest {
         deamon.stop();
         Thread.sleep(5000);
         EnvironmentUtils.cleanEnv();
+        OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
     }
 
     @Test

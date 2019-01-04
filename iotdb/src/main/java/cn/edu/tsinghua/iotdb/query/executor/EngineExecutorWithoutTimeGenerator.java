@@ -29,7 +29,7 @@ public class EngineExecutorWithoutTimeGenerator {
     private long jobId;
     private QueryExpression queryExpression;
 
-    public EngineExecutorWithoutTimeGenerator(long jobId, QueryExpression queryExpression) {
+    public EngineExecutorWithoutTimeGenerator(QueryExpression queryExpression) {
         this.jobId = jobId;
         this.queryExpression = queryExpression;
     }
@@ -55,12 +55,12 @@ public class EngineExecutorWithoutTimeGenerator {
             PriorityMergeReader priorityReader = new PriorityMergeReader();
 
             // sequence reader for one sealed tsfile
-            SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), timeFilter);
+            SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), timeFilter);
             priorityReader.addReaderWithPriority(tsFilesReader, 1);
 
             // unseq reader for all chunk groups in unSeqFile
             PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-                    createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), timeFilter);
+                    createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), timeFilter);
             priorityReader.addReaderWithPriority(unSeqMergeReader, 2);
 
             readersOfSelectedSeries.add(priorityReader);
@@ -89,12 +89,12 @@ public class EngineExecutorWithoutTimeGenerator {
             PriorityMergeReader priorityReader = new PriorityMergeReader();
 
             // sequence insert data
-            SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), null);
+            SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), null);
             priorityReader.addReaderWithPriority(tsFilesReader, 1);
 
             // unseq insert data
             PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-                    createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), null);
+                    createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), null);
             priorityReader.addReaderWithPriority(unSeqMergeReader, 2);
 
             readersOfSelectedSeries.add(priorityReader);
