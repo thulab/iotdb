@@ -11,7 +11,10 @@ import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
-import cn.edu.tsinghua.iotdb.engine.querycontext.*;
+import cn.edu.tsinghua.iotdb.engine.querycontext.MergeSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
+import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -27,12 +30,13 @@ import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -436,8 +440,8 @@ public class OverflowProcessor extends Processor {
 		LOGGER.info("The overflow processor {} ends flushing {}.", getProcessorName(), flushFunction);
 		long flushEndTime = System.currentTimeMillis();
 		long timeInterval = flushEndTime - flushStartTime;
-		DateTime startDateTime = new DateTime(flushStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-		DateTime endDateTime = new DateTime(flushEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 		LOGGER.info(
 				"The overflow processor {} flush {}, start time is {}, flush end time is {}, time consumption is {}ms",
 				getProcessorName(), flushFunction, startDateTime, endDateTime, timeInterval);
@@ -447,8 +451,8 @@ public class OverflowProcessor extends Processor {
 		// statistic information for flush
 		if (lastFlushTime > 0) {
 			long thisFLushTime = System.currentTimeMillis();
-			DateTime lastDateTime = new DateTime(lastFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			DateTime thisDateTime = new DateTime(thisFLushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+	        ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFlushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+	        ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisFLushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 			LOGGER.info(
 					"The overflow processor {} last flush time is {}, this flush time is {}, flush time interval is {}s",
 					getProcessorName(), lastDateTime, thisDateTime, (thisFLushTime - lastFlushTime) / 1000);
@@ -520,8 +524,8 @@ public class OverflowProcessor extends Processor {
 		// log close time
 		long closeEndTime = System.currentTimeMillis();
 		long timeInterval = closeEndTime - closeStartTime;
-		DateTime startDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-		DateTime endDateTime = new DateTime(closeStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 		LOGGER.info("The close operation of overflow processor {} starts at {} and ends at {}. It comsumes {}ms.",
 				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}

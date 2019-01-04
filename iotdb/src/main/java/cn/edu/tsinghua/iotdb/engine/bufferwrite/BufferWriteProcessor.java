@@ -1,5 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -10,7 +12,6 @@ import cn.edu.tsinghua.iotdb.engine.memtable.IMemTable;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemSeriesLazyMerger;
 import cn.edu.tsinghua.iotdb.engine.memtable.MemTableFlushUtil;
 import cn.edu.tsinghua.iotdb.engine.memtable.PrimitiveMemTable;
-import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.engine.pool.FlushManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
 import cn.edu.tsinghua.iotdb.engine.utils.FlushStatus;
@@ -25,7 +26,7 @@ import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-import org.joda.time.DateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,7 +188,7 @@ public class BufferWriteProcessor extends Processor {
      * @param dataType data type
      * @return corresponding chunk data and chunk metadata in memory
      */
-    public Pair<TimeValuePairSorter, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
+    public Pair<ReadOnlyMemChunk, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
                                                                                String measurementId, TSDataType dataType) {
         flushQueryLock.lock();
         try {
@@ -196,7 +197,7 @@ public class BufferWriteProcessor extends Processor {
                 memSeriesLazyMerger.addMemSeries(flushMemTable.query(deltaObjectId, measurementId, dataType));
             }
             memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
-            TimeValuePairSorter timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
+            ReadOnlyMemChunk timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
             return new Pair<>(timeValuePairSorter,
                     bufferWriteRestoreManager.getInsertMetadatas(deltaObjectId, measurementId, dataType));
         } finally {
@@ -261,8 +262,8 @@ public class BufferWriteProcessor extends Processor {
         }
         long flushEndTime = System.currentTimeMillis();
         long flushInterval = flushEndTime - flushStartTime;
-        DateTime startDateTime = new DateTime(flushStartTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-        DateTime endDateTime = new DateTime(flushEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
         LOGGER.info(
                 "The bufferwrite processor {} flush {}, start time is {}, flush end time is {}, flush time consumption is {}ms",
                 getProcessorName(), flushFunction, startDateTime, endDateTime, flushInterval);
@@ -273,8 +274,8 @@ public class BufferWriteProcessor extends Processor {
         if (lastFlushTime > 0) {
             long thisFlushTime = System.currentTimeMillis();
             long flushTimeInterval = thisFlushTime - lastFlushTime;
-            DateTime lastDateTime = new DateTime(lastFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-            DateTime thisDateTime = new DateTime(thisFlushTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFlushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisFlushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
             LOGGER.info(
                     "The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
                     getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval / 1000);
@@ -353,9 +354,8 @@ public class BufferWriteProcessor extends Processor {
             // delete the restore for this bufferwrite processor
             long closeEndTime = System.currentTimeMillis();
             long closeInterval = closeEndTime - closeStartTime;
-            DateTime startDateTime = new DateTime(closeStartTime,
-                    TsfileDBDescriptor.getInstance().getConfig().timeZone);
-            DateTime endDateTime = new DateTime(closeEndTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
             LOGGER.info(
                     "Close bufferwrite processor {}, the file name is {}, start time is {}, end time is {}, time consumption is {}ms",
                     getProcessorName(), fileName, startDateTime, endDateTime, closeInterval);
