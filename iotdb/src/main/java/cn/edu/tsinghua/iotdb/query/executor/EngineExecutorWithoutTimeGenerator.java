@@ -26,11 +26,9 @@ import java.util.List;
  */
 public class EngineExecutorWithoutTimeGenerator {
 
-    private long jobId;
     private QueryExpression queryExpression;
 
     public EngineExecutorWithoutTimeGenerator(QueryExpression queryExpression) {
-        this.jobId = jobId;
         this.queryExpression = queryExpression;
     }
 
@@ -66,7 +64,7 @@ public class EngineExecutorWithoutTimeGenerator {
             readersOfSelectedSeries.add(priorityReader);
         }
 
-        return new EngineDataSetWithoutTimeGenerator(jobId, queryExpression.getSelectedSeries(), dataTypes, readersOfSelectedSeries);
+        return new EngineDataSetWithoutTimeGenerator(queryExpression.getSelectedSeries(), dataTypes, readersOfSelectedSeries);
 
     }
 
@@ -100,7 +98,7 @@ public class EngineExecutorWithoutTimeGenerator {
             readersOfSelectedSeries.add(priorityReader);
         }
 
-        return new EngineDataSetWithoutTimeGenerator(jobId, queryExpression.getSelectedSeries(), dataTypes, readersOfSelectedSeries);
+        return new EngineDataSetWithoutTimeGenerator(queryExpression.getSelectedSeries(), dataTypes, readersOfSelectedSeries);
     }
 
 }

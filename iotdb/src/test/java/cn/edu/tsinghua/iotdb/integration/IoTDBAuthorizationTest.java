@@ -35,8 +35,8 @@ public class IoTDBAuthorizationTest {
     public void tearDown() throws Exception {
         deamon.stop();
         Thread.sleep(2000);
-        EnvironmentUtils.cleanEnv();
         OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test

@@ -81,8 +81,8 @@ public class IoTDBLimitSlimitTest {
     public static void tearDown() throws Exception {
         deamon.stop();
         Thread.sleep(5000);
-        EnvironmentUtils.cleanEnv();
         OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test

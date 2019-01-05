@@ -69,9 +69,8 @@ public class IoTDBLargeDataTest {
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
 
-        EnvironmentUtils.cleanEnv();
         OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
-
+        EnvironmentUtils.cleanEnv();
     }
 
     // "select * from root.vehicle" : test select wild data

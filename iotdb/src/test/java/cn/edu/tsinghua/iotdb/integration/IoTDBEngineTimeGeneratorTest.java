@@ -81,8 +81,8 @@ public class IoTDBEngineTimeGeneratorTest {
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
 
-        EnvironmentUtils.cleanEnv();
         OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
+        EnvironmentUtils.cleanEnv();
     }
 
 

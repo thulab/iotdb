@@ -81,8 +81,8 @@ public class IoTDBSeriesReaderTest {
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
 
-        EnvironmentUtils.cleanEnv();
         OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
+        EnvironmentUtils.cleanEnv();
     }
 
     @Test
