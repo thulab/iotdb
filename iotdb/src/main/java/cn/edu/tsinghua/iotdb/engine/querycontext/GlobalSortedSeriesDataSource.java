@@ -29,7 +29,7 @@ public class GlobalSortedSeriesDataSource {
     }
 
     public boolean hasSealedTsFiles() {
-        return sealedTsFiles != null;
+        return sealedTsFiles != null && sealedTsFiles.size() > 0;
     }
 
     public List<IntervalFileNode> getSealedTsFiles() {

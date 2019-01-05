@@ -1,9 +1,11 @@
 package cn.edu.tsinghua.iotdb.query.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.read.common.BatchData;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -24,7 +26,8 @@ public class UnSealedTsFileReader implements IReader {
 
     public UnSealedTsFileReader(UnsealedTsFile unsealedTsFile, Filter filter) throws IOException {
 
-        ChunkLoader chunkLoader = new ChunkLoaderImpl(new UnClosedTsFileReader(unsealedTsFile.getFilePath()));
+        TsFileSequenceReader unClosedTsFileReader = OpenedFileStreamManager.getInstance().get(unsealedTsFile.getFilePath(), true);
+        ChunkLoader chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
         if (filter == null) {
             unSealedTsFileReader = new FileSeriesReaderWithoutFilter(chunkLoader, unsealedTsFile.getChunkMetaDataList());

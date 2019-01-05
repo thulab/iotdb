@@ -126,7 +126,7 @@ public class SeriesReaderFactory {
     }
 
     private IReader createSealedTsFileReaderForMerge(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
-        TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(filePath);
+        TsFileSequenceReader tsFileSequenceReader = OpenedFileStreamManager.getInstance().get(filePath, false);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(singleSeriesExpression.getSeriesPath());

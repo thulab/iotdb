@@ -76,7 +76,7 @@ public class OpenedFileStreamManager {
     /**
      * Get the file reader of given file path.
      */
-    public synchronized TsFileSequenceReader get(String filePath, boolean isUnSeqFile) throws IOException {
+    public synchronized TsFileSequenceReader get(String filePath, boolean isUnClosed) throws IOException {
 
         long currentTime = System.currentTimeMillis();
 
@@ -87,7 +87,7 @@ public class OpenedFileStreamManager {
             }
 
             TsFileSequenceReader tsFileReader;
-            if (isUnSeqFile) {
+            if (isUnClosed) {
                 tsFileReader = new UnClosedTsFileReader(filePath);
             } else {
                 tsFileReader = new TsFileSequenceReader(filePath);
