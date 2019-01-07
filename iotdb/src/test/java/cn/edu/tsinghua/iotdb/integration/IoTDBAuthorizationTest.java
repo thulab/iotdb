@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
@@ -35,7 +34,6 @@ public class IoTDBAuthorizationTest {
     public void tearDown() throws Exception {
         deamon.stop();
         Thread.sleep(2000);
-        OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
         EnvironmentUtils.cleanEnv();
     }
 

@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.control;
 
-import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import org.junit.Assert;
 import org.junit.Test;
 

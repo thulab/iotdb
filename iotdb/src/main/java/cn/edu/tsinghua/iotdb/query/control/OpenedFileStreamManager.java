@@ -4,15 +4,22 @@ import cn.edu.tsinghua.iotdb.concurrent.IoTThreadFactory;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.utils.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p> Manage all opened file streams, to ensure that each file will be opened at most once.
  */
 public class OpenedFileStreamManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenedFileStreamManager.class);
 
     /**
      * max file stream storage number, must be lower than 65535
@@ -27,7 +34,7 @@ public class OpenedFileStreamManager {
     /**
      * expired period of cache file reader : 100 seconds
      */
-    private static long examinePeriod = 100;
+    private static long examinePeriod = 100000;
 
     /**
      * key of fileReaderMap file path, value of fileReaderMap is its unique reader and expired time.
@@ -42,6 +49,9 @@ public class OpenedFileStreamManager {
         return OverflowFileStreamManagerHelper.INSTANCE;
     }
 
+    /**
+     * This method is only used for unit test.
+     */
     public static OpenedFileStreamManager getInstance(long fileExpiredTime, long examineTime) {
         OpenedFileStreamManager.fileExpiredTime = fileExpiredTime;
         OpenedFileStreamManager.examinePeriod = examineTime;
@@ -70,7 +80,7 @@ public class OpenedFileStreamManager {
                     }
                 }
             }
-        },0, examinePeriod, TimeUnit.SECONDS);
+        },0, examinePeriod, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -100,9 +110,13 @@ public class OpenedFileStreamManager {
         return fileReaderMap.get(filePath).left;
     }
 
-    public void closeAllOpenedFiles() throws IOException {
+    public void closeAllOpenedFiles() {
         for (Pair<TsFileSequenceReader, Long> pair : fileReaderMap.values()) {
-            pair.left.close();
+            try {
+                pair.left.close();
+            } catch (IOException e) {
+                LOGGER.error("Can not remove the usage of TsFileSequenceReader {}", pair.left.getFileName());
+            }
         }
         fileReaderMap.clear();
     }
