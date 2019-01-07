@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.timegenerator;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.query.timegenerator.TimeGenerator;
@@ -19,14 +18,14 @@ public class EngineTimeGenerator implements TimeGenerator {
     private IExpression expression;
     private Node operatorNode;
 
-    public EngineTimeGenerator(IExpression expression) throws IOException, FileNodeManagerException {
+    public EngineTimeGenerator(long jobId, IExpression expression) throws IOException, FileNodeManagerException {
         this.expression = expression;
-        initNode();
+        initNode(jobId);
     }
 
-    private void initNode() throws IOException, FileNodeManagerException {
+    private void initNode(long jobId) throws IOException, FileNodeManagerException {
         EngineNodeConstructor engineNodeConstructor = new EngineNodeConstructor();
-        this.operatorNode = engineNodeConstructor.construct(expression);
+        this.operatorNode = engineNodeConstructor.construct(jobId, expression);
     }
 
     @Override

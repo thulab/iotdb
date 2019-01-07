@@ -1321,6 +1321,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					for (File file : bufferwriteDir.listFiles()) {
 						if (!bufferFiles.contains(file.getPath())) {
 							file.delete();
+							// TODO
 						}
 					}
 				}

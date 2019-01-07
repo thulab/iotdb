@@ -159,7 +159,8 @@ public class IoTDBCompleteTest {
                         "2,102,202,\n" +
                         "946684800000,105,null,\n" +
                         "NOW(),104,null,\n",
-                "DELETE TIMESERIES root.vehicle.*"};
+                "DELETE TIMESERIES root.vehicle.*"
+        };
         executeSQL(sqlS);
     }
 

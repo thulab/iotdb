@@ -12,17 +12,17 @@ import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
+import cn.edu.tsinghua.iotdb.exception.qp.IllegalASTFormatException;
+import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.metadata.Metadata;
 import cn.edu.tsinghua.iotdb.qp.QueryProcessor;
-import cn.edu.tsinghua.iotdb.exception.qp.IllegalASTFormatException;
-import cn.edu.tsinghua.iotdb.exception.qp.QueryProcessorException;
 import cn.edu.tsinghua.iotdb.qp.executor.OverflowQPExecutor;
 import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
-import cn.edu.tsinghua.iotdb.query.control.QueryJobManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.query.dataset.QueryDataSet;
@@ -127,10 +127,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 	public TSCloseOperationResp closeOperation(TSCloseOperationReq req) throws TException {
 		LOGGER.info("{}: receive close operation",TsFileDBConstant.GLOBAL_DB_NAME);
 		try {
-			//ReadCacheManager.getInstance().unlockForOneRequest();
-			QueryJobManager.getInstance().closeAllJobForOneQuery();
+			// end query for all the query tokens created by current thread
+			QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
 			clearAllStatusForCurrentRequest();
-		} catch (IOException e) {
+		} catch (FileNodeManagerException e) {
 			LOGGER.error("Error in closeOperation : {}", e.getMessage());
 		}
 		return new TSCloseOperationResp(new TS_Status(TS_StatusCode.SUCCESS_STATUS));

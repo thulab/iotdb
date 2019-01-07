@@ -1,11 +1,11 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
+import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
-import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class MManagerImproveTest {
     }
 
     @After
-    public void after() throws IOException {
+    public void after() throws IOException, FileNodeManagerException {
         EnvironmentUtils.cleanEnv();
     }
 

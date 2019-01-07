@@ -121,6 +121,10 @@ public class OpenedFileStreamManager {
         fileReaderMap.clear();
     }
 
+    public void decreaseFileReference(String filePath) {
+
+    }
+
     /**
      * This method is used for the end of merge process when the file need to be deleted.
      * TODO need to be invoked by FileNodeProcessor when merge process is done

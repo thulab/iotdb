@@ -2,11 +2,11 @@ package cn.edu.tsinghua.iotdb.query.timegenerator;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.query.reader.IReader;
-import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
@@ -22,19 +22,19 @@ import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.*;
 
 public class EngineNodeConstructor {
 
-    public Node construct(IExpression expression) throws IOException, FileNodeManagerException {
+    public Node construct(long jobId, IExpression expression) throws IOException, FileNodeManagerException {
         if (expression.getType() == SERIES) {
-            return new EngineLeafNode(generateSeriesReader((SingleSeriesExpression) expression));
+            return new EngineLeafNode(generateSeriesReader(jobId, (SingleSeriesExpression) expression));
         } else {
             Node leftChild;
             Node rightChild;
             if (expression.getType() == OR) {
-                leftChild = this.construct(((IBinaryExpression) expression).getLeft());
-                rightChild = this.construct(((IBinaryExpression) expression).getRight());
+                leftChild = this.construct(jobId, ((IBinaryExpression) expression).getLeft());
+                rightChild = this.construct(jobId, ((IBinaryExpression) expression).getRight());
                 return new OrNode(leftChild, rightChild);
             } else if (expression.getType() == AND) {
-                leftChild = this.construct(((IBinaryExpression) expression).getLeft());
-                rightChild = this.construct(((IBinaryExpression) expression).getRight());
+                leftChild = this.construct(jobId, ((IBinaryExpression) expression).getLeft());
+                rightChild = this.construct(jobId, ((IBinaryExpression) expression).getRight());
                 return new AndNode(leftChild, rightChild);
             } else {
                 throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + expression.getType());
@@ -42,7 +42,7 @@ public class EngineNodeConstructor {
         }
     }
 
-    private IReader generateSeriesReader(SingleSeriesExpression singleSeriesExpression)
+    private IReader generateSeriesReader(long jobId, SingleSeriesExpression singleSeriesExpression)
             throws IOException, FileNodeManagerException {
 
         QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(singleSeriesExpression.getSeriesPath());

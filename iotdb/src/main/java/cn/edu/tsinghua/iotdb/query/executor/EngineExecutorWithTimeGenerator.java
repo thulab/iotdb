@@ -4,13 +4,14 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.iotdb.query.dataset.EngineDataSetWithTimeGenerator;
 import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.query.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -32,9 +33,12 @@ public class EngineExecutorWithTimeGenerator {
         this.queryExpression = queryExpression;
     }
 
-    public QueryDataSet execute() throws IOException, FileNodeManagerException {
+    public QueryDataSet execute(long jobId) throws IOException, FileNodeManagerException {
 
-        EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(queryExpression.getExpression());
+        QueryTokenManager.getInstance().beginQueryOfGivenQueryPaths(jobId, queryExpression.getSelectedSeries());
+        QueryTokenManager.getInstance().beginQueryOfGivenExpression(jobId, queryExpression.getExpression());
+
+        EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(jobId, queryExpression.getExpression());
 
         List<EngineReaderByTimeStamp> readersOfSelectedSeries = getReadersOfSelectedPaths(queryExpression.getSelectedSeries());
 

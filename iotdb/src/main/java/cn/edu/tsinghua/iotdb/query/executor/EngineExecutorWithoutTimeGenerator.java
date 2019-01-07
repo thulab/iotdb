@@ -4,12 +4,13 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.iotdb.query.dataset.EngineDataSetWithoutTimeGenerator;
 import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.query.reader.IReader;
-import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
@@ -35,13 +36,15 @@ public class EngineExecutorWithoutTimeGenerator {
     /**
      * with global time filter
      */
-    public QueryDataSet executeWithGlobalTimeFilter()
+    public QueryDataSet executeWithGlobalTimeFilter(long jobId)
             throws IOException, FileNodeManagerException, PathErrorException {
 
         Filter timeFilter = ((GlobalTimeExpression) queryExpression.getExpression()).getFilter();
 
         List<IReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
+
+        QueryTokenManager.getInstance().beginQueryOfGivenQueryPaths(jobId, queryExpression.getSelectedSeries());
 
         for (Path path : queryExpression.getSelectedSeries()) {
 
@@ -71,11 +74,13 @@ public class EngineExecutorWithoutTimeGenerator {
     /**
      * without filter
      */
-    public QueryDataSet executeWithoutFilter()
+    public QueryDataSet executeWithoutFilter(long jobId)
             throws IOException, FileNodeManagerException, PathErrorException {
 
         List<IReader> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
+
+        QueryTokenManager.getInstance().beginQueryOfGivenQueryPaths(jobId, queryExpression.getSelectedSeries());
 
         for (Path path : queryExpression.getSelectedSeries()) {
 

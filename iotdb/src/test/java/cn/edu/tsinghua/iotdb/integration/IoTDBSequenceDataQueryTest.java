@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.iotdb.query.executor.EngineQueryRouter;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -168,6 +169,8 @@ public class IoTDBSequenceDataQueryTest {
             cnt++;
         }
         assertEquals(1000, cnt);
+
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
     @Test
@@ -192,6 +195,8 @@ public class IoTDBSequenceDataQueryTest {
             cnt++;
         }
         assertEquals(350, cnt);
+
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
     @Test
@@ -220,6 +225,8 @@ public class IoTDBSequenceDataQueryTest {
             cnt++;
         }
         assertEquals(count, cnt);
+
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
 }
