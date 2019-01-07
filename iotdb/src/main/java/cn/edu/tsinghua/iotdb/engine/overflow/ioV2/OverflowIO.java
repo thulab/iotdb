@@ -245,5 +245,10 @@ public class OverflowIO extends TsFileIOWriter {
 		public void write(int b) throws IOException {
 			raf.write(b);
 		}
+
+		@Override
+		public void close() throws IOException {
+			raf.close();
+		}
 	}
 }
