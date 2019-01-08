@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFilePathsManager;
 import cn.edu.tsinghua.iotdb.query.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -96,6 +97,7 @@ public class IoTDBEngineTimeGeneratorTest {
         TimeFilter.TimeGt timeGt = TimeFilter.gt(500);
 
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(pd0s0, FilterFactory.and(valueGtEq, timeGt));
+        OpenedFilePathsManager.getInstance().setJobIdForCurrentRequestThread(0);
         EngineTimeGenerator timeGenerator = new EngineTimeGenerator(0, singleSeriesExpression);
 
         int cnt = 0;
@@ -118,6 +120,7 @@ public class IoTDBEngineTimeGeneratorTest {
         Path pd1s0 = new Path(d1s0);
         ValueFilter.ValueGtEq valueGtEq = ValueFilter.gtEq(5);
 
+        OpenedFilePathsManager.getInstance().setJobIdForCurrentRequestThread(0);
         IExpression singleSeriesExpression = new SingleSeriesExpression(pd1s0, valueGtEq);
         EngineTimeGenerator timeGenerator = new EngineTimeGenerator(0, singleSeriesExpression);
 
@@ -146,6 +149,7 @@ public class IoTDBEngineTimeGeneratorTest {
         IExpression singleSeriesExpression2 = new SingleSeriesExpression(pd0s2, FilterFactory.or(valueGtEq11, timeGt));
         IExpression andExpression = BinaryExpression.and(singleSeriesExpression1, singleSeriesExpression2);
 
+        OpenedFilePathsManager.getInstance().setJobIdForCurrentRequestThread(0);
         EngineTimeGenerator timeGenerator = new EngineTimeGenerator(0, andExpression);
         int cnt = 0;
         while (timeGenerator.hasNext()) {

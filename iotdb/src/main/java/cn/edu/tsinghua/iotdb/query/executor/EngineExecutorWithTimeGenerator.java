@@ -28,12 +28,14 @@ import java.util.List;
 public class EngineExecutorWithTimeGenerator {
 
     private QueryExpression queryExpression;
+    private long jobId;
 
-    EngineExecutorWithTimeGenerator(QueryExpression queryExpression) {
+    EngineExecutorWithTimeGenerator(long jobId, QueryExpression queryExpression) {
+        this.jobId = jobId;
         this.queryExpression = queryExpression;
     }
 
-    public QueryDataSet execute(long jobId) throws IOException, FileNodeManagerException {
+    public QueryDataSet execute() throws IOException, FileNodeManagerException {
 
         QueryTokenManager.getInstance().beginQueryOfGivenQueryPaths(jobId, queryExpression.getSelectedSeries());
         QueryTokenManager.getInstance().beginQueryOfGivenExpression(jobId, queryExpression.getExpression());
@@ -63,7 +65,8 @@ public class EngineExecutorWithTimeGenerator {
 
         for (Path path : paths) {
 
-            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, path);
+
             PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
 
             // reader for sequence data

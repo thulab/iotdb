@@ -45,7 +45,7 @@ public class EngineNodeConstructor {
     private IReader generateSeriesReader(long jobId, SingleSeriesExpression singleSeriesExpression)
             throws IOException, FileNodeManagerException {
 
-        QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(singleSeriesExpression.getSeriesPath());
+        QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, singleSeriesExpression.getSeriesPath());
 
         Filter filter = singleSeriesExpression.getFilter();
 

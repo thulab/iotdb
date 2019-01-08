@@ -48,7 +48,7 @@ public class EngineExecutorWithoutTimeGenerator {
 
         for (Path path : queryExpression.getSelectedSeries()) {
 
-            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, path);
 
             // add data type
             dataTypes.add(MManager.getInstance().getSeriesType(path.getFullPath()));
@@ -84,7 +84,7 @@ public class EngineExecutorWithoutTimeGenerator {
 
         for (Path path : queryExpression.getSelectedSeries()) {
 
-            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, path);
 
             // add data type
             dataTypes.add(MManager.getInstance().getSeriesType(path.getFullPath()));

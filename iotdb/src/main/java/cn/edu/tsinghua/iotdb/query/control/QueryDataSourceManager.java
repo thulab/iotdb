@@ -14,8 +14,14 @@ public class QueryDataSourceManager {
 
     private static FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
-    public static QueryDataSource getQueryDataSource(Path selectedPath) throws FileNodeManagerException {
+    public static QueryDataSource getQueryDataSource(long jobId, Path selectedPath) throws FileNodeManagerException {
+
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(selectedPath, null);
-        return fileNodeManager.query(singleSeriesExpression);
+        QueryDataSource queryDataSource = fileNodeManager.query(singleSeriesExpression);
+
+        // add used files to thread request map
+        OpenedFilePathsManager.getInstance().addUsedFilesForCurrentRequestThread(jobId, queryDataSource);
+
+        return queryDataSource;
     }
 }

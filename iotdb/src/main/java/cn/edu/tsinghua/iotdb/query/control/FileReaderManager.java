@@ -1,6 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.control;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTThreadFactory;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import org.slf4j.Logger;
@@ -25,11 +26,6 @@ public class FileReaderManager {
      * max file stream storage number, must be lower than 65535
      */
     private static int maxCacheFileSize = 30000;
-
-    /**
-     * expired period of cache file reader : 100 seconds
-     */
-    private static long examinePeriod = 100000;
 
     /**
      * key of fileReaderMap file path, value of fileReaderMap is its unique reader.
@@ -79,12 +75,13 @@ public class FileReaderManager {
 
     public synchronized void increaseFileReference(String filePath) {
         if (!referenceMap.containsKey(filePath)) {
+            referenceMap.put(filePath, new AtomicInteger());
             referenceMap.get(filePath).set(0);
         }
         referenceMap.get(filePath).getAndIncrement();
     }
 
-    public synchronized void decreaseFileReference(String filePath) {
+    public void decreaseFileReference(String filePath) {
         referenceMap.get(filePath).getAndDecrement();
     }
 
@@ -115,6 +112,8 @@ public class FileReaderManager {
     }
 
     private void clearUnUsedFilesInFixTime() {
+        long examinePeriod = TsfileDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
+
         ScheduledExecutorService service = new ScheduledThreadPoolExecutor(1,
                 new IoTThreadFactory("opended-files-manager"));
 

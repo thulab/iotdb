@@ -4,10 +4,10 @@ import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p> Singleton pattern, to manage all query tokens.
@@ -30,7 +30,7 @@ public class OpenedFilePathsManager {
 
     private OpenedFilePathsManager() {
         jobContainer = new ThreadLocal<>();
-        filePathsMap = new HashMap<>();
+        filePathsMap = new ConcurrentHashMap<>();
     }
 
     private static class QueryTokenManagerHelper {
@@ -55,7 +55,6 @@ public class OpenedFilePathsManager {
             addFilePathToMap(jobId, sealedFilePath);
         }
 
-
         if (dataSource.getSeqDataSource().hasUnsealedTsFile()) {
             String unSealedFilePath = dataSource.getSeqDataSource().getUnsealedTsFile().getFilePath();
             addFilePathToMap(jobId, unSealedFilePath);
@@ -78,7 +77,11 @@ public class OpenedFilePathsManager {
         }
     }
 
-    private void addFilePathToMap(long jobId, String filePath) {
+    /**
+     * Increase the usage reference of filePath of job id.
+     * Before the invoking of this method, <code>setJobIdForCurrentRequestThread</code> has been invoked.
+     */
+    public void addFilePathToMap(long jobId, String filePath) {
         if (!filePathsMap.get(jobId).contains(filePath)) {
             filePathsMap.get(jobId).add(filePath);
             FileReaderManager.getInstance().increaseFileReference(filePath);

@@ -1,10 +1,10 @@
 package cn.edu.tsinghua.iotdb.conf;
 
+import org.joda.time.DateTimeZone;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.joda.time.DateTimeZone;
 
 public class TsfileDBConfig {
 
@@ -261,6 +261,11 @@ public class TsfileDBConfig {
 	public boolean update_historical_data_possibility = false;
 
 	public String ipWhiteList = "0.0.0.0/0";
+
+	/**
+	 * examine period of cache file reader : 100 seconds
+	 */
+	public long cacheFileReaderClearPeriod = 100000;
 
 	public TsfileDBConfig() {}
 

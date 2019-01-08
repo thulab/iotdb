@@ -48,8 +48,8 @@ public class EngineQueryRouter {
                     EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(queryExpression);
                     return engineExecutor.executeWithGlobalTimeFilter(jobId);
                 } else {
-                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(queryExpression);
-                    return engineExecutor.execute(jobId);
+                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(jobId, queryExpression);
+                    return engineExecutor.execute();
                 }
 
             } catch (QueryFilterOptimizationException | PathErrorException e) {
