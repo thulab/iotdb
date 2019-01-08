@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.query.factory;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithoutFilter;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
@@ -13,7 +13,6 @@ import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
@@ -56,7 +55,7 @@ public class SeriesReaderFactory {
 
             // store only one opened file stream into manager, to avoid too many opened files
             TsFileSequenceReader unClosedTsFileReader =
-                    OpenedFileStreamManager.getInstance().get(overflowInsertFile.getFilePath(), true);
+                    FileReaderManager.getInstance().get(overflowInsertFile.getFilePath(), true);
 
             ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
@@ -126,7 +125,7 @@ public class SeriesReaderFactory {
     }
 
     private IReader createSealedTsFileReaderForMerge(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
-        TsFileSequenceReader tsFileSequenceReader = OpenedFileStreamManager.getInstance().get(filePath, false);
+        TsFileSequenceReader tsFileSequenceReader = FileReaderManager.getInstance().get(filePath, false);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(singleSeriesExpression.getSeriesPath());

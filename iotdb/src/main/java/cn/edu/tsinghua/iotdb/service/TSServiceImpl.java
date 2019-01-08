@@ -22,6 +22,7 @@ import cn.edu.tsinghua.iotdb.qp.logical.Operator;
 import cn.edu.tsinghua.iotdb.qp.physical.PhysicalPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.QueryPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.sys.AuthorPlan;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFilePathsManager;
 import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.service.rpc.thrift.*;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -129,6 +130,10 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 		try {
 			// end query for all the query tokens created by current thread
 			QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
+
+			// remove usage of opened file paths of current thread
+			OpenedFilePathsManager.getInstance().removeUsedFilesForCurrentRequestThread();
+
 			clearAllStatusForCurrentRequest();
 		} catch (FileNodeManagerException e) {
 			LOGGER.error("Error in closeOperation : {}", e.getMessage());

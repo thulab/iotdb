@@ -14,7 +14,7 @@ import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -47,7 +47,7 @@ public class EnvironmentUtils {
 		QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
 
 		// clear opened file streams
-		OpenedFileStreamManager.getInstance().closeAllOpenedFiles();
+		FileReaderManager.getInstance().closeAndRemoveAllOpenedReaders();
 
 		// tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager

@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.reader.sequence;
 
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
-import cn.edu.tsinghua.iotdb.query.control.OpenedFileStreamManager;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePairUtils;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
@@ -142,7 +142,7 @@ public class SealedTsFilesReader implements IReader {
     private void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException {
 
         // to avoid too many opened files
-        TsFileSequenceReader tsFileReader = OpenedFileStreamManager.getInstance().get(fileNode.getFilePath(), false);
+        TsFileSequenceReader tsFileReader = FileReaderManager.getInstance().get(fileNode.getFilePath(), false);
 
         MetadataQuerierByFileImpl metadataQuerier = new MetadataQuerierByFileImpl(tsFileReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(seriesPath);

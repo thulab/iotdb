@@ -66,23 +66,6 @@ public class QueryTokenManager {
         }
     }
 
-    private void getUniquePaths(IExpression expression, Set<String> deviceIdSet) {
-        if (expression.getType() == ExpressionType.AND || expression.getType() == ExpressionType.OR) {
-            getUniquePaths(((IBinaryExpression) expression).getLeft(), deviceIdSet);
-            getUniquePaths(((IBinaryExpression) expression).getRight(), deviceIdSet);
-        } else if (expression.getType() == ExpressionType.SERIES) {
-            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) expression;
-            deviceIdSet.add(singleSeriesExp.getSeriesPath().getDevice());
-        }
-    }
-
-    private void putQueryTokenForCurrentRequestThread(long jobId, String deviceId, int queryToken) {
-        if (!tokensMap.get(jobId).containsKey(deviceId)) {
-            tokensMap.get(jobId).put(deviceId, new ArrayList<>());
-        }
-        tokensMap.get(jobId).get(deviceId).add(queryToken);
-    }
-
     /**
      * Set job id for current request thread.
      */
@@ -110,6 +93,25 @@ public class QueryTokenManager {
             }
             tokensMap.remove(jobId);
         }
+
+        jobContainer.remove();
+    }
+
+    private void getUniquePaths(IExpression expression, Set<String> deviceIdSet) {
+        if (expression.getType() == ExpressionType.AND || expression.getType() == ExpressionType.OR) {
+            getUniquePaths(((IBinaryExpression) expression).getLeft(), deviceIdSet);
+            getUniquePaths(((IBinaryExpression) expression).getRight(), deviceIdSet);
+        } else if (expression.getType() == ExpressionType.SERIES) {
+            SingleSeriesExpression singleSeriesExp = (SingleSeriesExpression) expression;
+            deviceIdSet.add(singleSeriesExp.getSeriesPath().getDevice());
+        }
+    }
+
+    private void putQueryTokenForCurrentRequestThread(long jobId, String deviceId, int queryToken) {
+        if (!tokensMap.get(jobId).containsKey(deviceId)) {
+            tokensMap.get(jobId).put(deviceId, new ArrayList<>());
+        }
+        tokensMap.get(jobId).get(deviceId).add(queryToken);
     }
 
 }

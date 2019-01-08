@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.query.executor;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFilePathsManager;
 import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
@@ -35,6 +36,7 @@ public class EngineQueryRouter {
 
         long jobId = getNextJobId();
         QueryTokenManager.getInstance().setJobIdForCurrentRequestThread(jobId);
+        OpenedFilePathsManager.getInstance().setJobIdForCurrentRequestThread(jobId);
 
         if (queryExpression.hasQueryFilter()) {
             try {
