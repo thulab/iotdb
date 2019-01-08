@@ -9,6 +9,7 @@ import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p> Singleton pattern, to manage all query tokens.
@@ -27,29 +28,25 @@ public class QueryTokenManager {
     /**
      * Map<jobId, Map<deviceId, List<token>>
      */
-    private Map<Long, Map<String, List<Integer>>> tokensMap;
+    private ConcurrentHashMap<Long, ConcurrentHashMap<String, List<Integer>>> queryTokensMap;
 
-    private QueryTokenManager() {
-        jobContainer = new ThreadLocal<>();
-        tokensMap = new HashMap<>();
-    }
-
-    private static class QueryTokenManagerHelper {
-        public static QueryTokenManager INSTANCE = new QueryTokenManager();
-    }
-
-    public static QueryTokenManager getInstance() {
-        return QueryTokenManagerHelper.INSTANCE;
+    /**
+     * Set job id for current request thread.
+     * When a query request is created firstly, this method must be invoked.
+     */
+    public void setJobIdForCurrentRequestThread(long jobId) {
+        jobContainer.set(jobId);
+        queryTokensMap.put(jobId, new ConcurrentHashMap<>());
     }
 
     /**
      * Begin query and set query tokens of queryPaths.
+     * This method is used for projection calculation.
      */
     public void beginQueryOfGivenQueryPaths(long jobId, List<Path> queryPaths) throws FileNodeManagerException {
         Set<String> deviceIdSet = new HashSet<>();
-        for (Path path : queryPaths) {
-            deviceIdSet.add(path.getDevice());
-        }
+        queryPaths.forEach((path) -> deviceIdSet.add(path.getDevice()));
+
         for (String deviceId : deviceIdSet) {
             putQueryTokenForCurrentRequestThread(jobId, deviceId, FileNodeManager.getInstance().beginQuery(deviceId));
         }
@@ -57,6 +54,7 @@ public class QueryTokenManager {
 
     /**
      * Begin query and set query tokens of all paths in expression.
+     * This method is used in filter calculation.
      */
     public void beginQueryOfGivenExpression(long jobId, IExpression expression) throws FileNodeManagerException {
         Set<String> deviceIdSet = new HashSet<>();
@@ -67,34 +65,21 @@ public class QueryTokenManager {
     }
 
     /**
-     * Set job id for current request thread.
-     */
-    public void setJobIdForCurrentRequestThread(long jobId) {
-        jobContainer.set(jobId);
-        tokensMap.put(jobId, new HashMap<>());
-    }
-
-    /**
-     * Get job id for current request thread.
+     * Whenever the jdbc request is closed normally or abnormally, this method must be invoked.
+     * All query tokens created by this jdbc request must be cleared.
      */
     public void endQueryForCurrentRequestThread() throws FileNodeManagerException {
-        if (jobContainer.get() == null) {
-            return;
-        }
+        if (jobContainer.get() != null) {
+            long jobId = jobContainer.get();
+            jobContainer.remove();
 
-        long jobId = jobContainer.get();
-
-        if (tokensMap.containsKey(jobId)) {
-            Map<String, List<Integer>> deviceTokenMap = tokensMap.get(jobId);
-            for (Map.Entry<String, List<Integer>> entry : deviceTokenMap.entrySet()) {
+            for (Map.Entry<String, List<Integer>> entry : queryTokensMap.get(jobId).entrySet()) {
                 for (int token : entry.getValue()) {
                     FileNodeManager.getInstance().endQuery(entry.getKey(), token);
                 }
             }
-            tokensMap.remove(jobId);
+            queryTokensMap.remove(jobId);
         }
-
-        jobContainer.remove();
     }
 
     private void getUniquePaths(IExpression expression, Set<String> deviceIdSet) {
@@ -108,10 +93,22 @@ public class QueryTokenManager {
     }
 
     private void putQueryTokenForCurrentRequestThread(long jobId, String deviceId, int queryToken) {
-        if (!tokensMap.get(jobId).containsKey(deviceId)) {
-            tokensMap.get(jobId).put(deviceId, new ArrayList<>());
+        if (!queryTokensMap.get(jobId).containsKey(deviceId)) {
+            queryTokensMap.get(jobId).put(deviceId, new ArrayList<>());
         }
-        tokensMap.get(jobId).get(deviceId).add(queryToken);
+        queryTokensMap.get(jobId).get(deviceId).add(queryToken);
     }
 
+    private QueryTokenManager() {
+        jobContainer = new ThreadLocal<>();
+        queryTokensMap = new ConcurrentHashMap<>();
+    }
+
+    private static class QueryTokenManagerHelper {
+        public static QueryTokenManager INSTANCE = new QueryTokenManager();
+    }
+
+    public static QueryTokenManager getInstance() {
+        return QueryTokenManagerHelper.INSTANCE;
+    }
 }

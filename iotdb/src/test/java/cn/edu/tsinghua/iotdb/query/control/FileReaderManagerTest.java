@@ -84,11 +84,11 @@ public class FileReaderManagerTest {
         }
 
         for (int i = 1; i <= MAX_FILE_SIZE; i++) {
-            manager.decreaseFileReference(filePath + i);
+            manager.decreaseFileReaderReference(filePath + i);
         }
 
         // the code below is not valid because the cacheFileReaderClearPeriod config in this class is not valid
-        
+
 //        TimeUnit.SECONDS.sleep(5);
 //
 //        for (int i = 1; i <= MAX_FILE_SIZE; i++) {

@@ -19,7 +19,7 @@ public class QueryDataSourceManager {
         SingleSeriesExpression singleSeriesExpression = new SingleSeriesExpression(selectedPath, null);
         QueryDataSource queryDataSource = fileNodeManager.query(singleSeriesExpression);
 
-        // add used files to thread request map
+        // add used files to current thread request cached map
         OpenedFilePathsManager.getInstance().addUsedFilesForCurrentRequestThread(jobId, queryDataSource);
 
         return queryDataSource;

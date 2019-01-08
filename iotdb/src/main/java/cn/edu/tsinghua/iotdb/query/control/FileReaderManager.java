@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <p> Manage all opened file streams, to ensure that each file will be opened at most once.
+ * <p> Singleton pattern, to manage all file reader.
+ * Manage all opened file streams, to ensure that each file will be opened at most once.
  */
 public class FileReaderManager {
 
@@ -25,7 +26,7 @@ public class FileReaderManager {
     /**
      * max file stream storage number, must be lower than 65535
      */
-    private static int maxCacheFileSize = 30000;
+    private static final int MAX_CACHED_FILE_SIZE = 30000;
 
     /**
      * key of fileReaderMap file path, value of fileReaderMap is its unique reader.
@@ -37,22 +38,15 @@ public class FileReaderManager {
      */
     private ConcurrentHashMap<String, AtomicInteger> referenceMap;
 
-    private static class OverflowFileStreamManagerHelper {
-        public static FileReaderManager INSTANCE = new FileReaderManager();
-    }
-
-    public static FileReaderManager getInstance() {
-        return OverflowFileStreamManagerHelper.INSTANCE;
-    }
-
     /**
-     * Get the file reader of given file path.
+     * Given a file path, tsfile or unseq tsfile, return a <code>TsFileSequenceReader</code> which
+     * opened this file.
      */
     public synchronized TsFileSequenceReader get(String filePath, boolean isUnClosed) throws IOException {
 
         if (!fileReaderMap.containsKey(filePath)) {
 
-            if (fileReaderMap.size() >= maxCacheFileSize) {
+            if (fileReaderMap.size() >= MAX_CACHED_FILE_SIZE) {
                 LOGGER.warn("Query has opened {} files !", fileReaderMap.size());
             }
 
@@ -65,15 +59,11 @@ public class FileReaderManager {
         return fileReaderMap.get(filePath);
     }
 
-    public void closeAndRemoveAllOpenedReaders() throws IOException {
-        for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
-            entry.getValue().close();
-            referenceMap.remove(entry.getKey());
-            fileReaderMap.remove(entry.getKey());
-        }
-    }
-
-    public synchronized void increaseFileReference(String filePath) {
+    /**
+     * Increase the usage reference of given file path.
+     * Only when the reference of given file path equals to zero, the corresponding file reader can be closed and remove.
+     */
+    public synchronized void increaseFileReaderReference(String filePath) {
         if (!referenceMap.containsKey(filePath)) {
             referenceMap.put(filePath, new AtomicInteger());
             referenceMap.get(filePath).set(0);
@@ -81,34 +71,25 @@ public class FileReaderManager {
         referenceMap.get(filePath).getAndIncrement();
     }
 
-    public void decreaseFileReference(String filePath) {
+    /**
+     * Decrease the usage reference of given file path.
+     * This method doesn't need lock.
+     * Only when the reference of given file path equals to zero, the corresponding file reader can be closed and remove.
+     */
+    public void decreaseFileReaderReference(String filePath) {
         referenceMap.get(filePath).getAndDecrement();
     }
 
     /**
-     * This method is used for the end of merge process when the file need to be deleted.
-     * TODO need to be invoked by FileNodeProcessor when merge process is done
+     * Only used for <code>EnvironmentUtils.cleanEnv</code> method.
+     * To make sure that unit test and integration test will not make conflict.
      */
-    public void removeCacheFileReaders(String filePath) throws IOException {
-        if (fileReaderMap.containsKey(filePath)) {
-            fileReaderMap.get(filePath).close();
-            fileReaderMap.remove(filePath);
-            referenceMap.remove(filePath);
+    public void closeAndRemoveAllOpenedReaders() throws IOException {
+        for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
+            entry.getValue().close();
+            referenceMap.remove(entry.getKey());
+            fileReaderMap.remove(entry.getKey());
         }
-    }
-
-    /**
-     * This method is only used for unit test
-     */
-    public synchronized boolean contains(String filePath) {
-        return fileReaderMap.containsKey(filePath);
-    }
-
-    private FileReaderManager() {
-        fileReaderMap = new ConcurrentHashMap<>();
-        referenceMap = new ConcurrentHashMap<>();
-
-        clearUnUsedFilesInFixTime();
     }
 
     private void clearUnUsedFilesInFixTime() {
@@ -135,5 +116,27 @@ public class FileReaderManager {
                 }
             }
         },0, examinePeriod, TimeUnit.MILLISECONDS);
+    }
+
+    private FileReaderManager() {
+        fileReaderMap = new ConcurrentHashMap<>();
+        referenceMap = new ConcurrentHashMap<>();
+
+        clearUnUsedFilesInFixTime();
+    }
+
+    private static class OverflowFileStreamManagerHelper {
+        public static FileReaderManager INSTANCE = new FileReaderManager();
+    }
+
+    public static FileReaderManager getInstance() {
+        return OverflowFileStreamManagerHelper.INSTANCE;
+    }
+
+    /**
+     * This method is only used for unit test
+     */
+    public synchronized boolean contains(String filePath) {
+        return fileReaderMap.containsKey(filePath);
     }
 }

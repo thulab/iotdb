@@ -5,7 +5,6 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,36 +18,27 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OpenedFilePathsManager {
 
     /**
-     * Each jdbc request has unique jod id, job id is stored in thread local variable jobContainer.
+     * Each jdbc request has an unique jod id, job id is stored in thread local variable jobIdContainer.
      */
-    private ThreadLocal<Long> jobContainer;
+    private ThreadLocal<Long> jobIdContainer;
 
     /**
      * Map<jobId, Set<filePaths>>
      */
-    private Map<Long, Set<String>> filePathsMap;
-
-    private OpenedFilePathsManager() {
-        jobContainer = new ThreadLocal<>();
-        filePathsMap = new ConcurrentHashMap<>();
-    }
-
-    private static class QueryTokenManagerHelper {
-        public static OpenedFilePathsManager INSTANCE = new OpenedFilePathsManager();
-    }
-
-    public static OpenedFilePathsManager getInstance() {
-        return QueryTokenManagerHelper.INSTANCE;
-    }
+    private ConcurrentHashMap<Long, Set<String>> filePathsMap;
 
     /**
      * Set job id for current request thread.
+     * When a query request is created firstly, this method must be invoked.
      */
     public void setJobIdForCurrentRequestThread(long jobId) {
-        jobContainer.set(jobId);
+        jobIdContainer.set(jobId);
         filePathsMap.put(jobId, new HashSet<>());
     }
 
+    /**
+     * Add the unique file paths to filePathsMap.
+     */
     public void addUsedFilesForCurrentRequestThread(long jobId, QueryDataSource dataSource) {
         for (IntervalFileNode intervalFileNode : dataSource.getSeqDataSource().getSealedTsFiles()) {
             String sealedFilePath = intervalFileNode.getFilePath();
@@ -66,25 +56,44 @@ public class OpenedFilePathsManager {
         }
     }
 
+    /**
+     * Whenever the jdbc request is closed normally or abnormally, this method must be invoked.
+     * All file paths used by this jdbc request must be cleared and thus the usage reference must be decreased.
+     */
     public void removeUsedFilesForCurrentRequestThread() {
-        if (jobContainer.get() != null) {
-            long jobId = jobContainer.get();
+        if (jobIdContainer.get() != null) {
+            long jobId = jobIdContainer.get();
+            jobIdContainer.remove();
+
             for (String filePath : filePathsMap.get(jobId)) {
-                FileReaderManager.getInstance().decreaseFileReference(filePath);
+                FileReaderManager.getInstance().decreaseFileReaderReference(filePath);
             }
             filePathsMap.remove(jobId);
-            jobContainer.remove();
         }
     }
 
     /**
      * Increase the usage reference of filePath of job id.
-     * Before the invoking of this method, <code>setJobIdForCurrentRequestThread</code> has been invoked.
+     * Before the invoking of this method, <code>this.setJobIdForCurrentRequestThread</code> has been invoked,
+     * so <code>filePathsMap.get(jobId)</code> must not return null.
      */
     public void addFilePathToMap(long jobId, String filePath) {
         if (!filePathsMap.get(jobId).contains(filePath)) {
             filePathsMap.get(jobId).add(filePath);
-            FileReaderManager.getInstance().increaseFileReference(filePath);
+            FileReaderManager.getInstance().increaseFileReaderReference(filePath);
         }
+    }
+
+    private OpenedFilePathsManager() {
+        jobIdContainer = new ThreadLocal<>();
+        filePathsMap = new ConcurrentHashMap<>();
+    }
+
+    private static class QueryTokenManagerHelper {
+        public static OpenedFilePathsManager INSTANCE = new OpenedFilePathsManager();
+    }
+
+    public static OpenedFilePathsManager getInstance() {
+        return QueryTokenManagerHelper.INSTANCE;
     }
 }
