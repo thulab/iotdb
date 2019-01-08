@@ -37,7 +37,7 @@ public class LogWriter implements ILogWriter {
         }
         buffer.flip();
         outputStream.write(buffer);
-        outputStream.force(true);
+        //outputStream.force(true);
     }
 
     @Override
