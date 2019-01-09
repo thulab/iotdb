@@ -1,16 +1,5 @@
 package cn.edu.tsinghua.tsfile.write.writer;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.file.MetaMarker;
@@ -29,9 +18,19 @@ import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
 import cn.edu.tsinghua.tsfile.utils.BytesUtils;
 import cn.edu.tsinghua.tsfile.utils.PublicBAOS;
 import cn.edu.tsinghua.tsfile.utils.ReadWriteIOUtils;
-import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-import java.util.*;
+import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * TSFileIOWriter is used to construct metadata and write data stored in memory
@@ -52,6 +51,13 @@ public class TsFileIOWriter {
     protected List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
     private ChunkGroupMetaData currentChunkGroupMetaData;
     private ChunkMetaData currentChunkMetaData;
+
+    /**
+     *
+     */
+    protected TsFileIOWriter(){
+
+    }
 
     /**
      * for writing a new tsfile.
@@ -92,7 +98,7 @@ public class TsFileIOWriter {
         bytes.writeTo(out.wrapAsStream());
     }
 
-    private void startFile() throws IOException {
+    protected void startFile() throws IOException {
         out.write(magicStringBytes);
     }
 

@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import java.time.Instant;
-import java.time.ZonedDateTime;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
@@ -26,12 +24,13 @@ import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.write.record.TSRecord;
 import cn.edu.tsinghua.tsfile.write.record.datapoint.DataPoint;
 import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -42,7 +41,7 @@ public class BufferWriteProcessor extends Processor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
 
     private FileSchema fileSchema;
-    private BufferWriteRestoreManager bufferWriteRestoreManager;
+//    private RestorableTsFileIOWriter bufferWriteRestoreManager;
 
     private volatile FlushStatus flushStatus = new FlushStatus();
     private volatile boolean isFlush;
@@ -52,7 +51,7 @@ public class BufferWriteProcessor extends Processor {
 
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
-    BufferIO writer;
+    RestorableTsFileIOWriter writer;
 
     private Action bufferwriteFlushAction;
     private Action bufferwriteCloseAction;
@@ -90,8 +89,7 @@ public class BufferWriteProcessor extends Processor {
         this.insertFilePath = new File(dataDir, fileName).getPath();
         bufferWriteRelativePath = processorName + File.separatorChar + fileName;
         try {
-            bufferWriteRestoreManager = new BufferWriteRestoreManager(processorName, insertFilePath);
-            writer = bufferWriteRestoreManager.recover();
+            writer = new RestorableTsFileIOWriter(processorName, insertFilePath);
         } catch (IOException e) {
             throw new BufferWriteProcessorException(e);
         }
@@ -199,7 +197,7 @@ public class BufferWriteProcessor extends Processor {
             memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
             ReadOnlyMemChunk timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
             return new Pair<>(timeValuePairSorter,
-                    bufferWriteRestoreManager.getInsertMetadatas(deltaObjectId, measurementId, dataType));
+                    writer.getMetadatas(deltaObjectId, measurementId, dataType));
         } finally {
             flushQueryLock.unlock();
         }
@@ -223,7 +221,7 @@ public class BufferWriteProcessor extends Processor {
         try {
             flushMemTable.clear();
             flushMemTable = null;
-            bufferWriteRestoreManager.appendMetadata();
+             writer.appendMetadata();
         } finally {
             isFlush = false;
             flushQueryLock.unlock();
@@ -240,7 +238,7 @@ public class BufferWriteProcessor extends Processor {
                 // flush data
                 MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable);
                 // write restore information
-                bufferWriteRestoreManager.flush(writer.getPos(), writer.getAppendedRowGroupMetadata());
+                writer.flush();
             }
 
             filenodeFlushAction.act();
@@ -345,7 +343,6 @@ public class BufferWriteProcessor extends Processor {
             flush(true);
             // end file
             writer.endFile(fileSchema);
-            bufferWriteRestoreManager.deleteRestoreFile();
 //            bufferWriteRestoreManager.close(fileSchema);
             // update the IntervalFile for interval list
             bufferwriteCloseAction.act();
@@ -435,15 +432,15 @@ public class BufferWriteProcessor extends Processor {
     }
 
     private String getBufferwriteRestoreFilePath() {
-        return bufferWriteRestoreManager.getRestoreFilePath();
+        return writer.getRestoreFilePath();
     }
 
     public boolean isNewProcessor() {
-        return bufferWriteRestoreManager.isNewResource();
+        return writer.isNewResource();
     }
 
     public void setNewProcessor(boolean isNewProcessor) {
-        bufferWriteRestoreManager.setNewResource(isNewProcessor);
+        writer.setNewResource(isNewProcessor);
     }
 
     public WriteLogNode getLogNode() {
