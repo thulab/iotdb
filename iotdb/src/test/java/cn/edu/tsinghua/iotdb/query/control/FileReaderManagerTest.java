@@ -9,6 +9,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+
+import static org.junit.Assert.fail;
 
 
 public class FileReaderManagerTest {
@@ -102,9 +105,12 @@ public class FileReaderManagerTest {
 
         OpenedFilePathsManager.getInstance().removeUsedFilesForCurrentRequestThread();
         FileReaderManager.getInstance().closeAndRemoveAllOpenedReaders();
-        for (int i = 0; i < MAX_FILE_SIZE; i++) {
+        for (int i = 1; i < MAX_FILE_SIZE; i++) {
             File file = new File(filePath + i);
-            file.delete();
+            boolean result = Files.deleteIfExists(file.toPath());
+            if (!result) {
+                fail();
+            }
         }
     }
 }
