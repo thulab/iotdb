@@ -121,7 +121,7 @@ public class FileReaderManager {
                 new IoTThreadFactory("opended-files-manager"));
 
         service.scheduleAtFixedRate(() -> {
-            synchronized (FileReaderManager.class) {
+            synchronized (this) {
                 for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
                     TsFileSequenceReader reader = entry.getValue();
                     int referenceNum = referenceMap.get(entry.getKey()).get();
