@@ -18,6 +18,7 @@ import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -35,11 +36,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 
 public class FileNodeManager implements IStatistic, IService {
@@ -748,6 +751,11 @@ public class FileNodeManager implements IStatistic, IService {
 				List<String> bufferwritePathList = directories.getAllTsFileFolders();
 				for(String bufferwritePath : bufferwritePathList) {
 					bufferwritePath = standardizeDir(bufferwritePath) + processorName;
+					File bufferDir = new File(bufferwritePath);
+					// free and close the streams under this bufferwrite directory
+					for(String bufferFile : bufferDir.list()){
+						FileReaderManager.getInstance().closeFileAndRemoveReader(bufferFile);
+					}
 					FileUtils.deleteDirectory(new File(bufferwritePath));
 				}
 

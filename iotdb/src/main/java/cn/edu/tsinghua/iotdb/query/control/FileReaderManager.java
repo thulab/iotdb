@@ -76,14 +76,14 @@ public class FileReaderManager {
      * This method doesn't need lock.
      * Only when the reference of given file path equals to zero, the corresponding file reader can be closed and remove.
      */
-    public void decreaseFileReaderReference(String filePath) {
+    public synchronized void decreaseFileReaderReference(String filePath) {
         referenceMap.get(filePath).getAndDecrement();
     }
 
     /**
      * This method is used when the given file path is deleted.
      */
-    public void closeFileAndRemoveReader(String filePath) throws IOException {
+    public synchronized void closeFileAndRemoveReader(String filePath) throws IOException {
         if (fileReaderMap.containsKey(filePath)) {
             referenceMap.remove(filePath);
             fileReaderMap.get(filePath).close();
@@ -95,7 +95,7 @@ public class FileReaderManager {
      * Only used for <code>EnvironmentUtils.cleanEnv</code> method.
      * To make sure that unit test and integration test will not make conflict.
      */
-    public void closeAndRemoveAllOpenedReaders() throws IOException {
+    public synchronized void closeAndRemoveAllOpenedReaders() throws IOException {
         for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
             entry.getValue().close();
             referenceMap.remove(entry.getKey());
