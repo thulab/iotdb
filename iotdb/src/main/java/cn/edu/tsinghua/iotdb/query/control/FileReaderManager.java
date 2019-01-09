@@ -38,6 +38,13 @@ public class FileReaderManager {
      */
     private ConcurrentHashMap<String, AtomicInteger> referenceMap;
 
+    private FileReaderManager() {
+        fileReaderMap = new ConcurrentHashMap<>();
+        referenceMap = new ConcurrentHashMap<>();
+
+        clearUnUsedFilesInFixTime();
+    }
+
     /**
      * Given a file path, tsfile or unseq tsfile, return a <code>TsFileSequenceReader</code> which
      * opened this file.
@@ -63,12 +70,8 @@ public class FileReaderManager {
      * Increase the usage reference of given file path.
      * Only when the reference of given file path equals to zero, the corresponding file reader can be closed and remove.
      */
-    public synchronized void increaseFileReaderReference(String filePath) {
-        if (!referenceMap.containsKey(filePath)) {
-            referenceMap.put(filePath, new AtomicInteger());
-            referenceMap.get(filePath).set(0);
-        }
-        referenceMap.get(filePath).getAndIncrement();
+    public void increaseFileReaderReference(String filePath) {
+        referenceMap.computeIfAbsent(filePath, k -> new AtomicInteger()).getAndIncrement();
     }
 
     /**
@@ -103,6 +106,13 @@ public class FileReaderManager {
         }
     }
 
+    /**
+     * This method is only used for unit test
+     */
+    public synchronized boolean contains(String filePath) {
+        return fileReaderMap.containsKey(filePath);
+    }
+
     private void clearUnUsedFilesInFixTime() {
         long examinePeriod = TsfileDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
 
@@ -113,9 +123,9 @@ public class FileReaderManager {
             synchronized (FileReaderManager.class) {
                 for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
                     TsFileSequenceReader reader = entry.getValue();
-                    int reference = referenceMap.get(entry.getKey()).get();
+                    int referenceNum = referenceMap.get(entry.getKey()).get();
 
-                    if (reference == 0) {
+                    if (referenceNum == 0) {
                         try {
                             reader.close();
                         } catch (IOException e) {
@@ -129,25 +139,11 @@ public class FileReaderManager {
         },0, examinePeriod, TimeUnit.MILLISECONDS);
     }
 
-    private FileReaderManager() {
-        fileReaderMap = new ConcurrentHashMap<>();
-        referenceMap = new ConcurrentHashMap<>();
-
-        clearUnUsedFilesInFixTime();
-    }
-
-    private static class OverflowFileStreamManagerHelper {
+    private static class FileReaderManagerHelper {
         public static FileReaderManager INSTANCE = new FileReaderManager();
     }
 
     public static FileReaderManager getInstance() {
-        return OverflowFileStreamManagerHelper.INSTANCE;
-    }
-
-    /**
-     * This method is only used for unit test
-     */
-    public synchronized boolean contains(String filePath) {
-        return fileReaderMap.containsKey(filePath);
+        return FileReaderManagerHelper.INSTANCE;
     }
 }

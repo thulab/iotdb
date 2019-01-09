@@ -27,6 +27,11 @@ public class OpenedFilePathsManager {
      */
     private ConcurrentHashMap<Long, Set<String>> filePathsMap;
 
+    private OpenedFilePathsManager() {
+        jobIdContainer = new ThreadLocal<>();
+        filePathsMap = new ConcurrentHashMap<>();
+    }
+
     /**
      * Set job id for current request thread.
      * When a query request is created firstly, this method must be invoked.
@@ -84,16 +89,11 @@ public class OpenedFilePathsManager {
         }
     }
 
-    private OpenedFilePathsManager() {
-        jobIdContainer = new ThreadLocal<>();
-        filePathsMap = new ConcurrentHashMap<>();
-    }
-
-    private static class QueryTokenManagerHelper {
+    private static class OpenedFilePathsManagerHelper {
         public static OpenedFilePathsManager INSTANCE = new OpenedFilePathsManager();
     }
 
     public static OpenedFilePathsManager getInstance() {
-        return QueryTokenManagerHelper.INSTANCE;
+        return OpenedFilePathsManagerHelper.INSTANCE;
     }
 }
