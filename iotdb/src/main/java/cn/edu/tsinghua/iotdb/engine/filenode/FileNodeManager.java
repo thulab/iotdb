@@ -751,14 +751,24 @@ public class FileNodeManager implements IStatistic, IService {
 					bufferwritePath = standardizeDir(bufferwritePath) + processorName;
 					File bufferDir = new File(bufferwritePath);
 					// free and close the streams under this bufferwrite directory
-					for(String bufferFile : bufferDir.list()){
-						FileReaderManager.getInstance().closeFileAndRemoveReader(bufferFile);
+					if(bufferDir.exists()) {
+						for (File bufferFile : bufferDir.listFiles()) {
+							FileReaderManager.getInstance().closeFileAndRemoveReader(bufferFile.getPath());
+						}
 					}
 					FileUtils.deleteDirectory(new File(bufferwritePath));
 				}
 
 				String overflowPath = TsFileDBConf.overflowDataDir;
 				overflowPath = standardizeDir(overflowPath) + processorName;
+				File overflowDir = new File(overflowPath);
+				if(overflowDir.exists()){
+					for(File subOverflowDir : overflowDir.listFiles()){
+						for(File overflowFile : subOverflowDir.listFiles()){
+							FileReaderManager.getInstance().closeFileAndRemoveReader(overflowFile.getPath());
+						}
+					}
+				}
 				FileUtils.deleteDirectory(new File(overflowPath));
 
 				MultiFileLogNodeManager.getInstance()
