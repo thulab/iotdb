@@ -10,10 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p> Singleton pattern, to manage all query tokens.
- * Each jdbc query request can query multiple series, in the processing of querying different device id,
- * the <code>FileNodeManager.getInstance().beginQuery</code> and <code>FileNodeManager.getInstance().endQuery</code>
- * must be invoked in the beginning and ending of jdbc request.
- *
+ * Each jdbc request has an unique job id, in this jdbc request, OpenedFilePathsManager manage all the opened files,
+ * and store in the set of current job id.
  */
 public class OpenedFilePathsManager {
 

@@ -70,7 +70,7 @@ public class FileReaderManager {
      * Increase the usage reference of given file path.
      * Only when the reference of given file path equals to zero, the corresponding file reader can be closed and remove.
      */
-    public void increaseFileReaderReference(String filePath) {
+    public synchronized void increaseFileReaderReference(String filePath) {
         referenceMap.computeIfAbsent(filePath, k -> new AtomicInteger()).getAndIncrement();
     }
 
@@ -87,6 +87,8 @@ public class FileReaderManager {
      * This method is used when the given file path is deleted.
      */
     public synchronized void closeFileAndRemoveReader(String filePath) throws IOException {
+        System.out.println("~~~~~~~~~~" + filePath);
+        System.out.println(fileReaderMap.containsKey(filePath));
         if (fileReaderMap.containsKey(filePath)) {
             referenceMap.remove(filePath);
             fileReaderMap.get(filePath).close();
