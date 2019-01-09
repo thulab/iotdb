@@ -87,7 +87,6 @@ public class FileReaderManager {
      * This method is used when the given file path is deleted.
      */
     public synchronized void closeFileAndRemoveReader(String filePath) throws IOException {
-        System.out.println("~~~~~~~~~~" + filePath);
         System.out.println(fileReaderMap.containsKey(filePath));
         if (fileReaderMap.containsKey(filePath)) {
             referenceMap.remove(filePath);
