@@ -27,6 +27,13 @@ public class QueryTokenManager {
 
     /**
      * Map<jobId, Map<deviceId, List<token>>
+     *
+     * <p> Key of queryTokensMap is job id, value of queryTokensMap is a deviceId-tokenList map,
+     * key of the deviceId-tokenList map is device id, value of deviceId-tokenList map is a list of tokens.
+     *
+     * <p> For example, in a query process, when invoking <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns a
+     * result token `1`, and when the query process is ended, we must invoke <code>FileNodeManager.getInstance().endQuery(device_1, 1)</code>
+     * to return the token of query device.
      */
     private ConcurrentHashMap<Long, ConcurrentHashMap<String, List<Integer>>> queryTokensMap;
 

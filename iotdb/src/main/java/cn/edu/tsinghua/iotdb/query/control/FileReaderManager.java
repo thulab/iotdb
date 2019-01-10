@@ -45,6 +45,32 @@ public class FileReaderManager {
         clearUnUsedFilesInFixTime();
     }
 
+    private void clearUnUsedFilesInFixTime() {
+        long examinePeriod = TsfileDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
+
+        ScheduledExecutorService service = new ScheduledThreadPoolExecutor(1,
+                new IoTThreadFactory("opended-files-manager"));
+
+        service.scheduleAtFixedRate(() -> {
+            synchronized (this) {
+                for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
+                    TsFileSequenceReader reader = entry.getValue();
+                    int referenceNum = referenceMap.get(entry.getKey()).get();
+
+                    if (referenceNum == 0) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                            LOGGER.error("Can not close TsFileSequenceReader {} !", reader.getFileName());
+                        }
+                        fileReaderMap.remove(entry.getKey());
+                        referenceMap.remove(entry.getKey());
+                    }
+                }
+            }
+        },0, examinePeriod, TimeUnit.MILLISECONDS);
+    }
+
     /**
      * Given a file path, tsfile or unseq tsfile, return a <code>TsFileSequenceReader</code> which
      * opened this file.
@@ -112,32 +138,6 @@ public class FileReaderManager {
      */
     public synchronized boolean contains(String filePath) {
         return fileReaderMap.containsKey(filePath);
-    }
-
-    private void clearUnUsedFilesInFixTime() {
-        long examinePeriod = TsfileDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
-
-        ScheduledExecutorService service = new ScheduledThreadPoolExecutor(1,
-                new IoTThreadFactory("opended-files-manager"));
-
-        service.scheduleAtFixedRate(() -> {
-            synchronized (this) {
-                for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
-                    TsFileSequenceReader reader = entry.getValue();
-                    int referenceNum = referenceMap.get(entry.getKey()).get();
-
-                    if (referenceNum == 0) {
-                        try {
-                            reader.close();
-                        } catch (IOException e) {
-                            LOGGER.error("Can not close TsFileSequenceReader {} !", reader.getFileName());
-                        }
-                        fileReaderMap.remove(entry.getKey());
-                        referenceMap.remove(entry.getKey());
-                    }
-                }
-            }
-        },0, examinePeriod, TimeUnit.MILLISECONDS);
     }
 
     private static class FileReaderManagerHelper {
