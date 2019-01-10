@@ -1,25 +1,24 @@
 package cn.edu.tsinghua.iotdb.service;
 
-import java.io.IOException;
-import java.util.List;
-
-import cn.edu.tsinghua.iotdb.exception.*;
-import cn.edu.tsinghua.iotdb.exception.builder.ExceptionBuilder;
-import cn.edu.tsinghua.iotdb.metadata.MManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBDefaultThreadExceptionHandler;
 import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
+import cn.edu.tsinghua.iotdb.exception.*;
+import cn.edu.tsinghua.iotdb.exception.builder.ExceptionBuilder;
+import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
-
 import cn.edu.tsinghua.iotdb.postback.receiver.ServerManager;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.MultiFileLogNodeManager;
 import cn.edu.tsinghua.iotdb.writelog.manager.WriteLogNodeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
 
 public class IoTDB implements IoTDBMBean{
 	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
@@ -79,6 +78,7 @@ public class IoTDB implements IoTDBMBean{
 		registerManager.register(CloseMergeService.getInstance());
 		registerManager.register(StatMonitor.getInstance());
 		registerManager.register(BasicMemController.getInstance());
+		registerManager.register(FileReaderManager.getInstance());
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
 
@@ -87,7 +87,7 @@ public class IoTDB implements IoTDBMBean{
 		serverManager.startServer();
 	}
 
-	public void deactivate(){
+	public void deactivate() {
 		serverManager.closeServer();
 		registerManager.deregisterAll();
 		JMXService.deregisterMBean(MBEAN_NAME);

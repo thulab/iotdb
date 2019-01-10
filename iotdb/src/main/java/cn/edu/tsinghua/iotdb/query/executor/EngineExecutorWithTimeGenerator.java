@@ -4,13 +4,14 @@ import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.iotdb.query.dataset.EngineDataSetWithTimeGenerator;
 import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
 import cn.edu.tsinghua.iotdb.query.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReaderByTimestamp;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.query.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 import cn.edu.tsinghua.tsfile.read.common.Path;
@@ -26,9 +27,8 @@ import java.util.List;
  */
 public class EngineExecutorWithTimeGenerator {
 
-    private long jobId;
-
     private QueryExpression queryExpression;
+    private long jobId;
 
     EngineExecutorWithTimeGenerator(long jobId, QueryExpression queryExpression) {
         this.jobId = jobId;
@@ -36,6 +36,9 @@ public class EngineExecutorWithTimeGenerator {
     }
 
     public QueryDataSet execute() throws IOException, FileNodeManagerException {
+
+        QueryTokenManager.getInstance().beginQueryOfGivenQueryPaths(jobId, queryExpression.getSelectedSeries());
+        QueryTokenManager.getInstance().beginQueryOfGivenExpression(jobId, queryExpression.getExpression());
 
         EngineTimeGenerator timestampGenerator = new EngineTimeGenerator(jobId, queryExpression.getExpression());
 
@@ -51,7 +54,7 @@ public class EngineExecutorWithTimeGenerator {
             }
 
         }
-        return new EngineDataSetWithTimeGenerator(jobId, queryExpression.getSelectedSeries(), dataTypes,
+        return new EngineDataSetWithTimeGenerator(queryExpression.getSelectedSeries(), dataTypes,
                 timestampGenerator, readersOfSelectedSeries);
     }
 
@@ -62,16 +65,17 @@ public class EngineExecutorWithTimeGenerator {
 
         for (Path path : paths) {
 
-            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(path);
+            QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, path);
+
             PriorityMergeReaderByTimestamp mergeReaderByTimestamp = new PriorityMergeReaderByTimestamp();
 
             // reader for sequence data
-            SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), null);
+            SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), null);
             mergeReaderByTimestamp.addReaderWithPriority(tsFilesReader, 1);
 
             // reader for unSequence data
             PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-                    createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), null);
+                    createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), null);
             mergeReaderByTimestamp.addReaderWithPriority(unSeqMergeReader, 2);
 
             readersOfSelectedSeries.add(mergeReaderByTimestamp);

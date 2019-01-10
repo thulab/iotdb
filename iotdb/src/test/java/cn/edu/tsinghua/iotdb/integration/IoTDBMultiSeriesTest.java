@@ -70,8 +70,8 @@ public class IoTDBMultiSeriesTest {
         tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
-        EnvironmentUtils.cleanEnv();
 
+        EnvironmentUtils.cleanEnv();
     }
 
     // "select * from root.vehicle" : test select wild data

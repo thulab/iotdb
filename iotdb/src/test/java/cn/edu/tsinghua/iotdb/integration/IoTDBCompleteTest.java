@@ -1,21 +1,14 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-
+import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import java.sql.*;
 
 import static cn.edu.tsinghua.iotdb.integration.Constant.TIMESTAMP_STR;
 
@@ -166,7 +159,8 @@ public class IoTDBCompleteTest {
                         "2,102,202,\n" +
                         "946684800000,105,null,\n" +
                         "NOW(),104,null,\n",
-                "DELETE TIMESERIES root.vehicle.*"};
+                "DELETE TIMESERIES root.vehicle.*"
+        };
         executeSQL(sqlS);
     }
 

@@ -5,7 +5,10 @@ import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.sql.*;
 
@@ -67,8 +70,8 @@ public class IoTDBLargeDataTest {
         tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
-        EnvironmentUtils.cleanEnv();
 
+        EnvironmentUtils.cleanEnv();
     }
 
     // "select * from root.vehicle" : test select wild data

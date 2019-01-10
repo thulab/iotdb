@@ -2,6 +2,8 @@ package cn.edu.tsinghua.iotdb.query.executor;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.query.control.OpenedFilePathsManager;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.tsfile.exception.filter.QueryFilterOptimizationException;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.QueryExpression;
@@ -32,20 +34,21 @@ public class EngineQueryRouter {
 
     public QueryDataSet query(QueryExpression queryExpression) throws IOException, FileNodeManagerException {
 
-        long currentJobId = getNextJobId();
+        long jobId = getNextJobId();
+        QueryTokenManager.getInstance().setJobIdForCurrentRequestThread(jobId);
+        OpenedFilePathsManager.getInstance().setJobIdForCurrentRequestThread(jobId);
 
         if (queryExpression.hasQueryFilter()) {
             try {
-
                 IExpression optimizedExpression = ExpressionOptimizer.getInstance().
                         optimize(queryExpression.getExpression(), queryExpression.getSelectedSeries());
                 queryExpression.setExpression(optimizedExpression);
 
                 if (optimizedExpression.getType() == GLOBAL_TIME) {
-                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(currentJobId, queryExpression);
+                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(jobId, queryExpression);
                     return engineExecutor.executeWithGlobalTimeFilter();
                 } else {
-                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(currentJobId, queryExpression);
+                    EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(jobId, queryExpression);
                     return engineExecutor.execute();
                 }
 
@@ -54,7 +57,7 @@ public class EngineQueryRouter {
             }
         } else {
             try {
-                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(currentJobId, queryExpression);
+                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(jobId, queryExpression);
                 return engineExecutor.executeWithoutFilter();
             } catch (PathErrorException e) {
                 throw new IOException(e);

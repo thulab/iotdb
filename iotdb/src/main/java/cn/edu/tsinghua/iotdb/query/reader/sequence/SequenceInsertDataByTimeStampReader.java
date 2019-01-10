@@ -3,7 +3,7 @@
 //import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 //import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 //import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
-//import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
+//import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 //import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReaderByTimestamp;
 //import cn.edu.tsinghua.iotdb.query.reader.merge.PrioritySeriesReader;
 //import cn.edu.tsinghua.iotdb.query.reader.merge.PrioritySeriesReaderByTimestamp;
@@ -157,7 +157,7 @@
 //    }
 //
 //    protected void initSingleTsFileReader(IntervalFileNode fileNode) throws IOException {
-//      RandomAccessFile raf = FileStreamManager.getInstance().get(jobId, fileNode.getFilePath());
+//      RandomAccessFile raf = FileReaderManager.getInstance().get(jobId, fileNode.getFilePath());
 //      ITsRandomAccessFileReader randomAccessFileReader = new TsRandomAccessLocalFileReader(raf);
 //      tsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader, seriesPath);
 //    }

@@ -269,6 +269,11 @@ public class TsfileDBConfig {
 
 	public String ipWhiteList = "0.0.0.0/0";
 
+	/**
+	 * examine period of cache file reader : 100 seconds
+	 */
+	public long cacheFileReaderClearPeriod = 100000;
+
 	public TsfileDBConfig() {}
 
 	public void updatePath() {

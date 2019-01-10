@@ -46,7 +46,7 @@ public class TsFileSequenceReader {
     }
 
 
-    TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException {
+    public TsFileSequenceReader(String file, boolean loadMetadataSize) throws IOException {
         this.file = file;
         tsFileInput = new DefaultTsFileInput(Paths.get(file));
         if (loadMetadataSize) {
