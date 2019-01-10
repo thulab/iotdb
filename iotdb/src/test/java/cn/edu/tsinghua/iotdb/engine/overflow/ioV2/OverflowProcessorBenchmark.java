@@ -18,21 +18,31 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Overflow Insert Benchmark.
+ * This class is used to bench overflow processor module and gets
+ * its performance.
+ */
 public class OverflowProcessorBenchmark {
+
     private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.
             getInstance().getConfig();
+
     private static int numOfDevice = 100;
+    private static int numOfMeasurement = 100;
+    private static int numOfPoint = 1000;
+
     private static String[] deviceIds = new String[numOfDevice];
     static {
         for(int i = 0;i<numOfDevice;i++){
             deviceIds[i] = String.valueOf("d"+i);
         }
     }
-    private static int numOfMeasurement = 100;
+
     private static String[] measurementIds  = new String[numOfMeasurement];
     private static FileSchema fileSchema = new FileSchema();
     private static TSDataType tsDataType = TSDataType.INT64;
-    private static int numOfPoint = 1000;
+
     static {
         for(int i = 0;i< numOfMeasurement;i++){
             measurementIds[i] = String.valueOf("m"+i);
