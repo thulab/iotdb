@@ -53,8 +53,8 @@ public class QueryTokenManager {
      * So is Q2,
      * <code>FileNodeManager.getInstance().endQuery(device_1, 3)</code> and <code>FileNodeManager.getInstance().endQuery(device_2, 4)</code> must be invoked
      *
-     * Only when the invoking of <code>FileNodeManager.getInstance().beginQuery()</code> and <code>FileNodeManager.getInstance().endQuery()</code> goes right,
-     * the write process and query process of IoTDB can run rightly.
+     * Last but no least, to ensure the correctness of write process and query process of IoTDB,
+     * <code>FileNodeManager.getInstance().beginQuery()</code> and <code>FileNodeManager.getInstance().endQuery() must be executed rightly.
      * </p>
      */
     private ConcurrentHashMap<Long, ConcurrentHashMap<String, List<Integer>>> queryTokensMap;

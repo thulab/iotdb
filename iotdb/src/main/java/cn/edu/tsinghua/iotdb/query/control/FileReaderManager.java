@@ -1,7 +1,6 @@
 package cn.edu.tsinghua.iotdb.query.control;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
-import cn.edu.tsinghua.iotdb.concurrent.IoTThreadFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.service.IService;
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
