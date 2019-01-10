@@ -8,7 +8,11 @@ import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
 import cn.edu.tsinghua.tsfile.read.expression.impl.SingleSeriesExpression;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,27 +38,22 @@ public class QueryTokenManager {
      * </p>
      *
      * <p>
-     * For example, in a query process Q1, we give a query sql <sql>select device_1.sensor_1, device_1.sensor_2, device_2.sensor_1, device_2.sensor_2</sql>,
-     * in this query clause, we will invoke <code>FileNodeManager.getInstance().beginQuery(device_1)</code> once and
-     * invoke <code>FileNodeManager.getInstance().beginQuery(device_2)</code> once. Notice that, Although in the query sql, there exists four paths, but the unique
-     * devices are only `device_1` and `device_2`.
-     * Assuming that in the invoking of <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns a
-     * result token `1` and the invoking <code>FileNodeManager.getInstance().beginQuery(device_2)</code>, it returns a
-     * another result token `2`;
+     * For example, during a query process Q1, given a query sql <sql>select device_1.sensor_1, device_1.sensor_2, device_2.sensor_1, device_2.sensor_2</sql>,
+     * we will invoke <code>FileNodeManager.getInstance().beginQuery(device_1)</code> and <code>FileNodeManager.getInstance().beginQuery(device_2)</code> both once.
+     * Although there exists four paths, but the unique devices are only `device_1` and `device_2`.
+     * When invoking <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns result token `1`.
+     * Similarly, <code>FileNodeManager.getInstance().beginQuery(device_2)</code> returns result token `2`.
      *
-     * Assume that, in the meanwhile, in another client, a query process Q2,
-     * we also give a query sql <sql>select device_1.sensor_1, device_1.sensor_2, device_2.sensor_1, device_2.sensor_2</sql>,
-     * in this query clause, we will invoke <code>FileNodeManager.getInstance().beginQuery(device_1)</code> once and
-     * invoke <code>FileNodeManager.getInstance().beginQuery(device_2)</code> once.
-     * Assume that, in the first invoking of <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns a
-     * result token `3` and in the invoking of <code>FileNodeManager.getInstance().beginQuery(device_2)</code>, it returns a
-     * another result token `4`;
+     * In the meanwhile, another query process Q2 aroused by other client is triggered, whose sql statement is same to Q1.
+     * Although <code>FileNodeManager.getInstance().beginQuery(device_1)</code> and <code>FileNodeManager.getInstance().beginQuery(device_2)</code>
+     * will be invoked again, it returns result token `3` and `4` .
      *
-     * As a right flow, in the exit of query process Q1 normally or abnormally, <code>FileNodeManager.getInstance().endQuery(device_1, 1)</code> and
-     * <code>FileNodeManager.getInstance().endQuery(device_2, 2)</code> must be invoked. In the exit of  query process Q2 normally or abnormally,
-     * <code>FileNodeManager.getInstance().endQuery(device_1, 3)</code> and <code>FileNodeManager.getInstance().endQuery(device_2, 4)</code> must be invoked.
+     * <code>FileNodeManager.getInstance().endQuery(device_1, 1)</code> and <code>FileNodeManager.getInstance().endQuery(device_2, 2)</code>
+     * must be invoked no matter how query process Q1 exits normally or abnormally.
+     * So is Q2,
+     * <code>FileNodeManager.getInstance().endQuery(device_1, 3)</code> and <code>FileNodeManager.getInstance().endQuery(device_2, 4)</code> must be invoked
      *
-     * Only when the invoking of <code>FileNodeManager.getInstance().beginQuery()</code> and <code>FileNodeManager.getInstance().endQuery()</code> is right,
+     * Only when the invoking of <code>FileNodeManager.getInstance().beginQuery()</code> and <code>FileNodeManager.getInstance().endQuery()</code> goes right,
      * the write process and query process of IoTDB can run rightly.
      * </p>
      */

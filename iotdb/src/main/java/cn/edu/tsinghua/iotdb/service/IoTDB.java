@@ -78,6 +78,7 @@ public class IoTDB implements IoTDBMBean{
 		registerManager.register(CloseMergeService.getInstance());
 		registerManager.register(StatMonitor.getInstance());
 		registerManager.register(BasicMemController.getInstance());
+		registerManager.register(FileReaderManager.getInstance());
 		
 		JMXService.registerMBean(getInstance(), MBEAN_NAME);
 
@@ -89,9 +90,7 @@ public class IoTDB implements IoTDBMBean{
 	public void deactivate() {
 		serverManager.closeServer();
 		registerManager.deregisterAll();
-		FileReaderManager.getInstance().clearThread();
 		JMXService.deregisterMBean(MBEAN_NAME);
-
 	}
 
 	@Override

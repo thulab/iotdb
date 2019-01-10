@@ -1,7 +1,11 @@
 package cn.edu.tsinghua.iotdb.query.control;
 
+import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.IoTThreadFactory;
 import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.exception.StartupException;
+import cn.edu.tsinghua.iotdb.service.IService;
+import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
 import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import org.slf4j.Logger;
@@ -15,11 +19,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static cn.edu.tsinghua.iotdb.service.ServiceType.FILE_READER_MANAGER_SERVICE;
+
 /**
  * <p> Singleton pattern, to manage all file reader.
  * Manage all opened file streams, to ensure that each file will be opened at most once.
  */
-public class FileReaderManager {
+public class FileReaderManager implements IService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReaderManager.class);
 
@@ -43,7 +49,7 @@ public class FileReaderManager {
     private FileReaderManager() {
         fileReaderMap = new ConcurrentHashMap<>();
         referenceMap = new ConcurrentHashMap<>();
-        executorService = new ScheduledThreadPoolExecutor(1, new IoTThreadFactory("opended-files-manager"));
+        executorService = IoTDBThreadPoolFactory.newScheduledThreadPool(1, "opended-files-manager");
 
         clearUnUsedFilesInFixTime();
     }
@@ -135,10 +141,18 @@ public class FileReaderManager {
     }
 
     /**
-     * Clear the timing thread in executor service.
+     * This method is only used for unit test
      */
-    public void clearThread() {
+    public synchronized boolean contains(String filePath) {
+        return fileReaderMap.containsKey(filePath);
+    }
 
+    @Override
+    public void start() throws StartupException {
+    }
+
+    @Override
+    public void stop() {
         if (executorService == null || executorService.isShutdown()) {
             return;
         }
@@ -151,11 +165,9 @@ public class FileReaderManager {
         }
     }
 
-    /**
-     * This method is only used for unit test
-     */
-    public synchronized boolean contains(String filePath) {
-        return fileReaderMap.containsKey(filePath);
+    @Override
+    public ServiceType getID() {
+        return FILE_READER_MANAGER_SERVICE;
     }
 
     private static class FileReaderManagerHelper {
