@@ -1,6 +1,20 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import static org.junit.Assert.assertEquals;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
+import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,21 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
-import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
-import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.utils.Pair;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import static org.junit.Assert.assertEquals;
 
 public class BufferWriteProcessorNewTest {
 
@@ -82,7 +82,7 @@ public class BufferWriteProcessorNewTest {
 		assertEquals(true, bufferwrite.isNewProcessor());
 		bufferwrite.setNewProcessor(false);
 		assertEquals(false, bufferwrite.isNewProcessor());
-		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
+		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
 				measurementId, dataType);
 		TimeValuePairSorter left = pair.left;
 		List<ChunkMetaData> right = pair.right;

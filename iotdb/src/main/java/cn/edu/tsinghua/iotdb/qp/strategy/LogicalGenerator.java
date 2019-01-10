@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.qp.strategy;
 
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
+import cn.edu.tsinghua.iotdb.qp.constant.DatetimeUtils;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.constant.TSParserConstant;
 import cn.edu.tsinghua.iotdb.exception.qp.IllegalASTFormatException;
@@ -35,12 +36,10 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 import cn.edu.tsinghua.tsfile.utils.Pair;
 import cn.edu.tsinghua.tsfile.utils.StringContainer;
 import org.antlr.runtime.Token;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZoneId;
 import java.util.*;
 
 import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.*;
@@ -52,11 +51,10 @@ import static cn.edu.tsinghua.iotdb.qp.constant.SQLConstant.*;
 public class LogicalGenerator {
     private Logger LOG = LoggerFactory.getLogger(LogicalGenerator.class);
     private RootOperator initializedOperator = null;
-    private DateTimeZone timeZone;
+    private ZoneId zoneId;
 
-    public LogicalGenerator(DateTimeZone timeZone) {
-
-        this.timeZone = timeZone;
+    public LogicalGenerator(ZoneId zoneId) {
+        this.zoneId = zoneId;
     }
 
     public RootOperator getLogicalPlan(ASTNode astNode) throws QueryProcessorException, ArgsErrorException {
@@ -762,7 +760,7 @@ public class LogicalGenerator {
         return parseTimeFormat(sc.toString()) + "";
     }
 
-    private long parseTimeFormat(String timestampStr) throws LogicalOperatorException {
+    public long parseTimeFormat(String timestampStr) throws LogicalOperatorException {
         if (timestampStr == null || timestampStr.trim().equals("")) {
             throw new LogicalOperatorException("input timestamp cannot be empty");
         }
@@ -770,14 +768,12 @@ public class LogicalGenerator {
             return System.currentTimeMillis();
         }
         try {
-            DateTime datetime = DateTime.parse(timestampStr, DateTimeFormat.forPattern(SQLConstant.determineDateFormat(timestampStr)).withZone(timeZone));
-            return datetime.getMillis();
-        } catch (Exception e) {
-            throw new LogicalOperatorException(String.format("Input time format %s error. "
+        	return DatetimeUtils.convertDatetimeStrToMillisecond(timestampStr, zoneId);
+		} catch (Exception e) {
+			throw new LogicalOperatorException(String.format("Input time format %s error. "
                     + "Input like yyyy-MM-dd HH:mm:ss, yyyy-MM-ddTHH:mm:ss or "
                     + "refer to user document for more info.", timestampStr));
-        }
-
+		}
     }
 
     private Path parsePath(ASTNode node) {

@@ -27,10 +27,7 @@ public class PageHeader {
     }
 
     public int calculatePageHeaderSize() {
-        //if(statistics!=null)
             return 3 * Integer.BYTES + 2 * Long.BYTES + statistics.getSerializedSize();
-        //else
-        //    return 3 * Integer.BYTES + 2 * Long.BYTES;
     }
 
     public int getSerializedSize() {

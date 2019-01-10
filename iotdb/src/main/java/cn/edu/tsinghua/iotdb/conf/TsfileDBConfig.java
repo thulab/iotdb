@@ -1,8 +1,7 @@
 package cn.edu.tsinghua.iotdb.conf;
 
-import org.joda.time.DateTimeZone;
-
 import java.io.File;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,7 +138,15 @@ public class TsfileDBConfig {
 	 */
 	public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
-	public DateTimeZone timeZone = DateTimeZone.getDefault();
+	public ZoneId zoneID = ZoneId.systemDefault();
+	
+	public ZoneId getZoneID() {
+		return zoneID;
+	}
+	
+	public String getZoneIDString() {
+		return zoneID.toString();
+	}
 	
 	/**
 	 *  BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
@@ -357,7 +364,7 @@ public class TsfileDBConfig {
 		dirs.add(dataDir);
 		dirs.add(sysDir);
 		dirs.add(walDir);
-		List<String> newdirs = new ArrayList<>();
+//		List<String> newdirs = new ArrayList<>();
 		String homeDir = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
 		for (int i = 0; i < 3; i++) {
 			String dir = dirs.get(i);

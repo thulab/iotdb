@@ -8,14 +8,19 @@ import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
-import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.engine.overflow.ioV2.OverflowProcessor;
 import cn.edu.tsinghua.iotdb.engine.pool.MergeManager;
 import cn.edu.tsinghua.iotdb.engine.querycontext.GlobalSortedSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
 import cn.edu.tsinghua.iotdb.engine.querycontext.UnsealedTsFile;
-import cn.edu.tsinghua.iotdb.exception.*;
+import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
+import cn.edu.tsinghua.iotdb.exception.ErrorDebugException;
+import cn.edu.tsinghua.iotdb.exception.FileNodeProcessorException;
+import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
+import cn.edu.tsinghua.iotdb.exception.PathErrorException;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.metadata.ColumnSchema;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
 import cn.edu.tsinghua.iotdb.monitor.IStatistic;
@@ -48,7 +53,6 @@ import cn.edu.tsinghua.tsfile.write.schema.FileSchema;
 import cn.edu.tsinghua.tsfile.write.schema.JsonConverter;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
-import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -58,7 +62,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -668,7 +673,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 			e.printStackTrace();
 			throw new FileNodeProcessorException(e);
 		}
-		// tsfile data
+		// tsfile dataØØ
 		List<IntervalFileNode> bufferwriteDataInFiles = new ArrayList<>();
 		for (IntervalFileNode intervalFileNode : newFileNodes) {
 			// add the same intervalFileNode, but not the same reference
@@ -676,7 +681,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 				bufferwriteDataInFiles.add(intervalFileNode.backUp());
 			}
 		}
-		Pair<TimeValuePairSorter, List<ChunkMetaData>> bufferwritedata = new Pair<TimeValuePairSorter, List<ChunkMetaData>>(
+		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> bufferwritedata = new Pair<ReadOnlyMemChunk, List<ChunkMetaData>>(
 				null, null);
 		// bufferwrite data
 		UnsealedTsFile unsealedTsFile = null;
@@ -818,8 +823,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (lastMergeTime > 0) {
 			long thisMergeTime = System.currentTimeMillis();
 			long mergeTimeInterval = thisMergeTime - lastMergeTime;
-			DateTime lastDateTime = new DateTime(lastMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
-			DateTime thisDateTime = new DateTime(thisMergeTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}s",
 					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval / 1000);
 		}
@@ -847,10 +852,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					writeLock();
 					merge();
 					long mergeEndTime = System.currentTimeMillis();
-					DateTime startDateTime = new DateTime(mergeStartTime,
-							TsfileDBDescriptor.getInstance().getConfig().timeZone);
-					DateTime endDateTime = new DateTime(mergeEndTime,
-							TsfileDBDescriptor.getInstance().getConfig().timeZone);
+		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 					long intervalTime = mergeEndTime - mergeStartTime;
 					LOGGER.info(
 							"The filenode processor {} merge start time is {}, merge end time is {}, merge consumes {}ms.",
@@ -1021,9 +1024,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
 					long endTime = System.currentTimeMillis();
 					long timeConsume = endTime - startTime;
-					DateTime startDateTime = new DateTime(startTime,
-							TsfileDBDescriptor.getInstance().getConfig().timeZone);
-					DateTime endDateTime = new DateTime(endTime, TsfileDBDescriptor.getInstance().getConfig().timeZone);
+		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
 					LOGGER.info(
 							"The fileNode processor {} has merged the {}/{} tsfile[{}->{}] over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
 							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge, newFile,
