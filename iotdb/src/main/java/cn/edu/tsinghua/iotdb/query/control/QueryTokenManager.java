@@ -28,12 +28,35 @@ public class QueryTokenManager {
     /**
      * Map<jobId, Map<deviceId, List<token>>
      *
-     * <p> Key of queryTokensMap is job id, value of queryTokensMap is a deviceId-tokenList map,
+     * <p>
+     * Key of queryTokensMap is job id, value of queryTokensMap is a deviceId-tokenList map,
      * key of the deviceId-tokenList map is device id, value of deviceId-tokenList map is a list of tokens.
+     * </p>
      *
-     * <p> For example, in a query process, when invoking <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns a
-     * result token `1`, and when the query process is ended, we must invoke <code>FileNodeManager.getInstance().endQuery(device_1, 1)</code>
-     * to return the token of query device.
+     * <p>
+     * For example, in a query process Q1, we give a query sql <sql>select device_1.sensor_1, device_1.sensor_2, device_2.sensor_1, device_2.sensor_2</sql>,
+     * in this query clause, we will invoke <code>FileNodeManager.getInstance().beginQuery(device_1)</code> once and
+     * invoke <code>FileNodeManager.getInstance().beginQuery(device_2)</code> once. Notice that, Although in the query sql, there exists four paths, but the unique
+     * devices are only `device_1` and `device_2`.
+     * Assuming that in the invoking of <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns a
+     * result token `1` and the invoking <code>FileNodeManager.getInstance().beginQuery(device_2)</code>, it returns a
+     * another result token `2`;
+     *
+     * Assume that, in the meanwhile, in another client, a query process Q2,
+     * we also give a query sql <sql>select device_1.sensor_1, device_1.sensor_2, device_2.sensor_1, device_2.sensor_2</sql>,
+     * in this query clause, we will invoke <code>FileNodeManager.getInstance().beginQuery(device_1)</code> once and
+     * invoke <code>FileNodeManager.getInstance().beginQuery(device_2)</code> once.
+     * Assume that, in the first invoking of <code>FileNodeManager.getInstance().beginQuery(device_1)</code>, it returns a
+     * result token `3` and in the invoking of <code>FileNodeManager.getInstance().beginQuery(device_2)</code>, it returns a
+     * another result token `4`;
+     *
+     * As a right flow, in the exit of query process Q1 normally or abnormally, <code>FileNodeManager.getInstance().endQuery(device_1, 1)</code> and
+     * <code>FileNodeManager.getInstance().endQuery(device_2, 2)</code> must be invoked. In the exit of  query process Q2 normally or abnormally,
+     * <code>FileNodeManager.getInstance().endQuery(device_1, 3)</code> and <code>FileNodeManager.getInstance().endQuery(device_2, 4)</code> must be invoked.
+     *
+     * Only when the invoking of <code>FileNodeManager.getInstance().beginQuery()</code> and <code>FileNodeManager.getInstance().endQuery()</code> is right,
+     * the write process and query process of IoTDB can run rightly.
+     * </p>
      */
     private ConcurrentHashMap<Long, ConcurrentHashMap<String, List<Integer>>> queryTokensMap;
 
