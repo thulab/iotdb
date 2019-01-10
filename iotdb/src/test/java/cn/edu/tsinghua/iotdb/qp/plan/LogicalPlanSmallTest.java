@@ -31,7 +31,7 @@ public class LogicalPlanSmallTest {
   @Before
   public void before() {
     TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
-    generator = new LogicalGenerator(config.timeZone);
+        generator = new LogicalGenerator(config.getZoneID());
   }
 
   @Test

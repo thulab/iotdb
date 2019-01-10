@@ -1,6 +1,23 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import static org.junit.Assert.assertEquals;
+import cn.edu.tsinghua.iotdb.conf.directories.Directories;
+import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
+import cn.edu.tsinghua.iotdb.engine.PathUtils;
+import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
+import cn.edu.tsinghua.iotdb.exception.ProcessorException;
+import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
+import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
+import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
+import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
+import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
+import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import cn.edu.tsinghua.tsfile.utils.Pair;
+import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,26 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
-import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
-import cn.edu.tsinghua.iotdb.exception.ProcessorException;
-import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
-import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
-import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
-import cn.edu.tsinghua.tsfile.utils.Pair;
-import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.PathUtils;
-import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
-import cn.edu.tsinghua.iotdb.utils.FileSchemaUtils;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
-import cn.edu.tsinghua.tsfile.common.conf.TSFileDescriptor;
-import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
+import static org.junit.Assert.assertEquals;
 
 public class BufferWriteProcessorTest {
 
@@ -121,7 +119,7 @@ public class BufferWriteProcessorTest {
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
 		assertEquals(true, insertFile.exists());
 		assertEquals(insertFileLength, insertFile.length());
-		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferWriteProcessor
+		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
 				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
@@ -148,7 +146,7 @@ public class BufferWriteProcessorTest {
 		assertEquals(true, restoreFile.exists());
 		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
 				FileSchemaUtils.constructFileSchema(deltaObjectId));
-		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferWriteProcessor
+		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
 				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
@@ -180,7 +178,7 @@ public class BufferWriteProcessorTest {
 		assertEquals(false, bufferwrite.isFlush());
 		assertEquals(0, bufferwrite.memoryUsage());
 		// query result
-		Pair<TimeValuePairSorter, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
+		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
 				measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
