@@ -48,6 +48,7 @@ public class EnvironmentUtils {
 
 		// clear opened file streams
 		FileReaderManager.getInstance().closeAndRemoveAllOpenedReaders();
+		FileReaderManager.getInstance().clearThread();
 
 		// tsFileConfig.duplicateIncompletedPage = false;
 		// clean filenode manager

@@ -38,20 +38,21 @@ public class FileReaderManager {
      */
     private ConcurrentHashMap<String, AtomicInteger> referenceMap;
 
+    private ScheduledExecutorService executorService;
+
     private FileReaderManager() {
         fileReaderMap = new ConcurrentHashMap<>();
         referenceMap = new ConcurrentHashMap<>();
+        executorService = new ScheduledThreadPoolExecutor(1, new IoTThreadFactory("opended-files-manager"));
 
         clearUnUsedFilesInFixTime();
     }
 
     private void clearUnUsedFilesInFixTime() {
+
         long examinePeriod = TsfileDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
 
-        ScheduledExecutorService service = new ScheduledThreadPoolExecutor(1,
-                new IoTThreadFactory("opended-files-manager"));
-
-        service.scheduleAtFixedRate(() -> {
+        executorService.scheduleAtFixedRate(() -> {
             synchronized (this) {
                 for (Map.Entry<String, TsFileSequenceReader> entry : fileReaderMap.entrySet()) {
                     TsFileSequenceReader reader = entry.getValue();
@@ -130,6 +131,23 @@ public class FileReaderManager {
             entry.getValue().close();
             referenceMap.remove(entry.getKey());
             fileReaderMap.remove(entry.getKey());
+        }
+    }
+
+    /**
+     * Clear the timing thread in executor service.
+     */
+    public void clearThread() {
+
+        if (executorService == null || executorService.isShutdown()) {
+            return;
+        }
+
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.error("StatMonitor timing service could not be shutdown.", e);
         }
     }
 
