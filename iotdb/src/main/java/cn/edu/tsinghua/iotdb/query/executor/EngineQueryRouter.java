@@ -45,8 +45,8 @@ public class EngineQueryRouter {
                 queryExpression.setExpression(optimizedExpression);
 
                 if (optimizedExpression.getType() == GLOBAL_TIME) {
-                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(queryExpression);
-                    return engineExecutor.executeWithGlobalTimeFilter(jobId);
+                    EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(jobId, queryExpression);
+                    return engineExecutor.executeWithGlobalTimeFilter();
                 } else {
                     EngineExecutorWithTimeGenerator engineExecutor = new EngineExecutorWithTimeGenerator(jobId, queryExpression);
                     return engineExecutor.execute();
@@ -57,8 +57,8 @@ public class EngineQueryRouter {
             }
         } else {
             try {
-                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(queryExpression);
-                return engineExecutor.executeWithoutFilter(jobId);
+                EngineExecutorWithoutTimeGenerator engineExecutor = new EngineExecutorWithoutTimeGenerator(jobId, queryExpression);
+                return engineExecutor.executeWithoutFilter();
             } catch (PathErrorException e) {
                 throw new IOException(e);
             }

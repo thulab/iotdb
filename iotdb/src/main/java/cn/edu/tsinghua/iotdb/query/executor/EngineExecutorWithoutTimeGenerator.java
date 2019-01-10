@@ -28,15 +28,17 @@ import java.util.List;
 public class EngineExecutorWithoutTimeGenerator {
 
     private QueryExpression queryExpression;
+    private long jobId;
 
-    public EngineExecutorWithoutTimeGenerator(QueryExpression queryExpression) {
+    public EngineExecutorWithoutTimeGenerator(long jobId, QueryExpression queryExpression) {
+        this.jobId = jobId;
         this.queryExpression = queryExpression;
     }
 
     /**
      * with global time filter
      */
-    public QueryDataSet executeWithGlobalTimeFilter(long jobId)
+    public QueryDataSet executeWithGlobalTimeFilter()
             throws IOException, FileNodeManagerException, PathErrorException {
 
         Filter timeFilter = ((GlobalTimeExpression) queryExpression.getExpression()).getFilter();
@@ -74,7 +76,7 @@ public class EngineExecutorWithoutTimeGenerator {
     /**
      * without filter
      */
-    public QueryDataSet executeWithoutFilter(long jobId)
+    public QueryDataSet executeWithoutFilter()
             throws IOException, FileNodeManagerException, PathErrorException {
 
         List<IReader> readersOfSelectedSeries = new ArrayList<>();

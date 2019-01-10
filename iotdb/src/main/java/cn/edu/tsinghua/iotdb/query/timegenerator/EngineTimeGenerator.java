@@ -17,15 +17,17 @@ public class EngineTimeGenerator implements TimeGenerator {
 
     private IExpression expression;
     private Node operatorNode;
+    private long jobId;
 
     public EngineTimeGenerator(long jobId, IExpression expression) throws IOException, FileNodeManagerException {
+        this.jobId = jobId;
         this.expression = expression;
-        initNode(jobId);
+        initNode();
     }
 
-    private void initNode(long jobId) throws IOException, FileNodeManagerException {
-        EngineNodeConstructor engineNodeConstructor = new EngineNodeConstructor();
-        this.operatorNode = engineNodeConstructor.construct(jobId, expression);
+    private void initNode() throws IOException, FileNodeManagerException {
+        EngineNodeConstructor engineNodeConstructor = new EngineNodeConstructor(jobId);
+        this.operatorNode = engineNodeConstructor.construct(expression);
     }
 
     @Override

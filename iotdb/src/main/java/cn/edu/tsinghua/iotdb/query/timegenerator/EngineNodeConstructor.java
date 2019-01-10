@@ -22,19 +22,25 @@ import static cn.edu.tsinghua.tsfile.read.expression.ExpressionType.*;
 
 public class EngineNodeConstructor {
 
-    public Node construct(long jobId, IExpression expression) throws IOException, FileNodeManagerException {
+    private long jobId;
+
+    public EngineNodeConstructor(long jobId) {
+        this.jobId = jobId;
+    }
+
+    public Node construct(IExpression expression) throws IOException, FileNodeManagerException {
         if (expression.getType() == SERIES) {
-            return new EngineLeafNode(generateSeriesReader(jobId, (SingleSeriesExpression) expression));
+            return new EngineLeafNode(generateSeriesReader((SingleSeriesExpression) expression));
         } else {
             Node leftChild;
             Node rightChild;
             if (expression.getType() == OR) {
-                leftChild = this.construct(jobId, ((IBinaryExpression) expression).getLeft());
-                rightChild = this.construct(jobId, ((IBinaryExpression) expression).getRight());
+                leftChild = this.construct(((IBinaryExpression) expression).getLeft());
+                rightChild = this.construct(((IBinaryExpression) expression).getRight());
                 return new OrNode(leftChild, rightChild);
             } else if (expression.getType() == AND) {
-                leftChild = this.construct(jobId, ((IBinaryExpression) expression).getLeft());
-                rightChild = this.construct(jobId, ((IBinaryExpression) expression).getRight());
+                leftChild = this.construct(((IBinaryExpression) expression).getLeft());
+                rightChild = this.construct(((IBinaryExpression) expression).getRight());
                 return new AndNode(leftChild, rightChild);
             } else {
                 throw new UnSupportedDataTypeException("Unsupported QueryFilterType when construct OperatorNode: " + expression.getType());
@@ -42,7 +48,7 @@ public class EngineNodeConstructor {
         }
     }
 
-    private IReader generateSeriesReader(long jobId, SingleSeriesExpression singleSeriesExpression)
+    private IReader generateSeriesReader(SingleSeriesExpression singleSeriesExpression)
             throws IOException, FileNodeManagerException {
 
         QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, singleSeriesExpression.getSeriesPath());
