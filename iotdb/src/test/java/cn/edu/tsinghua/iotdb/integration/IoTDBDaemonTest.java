@@ -103,6 +103,7 @@ public class IoTDBDaemonTest {
         connection.close();
         deamon.stop();
         Thread.sleep(5000);
+
         EnvironmentUtils.cleanEnv();
     }
 

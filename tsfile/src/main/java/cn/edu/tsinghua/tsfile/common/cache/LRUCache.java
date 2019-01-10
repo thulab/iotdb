@@ -5,7 +5,12 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
+/**
+ * This class is not thread safe.
+ *
+ * @param <K>
+ * @param <T>
+ */
 public abstract class LRUCache<K, T> implements Cache<K, T> {
 
     private int cacheSize;

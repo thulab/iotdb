@@ -27,8 +27,8 @@ public class TsFileMetadataUtils {
 		try {
 			reader = new TsFileSequenceReader(filePath);
 			return reader.readFileMetadata();
-		}finally {
-			if(reader != null) {
+		} finally {
+			if (reader != null) {
 				reader.close();
 			}
 		}
@@ -40,7 +40,7 @@ public class TsFileMetadataUtils {
 			return null;
 		} else {
 			TsFileSequenceReader reader = null;
-			try{
+			try {
 				reader = new TsFileSequenceReader(filePath);
 				long offset = fileMetaData.getDeviceMap().get(deltaObjectId).getOffset();
 				int size = fileMetaData.getDeviceMap().get(deltaObjectId).getLen();
@@ -48,7 +48,7 @@ public class TsFileMetadataUtils {
 				reader.readRaw(offset, size, data);
 				data.flip();
 				return TsDeviceMetadata.deserializeFrom(data);
-			}finally {
+			} finally {
 				if(reader != null) {
 					reader.close();
 				}

@@ -2,6 +2,7 @@ package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.query.control.QueryTokenManager;
 import cn.edu.tsinghua.iotdb.query.executor.EngineQueryRouter;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -63,11 +64,10 @@ public class IoTDBSeriesReaderTest {
         deamon.active();
         EnvironmentUtils.envSetUp();
 
-        if (testFlag) {
-            Thread.sleep(5000);
-            insertData();
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
-        }
+        Thread.sleep(5000);
+        insertData();
+        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+
     }
 
     @AfterClass
@@ -80,6 +80,7 @@ public class IoTDBSeriesReaderTest {
         tsFileConfig.maxNumberOfPointsInPage = maxNumberOfPointsInPage;
         tsFileConfig.pageSizeInByte = pageSizeInByte;
         tsFileConfig.groupSizeInByte = groupSizeInByte;
+
         EnvironmentUtils.cleanEnv();
     }
 
@@ -108,6 +109,8 @@ public class IoTDBSeriesReaderTest {
             cnt++;
         }
         assertEquals(23400, cnt);
+
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
     @Test
@@ -134,6 +137,7 @@ public class IoTDBSeriesReaderTest {
         }
         assertEquals(16440, cnt);
 
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
     @Test
@@ -159,6 +163,7 @@ public class IoTDBSeriesReaderTest {
         }
         assertEquals(3012, cnt);
 
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
     @Test
@@ -183,6 +188,8 @@ public class IoTDBSeriesReaderTest {
             cnt++;
         }
         assertEquals(22800, cnt);
+
+        QueryTokenManager.getInstance().endQueryForCurrentRequestThread();
     }
 
     private static void insertData() throws ClassNotFoundException, SQLException {

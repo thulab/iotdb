@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.dataset;
 
-import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.utils.TimeValuePair;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
@@ -17,8 +16,6 @@ import java.util.*;
 
 public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
-    private long jobId;
-
     private List<IReader> readers;
 
     private TimeValuePair[] cacheTimeValueList;
@@ -31,10 +28,9 @@ public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
     private Set<Long> timeSet;
 
-    public EngineDataSetWithoutTimeGenerator(long jobId, List<Path> paths,
+    public EngineDataSetWithoutTimeGenerator( List<Path> paths,
                                              List<TSDataType> dataTypes, List<IReader> readers) throws IOException {
         super(paths, dataTypes);
-        this.jobId = jobId;
         this.readers = readers;
         initHeap();
     }
@@ -57,12 +53,7 @@ public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
     @Override
     public boolean hasNext() throws IOException {
-        if (timeHeap.size() > 0) {
-            return true;
-        } else {
-            FileStreamManager.getInstance().closeAll(jobId);
-            return false;
-        }
+        return timeHeap.size() > 0;
     }
 
     @Override

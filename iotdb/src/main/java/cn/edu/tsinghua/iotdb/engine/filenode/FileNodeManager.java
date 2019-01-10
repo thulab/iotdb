@@ -18,6 +18,7 @@ import cn.edu.tsinghua.iotdb.monitor.StatMonitor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
 import cn.edu.tsinghua.iotdb.utils.MemUtils;
@@ -748,11 +749,26 @@ public class FileNodeManager implements IStatistic, IService {
 				List<String> bufferwritePathList = directories.getAllTsFileFolders();
 				for(String bufferwritePath : bufferwritePathList) {
 					bufferwritePath = standardizeDir(bufferwritePath) + processorName;
+					File bufferDir = new File(bufferwritePath);
+					// free and close the streams under this bufferwrite directory
+					if(bufferDir.exists()) {
+						for (File bufferFile : bufferDir.listFiles()) {
+							FileReaderManager.getInstance().closeFileAndRemoveReader(bufferFile.getPath());
+						}
+					}
 					FileUtils.deleteDirectory(new File(bufferwritePath));
 				}
 
 				String overflowPath = TsFileDBConf.overflowDataDir;
 				overflowPath = standardizeDir(overflowPath) + processorName;
+				File overflowDir = new File(overflowPath);
+				if(overflowDir.exists()){
+					for(File subOverflowDir : overflowDir.listFiles()){
+						for(File overflowFile : subOverflowDir.listFiles()){
+							FileReaderManager.getInstance().closeFileAndRemoveReader(overflowFile.getPath());
+						}
+					}
+				}
 				FileUtils.deleteDirectory(new File(overflowPath));
 
 				MultiFileLogNodeManager.getInstance()

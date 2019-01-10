@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.query.dataset;
 
-import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
 import cn.edu.tsinghua.iotdb.query.reader.merge.EngineReaderByTimeStamp;
 import cn.edu.tsinghua.iotdb.query.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.iotdb.utils.TsPrimitiveType;
@@ -18,14 +17,12 @@ import java.util.List;
 
 public class EngineDataSetWithTimeGenerator extends QueryDataSet {
 
-    private long jobId;
     private EngineTimeGenerator timeGenerator;
     private List<EngineReaderByTimeStamp> readers;
 
-    public EngineDataSetWithTimeGenerator(long jobId, List<Path> paths, List<TSDataType> dataTypes,
+    public EngineDataSetWithTimeGenerator(List<Path> paths, List<TSDataType> dataTypes,
                                           EngineTimeGenerator timeGenerator, List<EngineReaderByTimeStamp> readers) {
         super(paths, dataTypes);
-        this.jobId = jobId;
         this.timeGenerator = timeGenerator;
         this.readers = readers;
     }
@@ -33,12 +30,7 @@ public class EngineDataSetWithTimeGenerator extends QueryDataSet {
 
     @Override
     public boolean hasNext() throws IOException {
-        if (timeGenerator.hasNext()) {
-            return true;
-        } else {
-            FileStreamManager.getInstance().closeAll(jobId);
-            return false;
-        }
+        return timeGenerator.hasNext();
     }
 
 

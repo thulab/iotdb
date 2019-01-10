@@ -2,11 +2,11 @@ package cn.edu.tsinghua.iotdb.query.timegenerator;
 
 import cn.edu.tsinghua.iotdb.engine.querycontext.QueryDataSource;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
+import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.iotdb.query.factory.SeriesReaderFactory;
+import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
 import cn.edu.tsinghua.iotdb.query.reader.sequence.SequenceDataReader;
-import cn.edu.tsinghua.iotdb.query.reader.IReader;
-import cn.edu.tsinghua.iotdb.query.control.QueryDataSourceManager;
 import cn.edu.tsinghua.tsfile.exception.write.UnSupportedDataTypeException;
 import cn.edu.tsinghua.tsfile.read.expression.IBinaryExpression;
 import cn.edu.tsinghua.tsfile.read.expression.IExpression;
@@ -51,19 +51,19 @@ public class EngineNodeConstructor {
     private IReader generateSeriesReader(SingleSeriesExpression singleSeriesExpression)
             throws IOException, FileNodeManagerException {
 
-        QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(singleSeriesExpression.getSeriesPath());
+        QueryDataSource queryDataSource = QueryDataSourceManager.getQueryDataSource(jobId, singleSeriesExpression.getSeriesPath());
 
         Filter filter = singleSeriesExpression.getFilter();
 
         PriorityMergeReader priorityReader = new PriorityMergeReader();
 
         // reader for all sequence data
-        SequenceDataReader tsFilesReader = new SequenceDataReader(jobId, queryDataSource.getSeqDataSource(), filter);
+        SequenceDataReader tsFilesReader = new SequenceDataReader(queryDataSource.getSeqDataSource(), filter);
         priorityReader.addReaderWithPriority(tsFilesReader, 1);
 
         // reader for all unSequence data
         PriorityMergeReader unSeqMergeReader = SeriesReaderFactory.getInstance().
-                createUnSeqMergeReader(jobId, queryDataSource.getOverflowSeriesDataSource(), filter);
+                createUnSeqMergeReader(queryDataSource.getOverflowSeriesDataSource(), filter);
         priorityReader.addReaderWithPriority(unSeqMergeReader, 2);
 
         return priorityReader;

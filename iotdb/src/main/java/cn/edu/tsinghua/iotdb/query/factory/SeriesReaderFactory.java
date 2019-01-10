@@ -3,7 +3,7 @@ package cn.edu.tsinghua.iotdb.query.factory;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowInsertFile;
 import cn.edu.tsinghua.iotdb.engine.querycontext.OverflowSeriesDataSource;
-import cn.edu.tsinghua.iotdb.query.control.FileStreamManager;
+import cn.edu.tsinghua.iotdb.query.control.FileReaderManager;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithFilter;
 import cn.edu.tsinghua.iotdb.query.reader.mem.MemChunkReaderWithoutFilter;
 import cn.edu.tsinghua.iotdb.query.reader.merge.PriorityMergeReader;
@@ -13,7 +13,6 @@ import cn.edu.tsinghua.iotdb.query.reader.IReader;
 import cn.edu.tsinghua.tsfile.common.constant.StatisticConstant;
 import cn.edu.tsinghua.tsfile.file.metadata.ChunkMetaData;
 import cn.edu.tsinghua.tsfile.read.TsFileSequenceReader;
-import cn.edu.tsinghua.tsfile.read.UnClosedTsFileReader;
 import cn.edu.tsinghua.tsfile.read.common.Chunk;
 import cn.edu.tsinghua.tsfile.read.controller.ChunkLoaderImpl;
 import cn.edu.tsinghua.tsfile.read.controller.MetadataQuerier;
@@ -45,7 +44,7 @@ public class SeriesReaderFactory {
      * Note that, job id equals -1 meant that this method is used for IoTDB merge process, it's no need to maintain the
      * opened file stream.
      */
-    public PriorityMergeReader createUnSeqMergeReader(long jobId, OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
+    public PriorityMergeReader createUnSeqMergeReader(OverflowSeriesDataSource overflowSeriesDataSource, Filter filter)
             throws IOException {
 
         PriorityMergeReader unSeqMergeReader = new PriorityMergeReader();
@@ -55,17 +54,8 @@ public class SeriesReaderFactory {
         for (OverflowInsertFile overflowInsertFile : overflowSeriesDataSource.getOverflowInsertFileList()) {
 
             // store only one opened file stream into manager, to avoid too many opened files
-            TsFileSequenceReader unClosedTsFileReader;
-            if (jobId == -1) {
-                unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
-            } else {
-                if (!FileStreamManager.getInstance().containsCachedReader(jobId, overflowInsertFile.getFilePath())) {
-                    unClosedTsFileReader = new UnClosedTsFileReader(overflowInsertFile.getFilePath());
-                    FileStreamManager.getInstance().put(jobId, overflowInsertFile.getFilePath(), unClosedTsFileReader);
-                } else {
-                    unClosedTsFileReader = FileStreamManager.getInstance().get(jobId, overflowInsertFile.getFilePath());
-                }
-            }
+            TsFileSequenceReader unClosedTsFileReader =
+                    FileReaderManager.getInstance().get(overflowInsertFile.getFilePath(), true);
 
             ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
@@ -128,14 +118,14 @@ public class SeriesReaderFactory {
         priorityMergeReader.addReaderWithPriority(seriesInTsFileReader, 1);
 
         // UnSequence merge reader
-        IReader unSeqMergeReader = createUnSeqMergeReader(-1, overflowSeriesDataSource, singleSeriesExpression.getFilter());
+        IReader unSeqMergeReader = createUnSeqMergeReader(overflowSeriesDataSource, singleSeriesExpression.getFilter());
         priorityMergeReader.addReaderWithPriority(unSeqMergeReader, 2);
 
         return priorityMergeReader;
     }
 
     private IReader createSealedTsFileReaderForMerge(String filePath, SingleSeriesExpression singleSeriesExpression) throws IOException {
-        TsFileSequenceReader tsFileSequenceReader = new TsFileSequenceReader(filePath);
+        TsFileSequenceReader tsFileSequenceReader = FileReaderManager.getInstance().get(filePath, false);
         ChunkLoaderImpl chunkLoader = new ChunkLoaderImpl(tsFileSequenceReader);
         MetadataQuerier metadataQuerier = new MetadataQuerierByFileImpl(tsFileSequenceReader);
         List<ChunkMetaData> metaDataList = metadataQuerier.getChunkMetaDataList(singleSeriesExpression.getSeriesPath());
