@@ -1,7 +1,5 @@
 package cn.edu.tsinghua.iotdb.conf;
 
-import org.joda.time.DateTimeZone;
-
 import java.io.File;
 import java.time.ZoneId;
 import java.util.ArrayList;
