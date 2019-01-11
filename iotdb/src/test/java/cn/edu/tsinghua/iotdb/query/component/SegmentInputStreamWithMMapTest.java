@@ -1,8 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.component;
 
 import cn.edu.tsinghua.iotdb.query.reader.component.SegmentInputStreamWithMMap;
-import sun.nio.ch.DirectBuffer;
-
+import cn.edu.tsinghua.iotdb.utils.CommonUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,6 +12,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+
+import static org.junit.Assert.fail;
 
 public class SegmentInputStreamWithMMapTest {
 
@@ -38,7 +39,12 @@ public class SegmentInputStreamWithMMapTest {
   }
 
   @Test
-  public void testWithMMap() throws IOException {
+  public void testWithMMap() throws Exception {
+    int javaVersion = CommonUtils.getJDKVersion();
+    if(javaVersion < 8) {
+      fail(String.format("Current JDK verions is 1.%d, JDK requires 1.8 or later.", javaVersion));
+    }
+
     RandomAccessFile randomAccessFile = new RandomAccessFile(PATH, "r");
 
     MappedByteBuffer buffer1 = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, randomAccessFile.length());
@@ -46,7 +52,7 @@ public class SegmentInputStreamWithMMapTest {
     testOneSegmentWithMMap(buffer1, 20, 1000);
     testOneSegmentWithMMap(buffer1, 30, 1000);
     testOneSegmentWithMMap(buffer1, 1000, 1000);
-    ((DirectBuffer) buffer1).cleaner().clean();
+    CommonUtils.destroyBuffer(buffer1);
     randomAccessFile.close();
   }
 
