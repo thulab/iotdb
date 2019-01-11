@@ -137,7 +137,6 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
 
 
 	private void writeRestoreInfo() throws IOException {
-		// List<ChunkGroupMetaData> appendRowGroupMetaDatas = bufferWriteIO.getAppendedRowGroupMetadata();
 		long lastPosition = this.getPos();
 
 		//TODO: no need to create a TsRowGroupBlockMetadata, flush RowGroupMetadata one by one is ok

@@ -164,7 +164,6 @@ public class BufferWriteProcessor extends Processor {
     }
 
     private void checkMemThreshold4Flush(long addedMemory) throws BufferWriteProcessorException{
-        // memUsed += newMemUsage;
         addedMemory = memSize.addAndGet(addedMemory);
         if (addedMemory > memThreshold) {
             LOGGER.info("The usage of memory {} in bufferwrite processor {} reaches the threshold {}",
@@ -343,7 +342,6 @@ public class BufferWriteProcessor extends Processor {
             flush(true);
             // end file
             writer.endFile(fileSchema);
-//            bufferWriteRestoreManager.close(fileSchema);
             // update the IntervalFile for interval list
             bufferwriteCloseAction.act();
             // flush the changed information for filenode
