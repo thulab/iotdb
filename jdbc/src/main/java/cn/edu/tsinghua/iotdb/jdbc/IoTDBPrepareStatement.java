@@ -32,14 +32,14 @@ import java.util.Map;
 import cn.edu.tsinghua.service.rpc.thrift.TS_SessionHandle;
 import cn.edu.tsinghua.service.rpc.thrift.TSIService.Iface;
 
-public class TsfilePrepareStatement extends TsfileStatement implements PreparedStatement {
+public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedStatement {
 	private final String sql;
 	/**
 	 * save the SQL parameters as (paramLoc,paramValue) pair
 	 */
 	private final Map<Integer, String> parameters=new HashMap<Integer, String>();
 	
-	public TsfilePrepareStatement(TsfileConnection connection, Iface client, TS_SessionHandle sessionHandle, 
+	public IoTDBPrepareStatement(IoTDBConnection connection, Iface client, TS_SessionHandle sessionHandle, 
 			String sql, ZoneId zoneId) {
 		super(connection, client, sessionHandle, zoneId);
 		this.sql = sql;

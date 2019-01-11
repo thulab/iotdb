@@ -12,8 +12,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TsfileResultMetadataTest {
-	private TsfileResultMetadata metadata;
+public class IoTDBResultMetadataTest {
+	private IoTDBResultMetadata metadata;
 
 	@Before
 	public void setUp() throws Exception {
@@ -25,7 +25,7 @@ public class TsfileResultMetadataTest {
 
 	@Test
 	public void testGetColumnCount() throws SQLException {
-		metadata = new TsfileResultMetadata(null, null, null);
+		metadata = new IoTDBResultMetadata(null, null, null);
 		boolean flag = false;
 		try {
 			metadata.getColumnCount();
@@ -37,7 +37,7 @@ public class TsfileResultMetadataTest {
 		List<String> columnInfoList = new ArrayList<>();
 		flag = false;
 		try {
-			metadata = new TsfileResultMetadata(columnInfoList, null, null);
+			metadata = new IoTDBResultMetadata(columnInfoList, null, null);
 			metadata.getColumnCount();
 		} catch (Exception e) {
 			flag = true;
@@ -51,7 +51,7 @@ public class TsfileResultMetadataTest {
 
 	@Test
 	public void testGetColumnName() throws SQLException {
-		metadata = new TsfileResultMetadata(null, null, null);
+		metadata = new IoTDBResultMetadata(null, null, null);
 		boolean flag = false;
 		try {
 			metadata.getColumnName(1);
@@ -61,7 +61,7 @@ public class TsfileResultMetadataTest {
 		assertEquals(flag, true);
 		
 		List<String> columnInfoList = new ArrayList<>();
-		metadata = new TsfileResultMetadata(columnInfoList, null, null);
+		metadata = new IoTDBResultMetadata(columnInfoList, null, null);
 		flag = false;
 		try {
 			metadata.getColumnName(1);
@@ -71,7 +71,7 @@ public class TsfileResultMetadataTest {
 		assertEquals(flag, true);
 		
 		String[] colums = {"root.a.b.c1", "root.a.b.c2", "root.a.b.c3"};
-		metadata = new TsfileResultMetadata(Arrays.asList(colums), null, null);
+		metadata = new IoTDBResultMetadata(Arrays.asList(colums), null, null);
 		flag = false;
 		try {
 			metadata.getColumnName(colums.length+1);
@@ -96,7 +96,7 @@ public class TsfileResultMetadataTest {
 
 	@Test
 	public void testGetColumnType() throws SQLException {
-		metadata = new TsfileResultMetadata(null, null, null);
+		metadata = new IoTDBResultMetadata(null, null, null);
 		boolean flag = false;
 		try {
 			metadata.getColumnType(1);
@@ -106,7 +106,7 @@ public class TsfileResultMetadataTest {
 		assertEquals(flag, true);
 		
 		List<String> columnInfoList = new ArrayList<>();
-		metadata = new TsfileResultMetadata(columnInfoList, null, null);
+		metadata = new IoTDBResultMetadata(columnInfoList, null, null);
 		flag = false;
 		try {
 			metadata.getColumnType(1);
@@ -118,7 +118,7 @@ public class TsfileResultMetadataTest {
 		String[] columns = {"timestamp", "root.a.b.boolean", "root.a.b.int32", "root.a.b.int64" , "root.a.b.float", "root.a.b.double", "root.a.b.text"};
 		String[] typesString = {"BOOLEAN", "INT32", "INT64", "FLOAT", "DOUBLE", "TEXT"};
 		int[] types = {Types.BOOLEAN, Types.INTEGER, Types.BIGINT, Types.FLOAT, Types.DOUBLE, Types.VARCHAR};
-		metadata = new TsfileResultMetadata(Arrays.asList(columns), null, Arrays.asList(typesString));
+		metadata = new IoTDBResultMetadata(Arrays.asList(columns), null, Arrays.asList(typesString));
 		flag = false;
 		try {
 			metadata.getColumnType(columns.length+1);
@@ -144,7 +144,7 @@ public class TsfileResultMetadataTest {
 	@Test
 	public void testGetColumnTypeName() throws SQLException {
 		String operationType = "sum";
-		metadata = new TsfileResultMetadata(null, operationType, null);
+		metadata = new IoTDBResultMetadata(null, operationType, null);
 		assertEquals(metadata.getColumnTypeName(1), operationType);
 	}
 	

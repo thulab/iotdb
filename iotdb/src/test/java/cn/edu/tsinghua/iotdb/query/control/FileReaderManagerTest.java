@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.control;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,7 +18,7 @@ public class FileReaderManagerTest {
 
     private static final int MAX_FILE_SIZE = 10;
 
-    private TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig();
+    private IoTDBConfig dbConfig = IoTDBDescriptor.getInstance().getConfig();
     private long cacheFileReaderClearPeriod;
 
     @Before

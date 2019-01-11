@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
@@ -100,10 +100,10 @@ public class BufferWriteProcessor extends Processor {
         filenodeFlushAction = parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
         workMemTable = new PrimitiveMemTable();
 
-        if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+        if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
             try {
                 logNode = MultiFileLogNodeManager.getInstance().getNode(
-                        processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
+                        processorName + IoTDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX, getBufferwriteRestoreFilePath(),
                         FileNodeManager.getInstance().getRestoreFilePath(processorName));
             } catch (IOException e) {
                 throw new BufferWriteProcessorException(e);
@@ -241,7 +241,7 @@ public class BufferWriteProcessor extends Processor {
             }
 
             filenodeFlushAction.act();
-            if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+            if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
                 logNode.notifyEndFlush(null);
             }
         } catch (IOException e) {
@@ -259,8 +259,8 @@ public class BufferWriteProcessor extends Processor {
         }
         long flushEndTime = System.currentTimeMillis();
         long flushInterval = flushEndTime - flushStartTime;
-        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushStartTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushEndTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
         LOGGER.info(
                 "The bufferwrite processor {} flush {}, start time is {}, flush end time is {}, flush time consumption is {}ms",
                 getProcessorName(), flushFunction, startDateTime, endDateTime, flushInterval);
@@ -271,8 +271,8 @@ public class BufferWriteProcessor extends Processor {
         if (lastFlushTime > 0) {
             long thisFlushTime = System.currentTimeMillis();
             long flushTimeInterval = thisFlushTime - lastFlushTime;
-            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFlushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisFlushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFlushTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisFlushTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
             LOGGER.info(
                     "The bufferwrite processor {}: last flush time is {}, this flush time is {}, flush time interval is {}s",
                     getProcessorName(), lastDateTime, thisDateTime, flushTimeInterval / 1000);
@@ -299,7 +299,7 @@ public class BufferWriteProcessor extends Processor {
                 LOGGER.error("Failed to flush bufferwrite row group when calling the action function.");
                 throw new IOException(e);
             }
-            if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+            if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
                 logNode.notifyStartFlush();
             }
             valueCount = 0;
@@ -349,8 +349,8 @@ public class BufferWriteProcessor extends Processor {
             // delete the restore for this bufferwrite processor
             long closeEndTime = System.currentTimeMillis();
             long closeInterval = closeEndTime - closeStartTime;
-            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeEndTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
             LOGGER.info(
                     "Close bufferwrite processor {}, the file name is {}, start time is {}, end time is {}, time consumption is {}ms",
                     getProcessorName(), fileName, startDateTime, endDateTime, closeInterval);
@@ -401,7 +401,7 @@ public class BufferWriteProcessor extends Processor {
      * @throws IOException
      */
     private boolean checkSize() throws IOException {
-        TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+        IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
         long metaSize = getMetaSize();
         long fileSize = getFileSize();
         if (metaSize >= config.bufferwriteMetaSizeThreshold || fileSize >= config.bufferwriteFileSizeThreshold) {

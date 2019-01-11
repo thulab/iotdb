@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
@@ -38,7 +38,7 @@ public class OverflowFileSizeControlTest {
     private TSDataType[] dataTypes = { TSDataType.INT32, TSDataType.INT64, TSDataType.FLOAT, TSDataType.DOUBLE,
             TSDataType.BOOLEAN, TSDataType.TEXT };
 
-    private TsfileDBConfig dbConfig = TsfileDBDescriptor.getInstance().getConfig();
+    private IoTDBConfig dbConfig = IoTDBDescriptor.getInstance().getConfig();
     private long overflowFileSize;
     private int groupSize;
 

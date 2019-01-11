@@ -44,8 +44,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class TsfileConnection implements Connection {
-    private TsfileConnectionParams params;
+public class IoTDBConnection implements Connection {
+    private IoTDBConnectionParams params;
     private boolean isClosed = true;
     private SQLWarning warningChain = null;
     private TSocket transport;
@@ -56,12 +56,12 @@ public class TsfileConnection implements Connection {
     private ZoneId zoneId;
     private boolean autoCommit;
 
-    public TsfileConnection(){    
+    public IoTDBConnection(){    
     }
     
-    public TsfileConnection(String url, Properties info) throws SQLException, TTransportException {
+    public IoTDBConnection(String url, Properties info) throws SQLException, TTransportException {
 	if (url == null) {
-	    throw new TsfileURLException("Input url cannot be null");
+	    throw new IoTDBURLException("Input url cannot be null");
 	}
 	params = Utils.parseURL(url, info);
 
@@ -148,7 +148,7 @@ public class TsfileConnection implements Connection {
 	if (isClosed) {
 	    throw new SQLException("Cannot create statement because connection is closed");
 	}
-	return new TsfileStatement(this, client, sessionHandle, zoneId);
+	return new IoTDBStatement(this, client, sessionHandle, zoneId);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class TsfileConnection implements Connection {
 	if (resultSetType == ResultSet.TYPE_SCROLL_SENSITIVE) {
 	    throw new SQLException(String.format("Statement with resultset type %d is not supported", resultSetType));
 	}
-	return new TsfileStatement(this, client, sessionHandle, zoneId);
+	return new IoTDBStatement(this, client, sessionHandle, zoneId);
     }
 
     @Override
@@ -204,12 +204,12 @@ public class TsfileConnection implements Connection {
 	if (isClosed) {
 	    throw new SQLException("Cannot create statement because connection is closed");
 	}
-	return new TsfileDatabaseMetadata(this, client);
+	return new IoTDBDatabaseMetadata(this, client);
     }
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-	return TsfileJDBCConfig.connectionTimeoutInMs;
+	return Config.connectionTimeoutInMs;
     }
 
     @Override
@@ -269,7 +269,7 @@ public class TsfileConnection implements Connection {
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return new TsfilePrepareStatement(this, client, sessionHandle, sql, zoneId);
+		return new IoTDBPrepareStatement(this, client, sessionHandle, sql, zoneId);
     }
 
     @Override
@@ -375,7 +375,7 @@ public class TsfileConnection implements Connection {
     }
 
     private void openTransport() throws TTransportException {
-		transport = new TSocket(params.getHost(), params.getPort(), TsfileJDBCConfig.connectionTimeoutInMs);
+		transport = new TSocket(params.getHost(), params.getPort(), Config.connectionTimeoutInMs);
 		try {
 			transport.getSocket().setKeepAlive(true);
 		} catch (SocketException e) {
@@ -418,7 +418,7 @@ public class TsfileConnection implements Connection {
 
     public boolean reconnect() {
 	boolean flag = false;
-	for (int i = 1; i <= TsfileJDBCConfig.RETRY_NUM; i++) {
+	for (int i = 1; i <= Config.RETRY_NUM; i++) {
 	    try {   	
 		if (transport != null) {
 			transport.close();
@@ -431,7 +431,7 @@ public class TsfileConnection implements Connection {
 		}
 	    } catch (Exception e) {
 		try {
-		    Thread.sleep(TsfileJDBCConfig.RETRY_INTERVAL);
+		    Thread.sleep(Config.RETRY_INTERVAL);
 		} catch (InterruptedException e1) {
 		    e.printStackTrace();
 		}
@@ -440,14 +440,14 @@ public class TsfileConnection implements Connection {
 	return flag;
     }
 
-    public void setTimeZone(String zoneId) throws TException, TsfileSQLException{
+    public void setTimeZone(String zoneId) throws TException, IoTDBSQLException{
     	TSSetTimeZoneReq req = new TSSetTimeZoneReq(zoneId);
     	TSSetTimeZoneResp resp = client.setTimeZone(req);
     	Utils.verifySuccess(resp.getStatus());
     	this.zoneId = ZoneId.of(zoneId);
     }
     
-    public String getTimeZone() throws TException, TsfileSQLException{
+    public String getTimeZone() throws TException, IoTDBSQLException{
     	if(zoneId != null) return zoneId.toString();
     	
     	TSGetTimeZoneResp resp = client.getTimeZone();
@@ -460,7 +460,7 @@ public class TsfileConnection implements Connection {
     }
     
     public static TSIService.Iface newSynchronizedClient(TSIService.Iface client) {
-	return (TSIService.Iface) Proxy.newProxyInstance(TsfileConnection.class.getClassLoader(),
+	return (TSIService.Iface) Proxy.newProxyInstance(IoTDBConnection.class.getClassLoader(),
 		new Class[] { TSIService.Iface.class }, new SynchronizedHandler(client));
     }
 

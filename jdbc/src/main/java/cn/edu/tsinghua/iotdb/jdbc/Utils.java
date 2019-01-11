@@ -28,14 +28,14 @@ public class Utils {
      * Parse JDBC connection URL The only supported format of the URL is:
      * jdbc:tsfile://localhost:6667/
      */
-    public static TsfileConnectionParams parseURL(String url, Properties info) throws TsfileURLException {
-        TsfileConnectionParams params = new TsfileConnectionParams(url);
-        if (url.trim().equalsIgnoreCase(TsfileJDBCConfig.TSFILE_URL_PREFIX)) {
+    public static IoTDBConnectionParams parseURL(String url, Properties info) throws IoTDBURLException {
+        IoTDBConnectionParams params = new IoTDBConnectionParams(url);
+        if (url.trim().equalsIgnoreCase(Config.IOTDB_URL_PREFIX)) {
             return params;
         }
 
         Pattern pattern = Pattern.compile("([^;]*):([^;]*)/");
-        Matcher matcher = pattern.matcher(url.substring(TsfileJDBCConfig.TSFILE_URL_PREFIX.length()));
+        Matcher matcher = pattern.matcher(url.substring(Config.IOTDB_URL_PREFIX.length()));
         boolean isUrlLegal = false;
         while (matcher.find()) {
             params.setHost(matcher.group(1));
@@ -43,22 +43,22 @@ public class Utils {
             isUrlLegal = true;
         }
         if (!isUrlLegal) {
-            throw new TsfileURLException("Error url format, url should be jdbc:tsfile://ip:port/");
+            throw new IoTDBURLException("Error url format, url should be jdbc:tsfile://ip:port/");
         }
 
-        if (info.containsKey(TsfileJDBCConfig.AUTH_USER)) {
-            params.setUsername(info.getProperty(TsfileJDBCConfig.AUTH_USER));
+        if (info.containsKey(Config.AUTH_USER)) {
+            params.setUsername(info.getProperty(Config.AUTH_USER));
         }
-        if (info.containsKey(TsfileJDBCConfig.AUTH_PASSWORD)) {
-            params.setPassword(info.getProperty(TsfileJDBCConfig.AUTH_PASSWORD));
+        if (info.containsKey(Config.AUTH_PASSWORD)) {
+            params.setPassword(info.getProperty(Config.AUTH_PASSWORD));
         }
 
         return params;
     }
 
-    public static void verifySuccess(TS_Status status) throws TsfileSQLException {
+    public static void verifySuccess(TS_Status status) throws IoTDBSQLException {
         if (status.getStatusCode() != TS_StatusCode.SUCCESS_STATUS) {
-            throw new TsfileSQLException(status.errorMessage);
+            throw new IoTDBSQLException(status.errorMessage);
         }
     }
     

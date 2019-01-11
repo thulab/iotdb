@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.metadata;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.MetadataArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.utils.RandomDeleteCache;
@@ -46,7 +46,7 @@ public class MManager {
     }
 
     private MManager() {
-        metadataDirPath = TsfileDBDescriptor.getInstance().getConfig().metadataDir;
+        metadataDirPath = IoTDBDescriptor.getInstance().getConfig().metadataDir;
         if (metadataDirPath.length() > 0
                 && metadataDirPath.charAt(metadataDirPath.length() - 1) != File.separatorChar) {
             metadataDirPath = metadataDirPath + File.separatorChar;
@@ -59,7 +59,7 @@ public class MManager {
         logFilePath = metadataDirPath + MetadataConstant.METADATA_LOG;
         writeToLog = false;
 
-        int cacheSize = TsfileDBDescriptor.getInstance().getConfig().mManagerCacheSize;
+        int cacheSize = IoTDBDescriptor.getInstance().getConfig().mManagerCacheSize;
         checkAndGetDataTypeCache = new RandomDeleteCache<String, PathCheckRet>(cacheSize) {
             @Override
             public void beforeRemove(PathCheckRet object) throws CacheException {

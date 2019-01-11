@@ -33,15 +33,15 @@ public class UtilsTest {
 	}
 
 	@Test
-	public void testParseURL() throws TsfileURLException {
+	public void testParseURL() throws IoTDBURLException {
 		String userName = "test";
 		String userPwd = "test";
 		String host = "localhost";
 		int port = 6667;
 		Properties properties = new Properties();
-		properties.setProperty(TsfileJDBCConfig.AUTH_USER, userName);
-		properties.setProperty(TsfileJDBCConfig.AUTH_PASSWORD, userPwd);
-		TsfileConnectionParams params = Utils.parseURL(String.format("jdbc:tsfile://%s:%s/", host, port), properties);
+		properties.setProperty(Config.AUTH_USER, userName);
+		properties.setProperty(Config.AUTH_PASSWORD, userPwd);
+		IoTDBConnectionParams params = Utils.parseURL(String.format("jdbc:tsfile://%s:%s/", host, port), properties);
 		assertEquals(params.getHost(), host);
 		assertEquals(params.getPort(), port);
 		assertEquals(params.getUsername(), userName);

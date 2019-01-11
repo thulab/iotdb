@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
@@ -82,7 +82,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
-	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
+	private static final IoTDBConfig TsFileDBConf = IoTDBDescriptor.getInstance().getConfig();
 	private static final MManager mManager = MManager.getInstance();
 	private static final Directories directories = Directories.getInstance();
 
@@ -823,8 +823,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 		if (lastMergeTime > 0) {
 			long thisMergeTime = System.currentTimeMillis();
 			long mergeTimeInterval = thisMergeTime - lastMergeTime;
-            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastMergeTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+            ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisMergeTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
 			LOGGER.info("The filenode {} last merge time is {}, this merge time is {}, merge time interval is {}s",
 					getProcessorName(), lastDateTime, thisDateTime, mergeTimeInterval / 1000);
 		}
@@ -832,11 +832,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 
 		if (overflowProcessor != null) {
 			if (overflowProcessor
-					.getFileSize() < TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold) {
+					.getFileSize() < IoTDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold) {
 				LOGGER.info(
 						"Skip this merge taks submission, because the size{} of overflow processor {} does not reaches the threshold {}.",
 						MemUtils.bytesCntToStr(overflowProcessor.getFileSize()), getProcessorName(),
-						MemUtils.bytesCntToStr(TsfileDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold));
+						MemUtils.bytesCntToStr(IoTDBDescriptor.getInstance().getConfig().overflowFileSizeThreshold));
 				return null;
 			}
 		} else {
@@ -852,8 +852,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					writeLock();
 					merge();
 					long mergeEndTime = System.currentTimeMillis();
-		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeStartTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(mergeEndTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
 					long intervalTime = mergeEndTime - mergeStartTime;
 					LOGGER.info(
 							"The filenode processor {} merge start time is {}, merge end time is {}, merge consumes {}ms.",
@@ -1024,8 +1024,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
 					String newFile = queryAndWriteDataForMerge(backupIntervalFile);
 					long endTime = System.currentTimeMillis();
 					long timeConsume = endTime - startTime;
-		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(startTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+		            ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(endTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
 					LOGGER.info(
 							"The fileNode processor {} has merged the {}/{} tsfile[{}->{}] over, start time of merge is {}, end time of merge is {}, time consumption is {}ms, the process is {}%",
 							getProcessorName(), numOfMergeFiles, allNeedMergeFiles, filePathBeforeMerge, newFile,

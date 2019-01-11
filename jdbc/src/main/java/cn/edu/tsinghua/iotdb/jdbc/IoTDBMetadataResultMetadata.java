@@ -8,10 +8,10 @@ import java.sql.Types;
     TsfileMetadataResultMetadata implements a similar api like TsfileQueryResultSet to display column metadata.
  */
 
-public class TsfileMetadataResultMetadata implements ResultSetMetaData {
+public class IoTDBMetadataResultMetadata implements ResultSetMetaData {
     private String[] showLabels;
 
-    public TsfileMetadataResultMetadata(String[] showLabels) {
+    public IoTDBMetadataResultMetadata(String[] showLabels) {
         this.showLabels = showLabels;
     }
 

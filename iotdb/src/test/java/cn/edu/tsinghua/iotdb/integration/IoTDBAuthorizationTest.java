@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
@@ -39,7 +39,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void allPrivilegesTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -145,7 +145,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void updatePasswordTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -171,7 +171,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void illegalGrantRevokeUserTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -309,7 +309,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void createDeleteTimeSeriesTest() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -395,7 +395,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void insertQueryTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -457,7 +457,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void rolePrivilegeTest() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -513,7 +513,7 @@ public class IoTDBAuthorizationTest {
     @Test
     @Ignore
     public void authPerformanceTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -556,7 +556,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListUser() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -611,7 +611,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListRole() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -663,7 +663,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListUserPrivileges() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -727,7 +727,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListRolePrivileges() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -776,7 +776,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListUserRoles() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
@@ -824,7 +824,7 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListRoleUsers() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 

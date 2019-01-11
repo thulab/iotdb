@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.postback.utils;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -192,7 +192,7 @@ public class CreateDataSender3 {
         Connection connection1 = null;
         Statement statement1 = null;
 
-        String path = new File(System.getProperty(TsFileDBConstant.IOTDB_HOME, null)).getParent() + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries3.txt";
+        String path = new File(System.getProperty(IoTDBConstant.IOTDB_HOME, null)).getParent() + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries3.txt";
         Map<String, String> timeseriesMap = generateTimeseriesMapFromFile(path);
 
         List<String> storageGroupList = new ArrayList<>();
@@ -203,9 +203,9 @@ public class CreateDataSender3 {
 
         try {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");
-            connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+            connection = DriverManager.getConnection("jdbc:iotdb://localhost:6667/", "root", "root");
             statement = connection.createStatement();
-            connection1 = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
+            connection1 = DriverManager.getConnection("jdbc:iotdb://192.168.130.17:6667/", "root", "root");
             statement1 = connection1.createStatement();
 
             setStorageGroup(statement, statement1, storageGroupList);

@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.utils;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
@@ -17,7 +17,7 @@ import java.util.EnumMap;
 // Notice : statistics in this class may not be accurate because of limited user authority.
 public class OpenFileNumUtil {
     private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
-    private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private static IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
     private static Directories directories = Directories.getInstance();
     private int pid;
     private String processName;

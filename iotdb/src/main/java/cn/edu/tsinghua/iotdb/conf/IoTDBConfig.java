@@ -5,7 +5,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TsfileDBConfig {
+public class IoTDBConfig {
 
 	public static final String CONFIG_NAME = "iotdb-engine.properties";
 	public static final String default_data_dir = "data";
@@ -274,7 +274,7 @@ public class TsfileDBConfig {
 	 */
 	public long cacheFileReaderClearPeriod = 100000;
 
-	public TsfileDBConfig() {}
+	public IoTDBConfig() {}
 
 	public void updatePath() {
 		confirmMultDirStrategy();
@@ -365,7 +365,7 @@ public class TsfileDBConfig {
 		dirs.add(sysDir);
 		dirs.add(walDir);
 //		List<String> newdirs = new ArrayList<>();
-		String homeDir = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
+		String homeDir = System.getProperty(IoTDBConstant.IOTDB_HOME, null);
 		for (int i = 0; i < 3; i++) {
 			String dir = dirs.get(i);
 			if (new File(dir).isAbsolute()) {

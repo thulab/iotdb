@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
 import cn.edu.tsinghua.iotdb.exception.OverflowProcessorException;
@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class OverflowProcessorBenchmark {
 
-    private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.
+    private static final IoTDBConfig TsFileDBConf = IoTDBDescriptor.
             getInstance().getConfig();
 
     private static int numOfDevice = 100;

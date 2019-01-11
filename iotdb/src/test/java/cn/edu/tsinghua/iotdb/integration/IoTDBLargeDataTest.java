@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import cn.edu.tsinghua.tsfile.common.conf.TSFileConfig;
@@ -79,7 +79,7 @@ public class IoTDBLargeDataTest {
     public void selectAllTest() throws ClassNotFoundException, SQLException {
         String selectSql = "select * from root.vehicle";
 
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
@@ -114,7 +114,7 @@ public class IoTDBLargeDataTest {
 
         String selectSql = "select s0 from root.vehicle.d0 where s0 >= 20";
 
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
@@ -145,7 +145,7 @@ public class IoTDBLargeDataTest {
     @Test
     public void seriesGlobalTimeFilterTest() throws ClassNotFoundException, SQLException {
 
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         boolean hasResultSet;
         Statement statement;
@@ -179,7 +179,7 @@ public class IoTDBLargeDataTest {
     // "select s1 from root.vehicle.d0 where s0 < 111" : test select clause with different series filter
     @Test
     public void crossSeriesReadUpdateTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
         boolean hasResultSet;
         Statement statement;
@@ -214,7 +214,7 @@ public class IoTDBLargeDataTest {
     }
 
     private static void insertData() throws ClassNotFoundException, SQLException, InterruptedException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");

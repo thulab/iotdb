@@ -3,8 +3,8 @@ package cn.edu.tsinghua.iotdb.qp;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.exception.qp.IllegalASTFormatException;
@@ -45,7 +45,7 @@ public class QueryProcessor {
 
     public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr)
             throws QueryProcessorException, ArgsErrorException, ProcessorException {
-        TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+        IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
         return parseSQLToPhysicalPlan(sqlStr, config.getZoneID());
     }
 

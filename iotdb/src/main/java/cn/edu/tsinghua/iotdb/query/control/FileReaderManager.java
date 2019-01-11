@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.query.control;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.StartupException;
 import cn.edu.tsinghua.iotdb.service.IService;
 import cn.edu.tsinghua.iotdb.service.ServiceType;
@@ -54,7 +54,7 @@ public class FileReaderManager implements IService {
 
     private void clearUnUsedFilesInFixTime() {
 
-        long examinePeriod = TsfileDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
+        long examinePeriod = IoTDBDescriptor.getInstance().getConfig().cacheFileReaderClearPeriod;
 
         executorService.scheduleAtFixedRate(() -> {
             synchronized (this) {

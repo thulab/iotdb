@@ -1,14 +1,14 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-public class TsfileConnectionParams {
-    private String host = TsfileJDBCConfig.TSFILE_DEFAULT_HOST;
-    private int port = TsfileJDBCConfig.TSFILE_DEFAULT_PORT;
+public class IoTDBConnectionParams {
+    private String host = Config.IOTDB_URL_PREFIX;
+    private int port = Config.IOTDB_DEFAULT_PORT;
     private String jdbcUriString;
-    private String seriesName = TsfileJDBCConfig.DEFAULT_SERIES_NAME;
-    private String username = TsfileJDBCConfig.DEFAULT_USER;
-    private String password = TsfileJDBCConfig.DEFALUT_PASSWORD;
+    private String seriesName = Config.DEFAULT_SERIES_NAME;
+    private String username = Config.DEFAULT_USER;
+    private String password = Config.DEFALUT_PASSWORD;
     
-    public TsfileConnectionParams(String url){
+    public IoTDBConnectionParams(String url){
     	this.jdbcUriString = url;
     }
     

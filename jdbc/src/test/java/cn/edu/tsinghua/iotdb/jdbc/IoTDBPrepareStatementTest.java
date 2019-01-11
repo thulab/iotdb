@@ -25,10 +25,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 
-public class TsFilePrepareStatementTest {
+public class IoTDBPrepareStatementTest {
 	private ZoneId zoneId = ZoneId.systemDefault(); 
 	@Mock
-	private TsfileConnection connection;
+	private IoTDBConnection connection;
 	
 	@Mock
 	private Iface client;
@@ -61,7 +61,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void testNonParameterized() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < 24 and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.execute();
 
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -73,7 +73,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void unusedArgument() throws SQLException {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < 24 and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setString(1, "123");
 		ps.execute();
 	}
@@ -82,7 +82,7 @@ public class TsFilePrepareStatementTest {
 	@Test(expected = SQLException.class)
 	public void unsetArgument() throws SQLException {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < 24 and time > ?";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.execute();
 	}
 
@@ -90,7 +90,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneIntArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < ? and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setInt(1, 123);
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -102,7 +102,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneLongArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < ? and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setLong(1, 123);
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -114,7 +114,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneFloatArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < ? and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setFloat(1, 123.133f);
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -126,7 +126,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneDoubleArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < ? and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setDouble(1, 123.456);
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -138,7 +138,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneBooleanArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < ? and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setBoolean(1, false);
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -150,7 +150,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneStringArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE temperature < ? and time > 2017-11-1 0:13:00";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setString(1, "abcde");
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -162,7 +162,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneTimeLongArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE time > ?";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setLong(1, 1233);
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -174,7 +174,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void oneTimeTimestampArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE time > ?";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setTimestamp(1, Timestamp.valueOf("2017-11-01 00:13:00"));
 		ps.execute();
 		ArgumentCaptor<TSExecuteStatementReq> argument = ArgumentCaptor.forClass(TSExecuteStatementReq.class);
@@ -186,7 +186,7 @@ public class TsFilePrepareStatementTest {
 	@Test
 	public void escapingOfStringArgument() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE status = '134' and temperature = ?";
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setLong(1, 1333);
 		ps.execute();
 		
@@ -200,7 +200,7 @@ public class TsFilePrepareStatementTest {
 	public void pastingIntoEscapedQuery() throws Exception {
 		String sql = "SELECT status, temperature FROM root.ln.wf01.wt01 WHERE status = '\\044e' || temperature = ?";
 
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setDouble(1, -1323.0);
 		ps.execute();
 		
@@ -214,7 +214,7 @@ public class TsFilePrepareStatementTest {
 	public void testInsertStatement1() throws Exception{
 		String sql = "INSERT INTO root.ln.wf01.wt01(timestamp,a,b,c,d,e,f) VALUES(?,?,?,?,?,?,?)";
 
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setLong(1, 12324);
 		ps.setBoolean(2, false);
 		ps.setInt(3, 123);
@@ -234,7 +234,7 @@ public class TsFilePrepareStatementTest {
 	public void testInsertStatement2() throws Exception{
 		String sql = "INSERT INTO root.ln.wf01.wt01(timestamp,a,b,c,d,e,f) VALUES(?,?,?,?,?,?,?)";
 
-		TsfilePrepareStatement ps = new TsfilePrepareStatement(connection, client, sessHandle, sql, zoneId);
+		IoTDBPrepareStatement ps = new IoTDBPrepareStatement(connection, client, sessHandle, sql, zoneId);
 		ps.setTimestamp(1, Timestamp.valueOf("2017-11-01 00:13:00"));
 		ps.setBoolean(2, false);
 		ps.setInt(3, 123);

@@ -13,26 +13,26 @@ import cn.edu.tsinghua.iotdb.engine.memcontrol.BasicMemController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TsfileDBDescriptor {
-	private static final Logger LOGGER = LoggerFactory.getLogger(TsfileDBDescriptor.class);
+public class IoTDBDescriptor {
+	private static final Logger LOGGER = LoggerFactory.getLogger(IoTDBDescriptor.class);
 
 	private static class TsfileDBDescriptorHolder{
-		private static final TsfileDBDescriptor INSTANCE = new TsfileDBDescriptor();
+		private static final IoTDBDescriptor INSTANCE = new IoTDBDescriptor();
 	}
 	
-	private TsfileDBDescriptor() {
+	private IoTDBDescriptor() {
 		loadProps();
 	}
 
-	public static final TsfileDBDescriptor getInstance() {
+	public static final IoTDBDescriptor getInstance() {
 		return TsfileDBDescriptorHolder.INSTANCE;
 	}
 
-	public TsfileDBConfig getConfig() {
+	public IoTDBConfig getConfig() {
 		return conf;
 	}
 
-	private TsfileDBConfig conf = new TsfileDBConfig();
+	private IoTDBConfig conf = new IoTDBConfig();
 
 	/**
 	 * load an properties file and set TsfileDBConfig variables
@@ -40,19 +40,19 @@ public class TsfileDBDescriptor {
 	 */
 	private void loadProps() {
 		InputStream inputStream = null;
-		String url = System.getProperty(TsFileDBConstant.IOTDB_CONF, null);
+		String url = System.getProperty(IoTDBConstant.IOTDB_CONF, null);
 		if (url == null) {
-			url = System.getProperty(TsFileDBConstant.IOTDB_HOME, null);
+			url = System.getProperty(IoTDBConstant.IOTDB_HOME, null);
 			if (url != null) {
-				url = url + File.separatorChar + "conf" + File.separatorChar + TsfileDBConfig.CONFIG_NAME;
+				url = url + File.separatorChar + "conf" + File.separatorChar + IoTDBConfig.CONFIG_NAME;
 			} else {
-				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", TsfileDBConfig.CONFIG_NAME);
+				LOGGER.warn("Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading config file {}, use default configuration", IoTDBConfig.CONFIG_NAME);
 				// update all data seriesPath
 				conf.updatePath();
 				return;
 			}
 		} else{
-			url += (File.separatorChar + TsfileDBConfig.CONFIG_NAME);
+			url += (File.separatorChar + IoTDBConfig.CONFIG_NAME);
 		}
 		
 		try {
@@ -131,10 +131,10 @@ public class TsfileDBDescriptor {
 			conf.ipWhiteList = properties.getProperty("IP_white_list", conf.ipWhiteList);
 
 			if (conf.memThresholdWarning <= 0)
-				conf.memThresholdWarning = TsFileDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;
+				conf.memThresholdWarning = IoTDBConstant.MEM_THRESHOLD_WARNING_DEFAULT;
 			if (conf.memThresholdDangerous < conf.memThresholdWarning)
 				conf.memThresholdDangerous = Math.max(conf.memThresholdWarning,
-						TsFileDBConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
+						IoTDBConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
 
 			conf.concurrentFlushThread = Integer
 					.parseInt(properties.getProperty("concurrent_flush_thread", conf.concurrentFlushThread + ""));

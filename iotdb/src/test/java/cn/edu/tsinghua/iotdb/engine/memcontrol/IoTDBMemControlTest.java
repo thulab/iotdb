@@ -1,9 +1,9 @@
 package cn.edu.tsinghua.iotdb.engine.memcontrol;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.integration.Constant;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -54,7 +54,7 @@ public class IoTDBMemControlTest {
             "CREATE TIMESERIES root.house.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN"
     };
 
-    TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
     private IoTDB deamon;
 
     private boolean testFlag = false;
@@ -69,8 +69,8 @@ public class IoTDBMemControlTest {
             deamon = IoTDB.getInstance();
             
 
-            config.memThresholdWarning = 3 * TsFileDBConstant.MB;
-            config.memThresholdDangerous = 5 * TsFileDBConstant.MB;
+            config.memThresholdWarning = 3 * IoTDBConstant.MB;
+            config.memThresholdDangerous = 5 * IoTDBConstant.MB;
 
             BasicMemController.getInstance().setCheckInterval(15 * 1000);
             BasicMemController.getInstance().setDangerouseThreshold(config.memThresholdDangerous);  // force initialize
@@ -112,7 +112,7 @@ public class IoTDBMemControlTest {
 
     public void insert(String deviceId) {
         try {
-            Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+            Class.forName(Config.JDBC_DRIVER_NAME);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -127,7 +127,7 @@ public class IoTDBMemControlTest {
         long insertCnt = config.memThresholdDangerous / recordMemSize * 2;
         System.out.println(Thread.currentThread().getId() + " to insert " + insertCnt);
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (int i = 0; i < insertCnt; i++) {
                 record.time = i + 1;
@@ -153,10 +153,10 @@ public class IoTDBMemControlTest {
     }
 
     private void insertSQL() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (String sql : sqls) {
                 statement.execute(sql);
