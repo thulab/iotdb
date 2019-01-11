@@ -16,12 +16,18 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Bench The filenode manager with mul-thread and get its performance.
+ */
 public class FileNodeManagerBenchmark {
 
     private static int numOfWoker = 10;
+    private static int numOfDevice = 10;
+    private static int numOfMeasurement = 10;
+    private static long numOfTotalLine = 10000000;
     private static CountDownLatch latch = new CountDownLatch(numOfWoker);
     private static AtomicLong atomicLong = new AtomicLong();
-    private static int numOfDevice = 10;
+
     private static String[] devices = new String[numOfDevice];
     private static String prefix = "root.bench";
     static {
@@ -29,14 +35,13 @@ public class FileNodeManagerBenchmark {
             devices[i] = prefix+"."+"device_"+i;
         }
     }
-    private static int numOfMeasurement = 10;
+
     private static String[] measurements = new String[numOfMeasurement];
     static {
         for(int i = 0;i<numOfMeasurement;i++){
             measurements[i] = "measurement_"+i;
         }
     }
-    private static long numOfTotalLine = 10000000;
 
     private static void prepare() throws MetadataArgsErrorException, PathErrorException, IOException {
         MManager manager = MManager.getInstance();
