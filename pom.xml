@@ -47,7 +47,6 @@
 		<json.version>20140107</json.version>
 		<joda.version>2.9.9</joda.version>
 		<spark.version>2.0.1</spark.version>
-		<json.version>20140107</json.version>
 		<common.io.version>2.5</common.io.version>
 		<commons.collections4>4.0</commons.collections4>
 
@@ -86,26 +85,31 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>${joda.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.10.19</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>javax.annotation</groupId>
+		    <artifactId>javax.annotation-api</artifactId>
+		    <version>1.3.2</version>
+		</dependency>
+		<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>jaxb-api</artifactId>
+		    <version>2.4.0-b180725.0427</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.glassfish.jaxb</groupId>
+		    <artifactId>jaxb-runtime</artifactId>
+		    <version>2.4.0-b180725.0644</version>
 		</dependency>
 	</dependencies>
 
@@ -128,6 +132,13 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<configuration>
 						<excludePackageNames>*thrift*</excludePackageNames>
+						<!--
+                          This will suppress the generation of a hidden timestamp at the top of each generated html page
+                          and hopefully let the site generation nod to too big updates every time.
+                        -->
+						<notimestamp>true</notimestamp>
+						<!--Don't fail the build, just because there were issues in the JavaDoc generation.-->
+						<failOnError>false</failOnError>
 					</configuration>
 				</plugin>
 				<!--
@@ -139,22 +150,6 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
 						<argLine>-Xmx512m</argLine>
-					</configuration>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<configuration>
-						<!--
-                          This will suppress the generation of a hidden timestamp at the top of each generated html page
-                          and hopefully let the site generation nod to too big updates every time.
-                        -->
-						<notimestamp>true</notimestamp>
-						<!--
-                          Don't fail the build, just because there were issues in the JavaDoc generation.
-                        -->
-						<failOnError>false</failOnError>
 					</configuration>
 				</plugin>
 			</plugins>
