@@ -152,7 +152,7 @@ public class IoTDBLimitSlimitTest {
             String result = "";
             Long now_start = 0L;
             boolean cmp = false;
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             for (String sql : sqls) {
                 //System.out.println("----" + sql);
                 if (cmp) {
@@ -211,7 +211,7 @@ public class IoTDBLimitSlimitTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (String sql : insertSqls) {
                 statement.execute(sql);

@@ -353,7 +353,7 @@ public class IoTDBCompleteTest {
             String result = "";
             Long now_start = 0L;
             boolean cmp = false;
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             for (String sql : sqls) {
                 if (cmp) {
                     Assert.assertEquals(result, sql);

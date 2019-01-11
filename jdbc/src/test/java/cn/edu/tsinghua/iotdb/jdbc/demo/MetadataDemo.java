@@ -18,7 +18,7 @@ public class MetadataDemo {
 //		Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
 //		Connection connection = null;
 //		try {
-//			connection =  DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+//			connection =  DriverManager.getConnection("jdbc:iotdb://127.0.0.1:6667/", "root", "root");
 //			DatabaseMetaData databaseMetaData = connection.getMetaData();
 //		} finally {
 //			connection.close();

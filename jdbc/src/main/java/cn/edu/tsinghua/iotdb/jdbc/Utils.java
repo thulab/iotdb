@@ -26,7 +26,7 @@ public class Utils {
 
     /**
      * Parse JDBC connection URL The only supported format of the URL is:
-     * jdbc:tsfile://localhost:6667/
+     * jdbc:iotdb://localhost:6667/
      */
     public static IoTDBConnectionParams parseURL(String url, Properties info) throws IoTDBURLException {
         IoTDBConnectionParams params = new IoTDBConnectionParams(url);
@@ -43,7 +43,7 @@ public class Utils {
             isUrlLegal = true;
         }
         if (!isUrlLegal) {
-            throw new IoTDBURLException("Error url format, url should be jdbc:tsfile://ip:port/");
+            throw new IoTDBURLException("Error url format, url should be jdbc:iotdb://ip:port/");
         }
 
         if (info.containsKey(Config.AUTH_USER)) {

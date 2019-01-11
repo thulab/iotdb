@@ -28,7 +28,7 @@ public class IoTDBMetadataFetchTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
 
             String[] insertSqls = new String[]{
@@ -76,7 +76,7 @@ public class IoTDBMetadataFetchTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String[] sqls = new String[]{
                     "show timeseries root.ln.wf01.wt01.status", // full seriesPath
@@ -132,7 +132,7 @@ public class IoTDBMetadataFetchTest {
         Connection connection = null;
         Statement statement = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             statement = connection.createStatement();
             String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
             statement.execute(sql);
@@ -150,7 +150,7 @@ public class IoTDBMetadataFetchTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String[] sqls = new String[]{
                     "show storage group"
@@ -193,7 +193,7 @@ public class IoTDBMetadataFetchTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             databaseMetaData = connection.getMetaData();
 
             AllColumns();

@@ -95,7 +95,7 @@ public class IoTDBTimeZoneTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         IoTDBConnection connection = null;
         try {
-            connection = (IoTDBConnection) DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = (IoTDBConnection) DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String insertSQLTemplate = "insert into root.timezone(timestamp,tz1) values(%s,%s)";
             connection.setTimeZone("+08:00");
@@ -140,7 +140,7 @@ public class IoTDBTimeZoneTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (String sql : insertSqls) {
                 statement.execute(sql);

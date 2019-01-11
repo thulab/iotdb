@@ -54,7 +54,7 @@ public class IoTDBMultiSeriesTest {
         Thread.sleep(5000);
         insertData();
 
-        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
 
     }
 
@@ -82,7 +82,7 @@ public class IoTDBMultiSeriesTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute(selectSql);
             Assert.assertTrue(hasResultSet);
@@ -117,7 +117,7 @@ public class IoTDBMultiSeriesTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             boolean hasResultSet = statement.execute(selectSql);
             Assert.assertTrue(hasResultSet);
@@ -146,12 +146,12 @@ public class IoTDBMultiSeriesTest {
     public void seriesGlobalTimeFilterTest() throws ClassNotFoundException, SQLException {
 
         Class.forName(Config.JDBC_DRIVER_NAME);
-        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Connection connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         boolean hasResultSet;
         Statement statement;
 
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             statement = connection.createStatement();
             hasResultSet = statement.execute("select s0 from root.vehicle.d0 where time > 22987");
             assertTrue(hasResultSet);
@@ -180,12 +180,12 @@ public class IoTDBMultiSeriesTest {
     @Test
     public void crossSeriesReadUpdateTest() throws ClassNotFoundException, SQLException {
         Class.forName(Config.JDBC_DRIVER_NAME);
-        Connection connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Connection connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         boolean hasResultSet;
         Statement statement;
 
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             statement = connection.createStatement();
             hasResultSet = statement.execute("select s1 from root.vehicle.d0 where s0 < 111");
             assertTrue(hasResultSet);
@@ -217,7 +217,7 @@ public class IoTDBMultiSeriesTest {
         Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
 
             for (String sql : create_sql) {

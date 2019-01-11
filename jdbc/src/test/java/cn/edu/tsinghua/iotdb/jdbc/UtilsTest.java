@@ -41,7 +41,7 @@ public class UtilsTest {
 		Properties properties = new Properties();
 		properties.setProperty(Config.AUTH_USER, userName);
 		properties.setProperty(Config.AUTH_PASSWORD, userPwd);
-		IoTDBConnectionParams params = Utils.parseURL(String.format("jdbc:tsfile://%s:%s/", host, port), properties);
+		IoTDBConnectionParams params = Utils.parseURL(String.format(Config.IOTDB_URL_PREFIX+"%s:%s/", host, port), properties);
 		assertEquals(params.getHost(), host);
 		assertEquals(params.getPort(), port);
 		assertEquals(params.getUsername(), userName);
