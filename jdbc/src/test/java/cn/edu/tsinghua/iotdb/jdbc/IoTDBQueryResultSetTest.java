@@ -65,9 +65,9 @@ import static org.mockito.Mockito.*;
     "insert into root.vehicle.d0(timestamp,s1) values(2000-01-01T08:00:00+08:00, 100)",
  */
 
-public class TsfileQueryResultSetTest {
+public class IoTDBQueryResultSetTest {
     @Mock
-    private TsfileConnection connection;
+    private IoTDBConnection connection;
     @Mock
     private TSIService.Iface client;
     @Mock
@@ -90,7 +90,7 @@ public class TsfileQueryResultSetTest {
     public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        statement = new TsfileStatement(connection, client, sessHandle, zoneID);
+        statement = new IoTDBStatement(connection, client, sessHandle, zoneID);
 
         when(connection.isClosed()).thenReturn(false);
         when(client.executeStatement(any(TSExecuteStatementReq.class))).thenReturn(execResp);

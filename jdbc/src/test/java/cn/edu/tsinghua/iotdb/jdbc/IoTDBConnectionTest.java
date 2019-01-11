@@ -25,11 +25,11 @@ import java.util.List;
 import org.apache.thrift.TException;
 
 
-public class TsfileConnectionTest {
+public class IoTDBConnectionTest {
     @Mock
     private TSIService.Iface client;
     
-    private TsfileConnection connection = new TsfileConnection();
+    private IoTDBConnection connection = new IoTDBConnection();
     private TS_Status Status_SUCCESS = new TS_Status(TS_StatusCode.SUCCESS_STATUS);
 
 	@Before
@@ -42,7 +42,7 @@ public class TsfileConnectionTest {
 	}
 
 	@Test
-	public void testSetTimeZone() throws TException, TsfileSQLException {
+	public void testSetTimeZone() throws TException, IoTDBSQLException {
 		String timeZone = "Asia/Shanghai";
 		when(client.setTimeZone(any(TSSetTimeZoneReq.class))).thenReturn(new TSSetTimeZoneResp(Status_SUCCESS));
 		connection.client = client;
@@ -51,7 +51,7 @@ public class TsfileConnectionTest {
 	}
 
 	@Test
-	public void testGetTimeZone() throws TsfileSQLException, TException {
+	public void testGetTimeZone() throws IoTDBSQLException, TException {
 	    String timeZone = "GMT+:08:00";
 		when(client.getTimeZone()).thenReturn(new TSGetTimeZoneResp(Status_SUCCESS, timeZone));
 		connection.client = client;
@@ -59,7 +59,7 @@ public class TsfileConnectionTest {
 	}
 
 	@Test
-	public void testGetServerProperties() throws TsfileSQLException, TException {
+	public void testGetServerProperties() throws IoTDBSQLException, TException {
 		final String version = "v0.1";
 		@SuppressWarnings("serial")
 		final List<String> supportedAggregationTime = new ArrayList<String>() {{

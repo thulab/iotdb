@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileConnection;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.IoTDBConnection;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.apache.thrift.TException;
@@ -92,10 +92,10 @@ public class IoTDBTimeZoneTest {
      */
     @Test
     public void timezoneTest() throws ClassNotFoundException, SQLException, TException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        TsfileConnection connection = null;
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        IoTDBConnection connection = null;
         try {
-            connection = (TsfileConnection) DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = (IoTDBConnection) DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String insertSQLTemplate = "insert into root.timezone(timestamp,tz1) values(%s,%s)";
             connection.setTimeZone("+08:00");
@@ -137,10 +137,10 @@ public class IoTDBTimeZoneTest {
     }
     
     public void createTimeseries() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (String sql : insertSqls) {
                 statement.execute(sql);

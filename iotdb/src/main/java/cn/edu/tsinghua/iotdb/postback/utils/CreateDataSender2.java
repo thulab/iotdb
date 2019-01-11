@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
 
 /**
  * @author lta
@@ -175,7 +175,7 @@ public class CreateDataSender2 {
         Connection connection = null;
         Statement statement = null;
 
-        String path = new File(System.getProperty(TsFileDBConstant.IOTDB_HOME, null)).getParent() + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries2.txt";
+        String path = new File(System.getProperty(IoTDBConstant.IOTDB_HOME, null)).getParent() + File.separator + "src" + File.separator + "test" + File.separator + "resources" + File.separator + "CreateTimeseries2.txt";
         Map<String, String> timeseriesMap = generateTimeseriesMapFromFile(path);
 
         List<String> storageGroupList = new ArrayList<>();
@@ -186,7 +186,7 @@ public class CreateDataSender2 {
 
         try {
             Class.forName("cn.edu.tsinghua.iotdb.jdbc.TsfileDriver");
-            connection = DriverManager.getConnection("jdbc:tsfile://localhost:6667/", "root", "root");
+            connection = DriverManager.getConnection("jdbc:iotdb://localhost:6667/", "root", "root");
             statement = connection.createStatement();
 
             setStorageGroup(statement, storageGroupList);

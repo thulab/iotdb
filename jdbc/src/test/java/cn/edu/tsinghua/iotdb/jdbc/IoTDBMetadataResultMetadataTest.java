@@ -8,9 +8,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TsfileMetadataResultMetadataTest {
+public class IoTDBMetadataResultMetadataTest {
 
-	private TsfileMetadataResultMetadata metadata;
+	private IoTDBMetadataResultMetadata metadata;
 	private String[] cols = {"a1", "a2", "a3", "a4"};
 	
 	@Before
@@ -26,7 +26,7 @@ public class TsfileMetadataResultMetadataTest {
 	public void testGetColumnCount() throws SQLException {
 		boolean flag = false;
 		try {
-			metadata = new TsfileMetadataResultMetadata(null);
+			metadata = new IoTDBMetadataResultMetadata(null);
 			assertEquals((long)metadata.getColumnCount(), 0);
 		} catch (Exception e) {
 			flag = true;
@@ -36,14 +36,14 @@ public class TsfileMetadataResultMetadataTest {
 		flag = false;
 		try {
 			String[] nullArray = {};
-			metadata = new TsfileMetadataResultMetadata(nullArray);
+			metadata = new IoTDBMetadataResultMetadata(nullArray);
 			assertEquals((long)metadata.getColumnCount(), 0);
 		} catch (Exception e) {
 			flag = true;
 		}
 		assertEquals(flag, true);
 		
-		metadata = new TsfileMetadataResultMetadata(cols);
+		metadata = new IoTDBMetadataResultMetadata(cols);
 		assertEquals((long)metadata.getColumnCount(), cols.length);
 	}
 
@@ -51,7 +51,7 @@ public class TsfileMetadataResultMetadataTest {
 	@Test
 	public void testGetColumnName() throws SQLException {
 		boolean flag = false;
-		metadata = new TsfileMetadataResultMetadata(null);
+		metadata = new IoTDBMetadataResultMetadata(null);
 		try {
 			metadata.getColumnName(1);
 		} catch (Exception e) {
@@ -60,14 +60,14 @@ public class TsfileMetadataResultMetadataTest {
 		assertEquals(flag, true);
 		try {
 			String[] nullArray = {};
-			metadata = new TsfileMetadataResultMetadata(nullArray);
+			metadata = new IoTDBMetadataResultMetadata(nullArray);
 			metadata.getColumnName(1);
 		} catch (Exception e) {
 			flag = true;
 		}
 		assertEquals(flag, true);
 		
-		metadata = new TsfileMetadataResultMetadata(cols);
+		metadata = new IoTDBMetadataResultMetadata(cols);
 		try {
 			metadata.getColumnName(0);
 		} catch (Exception e) {

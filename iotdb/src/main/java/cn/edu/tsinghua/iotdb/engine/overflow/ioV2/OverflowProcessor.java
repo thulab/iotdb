@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.overflow.ioV2;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.Action;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.FileNodeConstants;
@@ -48,7 +48,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class OverflowProcessor extends Processor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OverflowProcessor.class);
-	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
+	private static final IoTDBConfig TsFileDBConf = IoTDBDescriptor.getInstance().getConfig();
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
 	private OverflowResource workResource;
 	private OverflowResource mergeResource;
@@ -94,9 +94,9 @@ public class OverflowProcessor extends Processor {
 		overflowFlushAction = (Action) parameters.get(FileNodeConstants.OVERFLOW_FLUSH_ACTION);
 		filenodeFlushAction = (Action) parameters.get(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION);
 
-		if (TsfileDBDescriptor.getInstance().getConfig().enableWal)
+		if (IoTDBDescriptor.getInstance().getConfig().enableWal)
 			logNode = MultiFileLogNodeManager.getInstance().getNode(
-					processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(),
+					processorName + IoTDBConstant.OVERFLOW_LOG_NODE_SUFFIX, getOverflowRestoreFile(),
 					FileNodeManager.getInstance().getRestoreFilePath(processorName));
 	}
 
@@ -418,7 +418,7 @@ public class OverflowProcessor extends Processor {
 					getProcessorName());
 			filenodeFlushAction.act();
 			// write-ahead log
-			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+			if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
 				logNode.notifyEndFlush(null);
 			}
 		} catch (IOException e) {
@@ -440,8 +440,8 @@ public class OverflowProcessor extends Processor {
 		LOGGER.info("The overflow processor {} ends flushing {}.", getProcessorName(), flushFunction);
 		long flushEndTime = System.currentTimeMillis();
 		long timeInterval = flushEndTime - flushStartTime;
-        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushEndTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushStartTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(flushEndTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
 		LOGGER.info(
 				"The overflow processor {} flush {}, start time is {}, flush end time is {}, time consumption is {}ms",
 				getProcessorName(), flushFunction, startDateTime, endDateTime, timeInterval);
@@ -451,8 +451,8 @@ public class OverflowProcessor extends Processor {
 		// statistic information for flush
 		if (lastFlushTime > 0) {
 			long thisFLushTime = System.currentTimeMillis();
-	        ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFlushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-	        ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisFLushTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+	        ZonedDateTime lastDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(lastFlushTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+	        ZonedDateTime thisDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(thisFLushTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
 			LOGGER.info(
 					"The overflow processor {} last flush time is {}, this flush time is {}, flush time interval is {}s",
 					getProcessorName(), lastDateTime, thisDateTime, (thisFLushTime - lastFlushTime) / 1000);
@@ -477,7 +477,7 @@ public class OverflowProcessor extends Processor {
 				throw new OverflowProcessorException(e);
 			}
 
-			if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+			if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
 				try {
 					logNode.notifyStartFlush();
 				} catch (IOException e) {
@@ -524,8 +524,8 @@ public class OverflowProcessor extends Processor {
 		// log close time
 		long closeEndTime = System.currentTimeMillis();
 		long timeInterval = closeEndTime - closeStartTime;
-        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
-        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), TsfileDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime startDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
+        ZonedDateTime endDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(closeStartTime), IoTDBDescriptor.getInstance().getConfig().getZoneID());
 		LOGGER.info("The close operation of overflow processor {} starts at {} and ends at {}. It comsumes {}ms.",
 				getProcessorName(), startDateTime, endDateTime, timeInterval);
 	}
@@ -583,7 +583,7 @@ public class OverflowProcessor extends Processor {
 	 * new one.
 	 */
 	private boolean checkSize() {
-		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 		long metaSize = getMetaSize();
 		long fileSize = getFileSize();
 		LOGGER.info("The overflow processor {}, the size of metadata reaches {}, the size of file reaches {}.",

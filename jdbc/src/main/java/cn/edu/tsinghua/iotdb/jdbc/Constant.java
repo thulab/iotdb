@@ -1,6 +1,6 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-public class TsFileDBConstant {
+public class Constant {
 
 	public static final String GLOBAL_DB_NAME = "IoTDB";
 

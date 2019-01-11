@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileMetadataResultSet;
+import cn.edu.tsinghua.iotdb.jdbc.Constant;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
+import cn.edu.tsinghua.iotdb.jdbc.IoTDBMetadataResultSet;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.After;
@@ -25,10 +25,10 @@ public class IoTDBMetadataFetchTest {
     private DatabaseMetaData databaseMetaData;
 
     private static void insertSQL() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
 
             String[] insertSqls = new String[]{
@@ -73,10 +73,10 @@ public class IoTDBMetadataFetchTest {
 
     @Test
     public void ShowTimeseriesTest1() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String[] sqls = new String[]{
                     "show timeseries root.ln.wf01.wt01.status", // full seriesPath
@@ -128,11 +128,11 @@ public class IoTDBMetadataFetchTest {
 
     @Test
     public void ShowTimeseriesTest2() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         Statement statement = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             statement = connection.createStatement();
             String sql = "show timeseries"; // not supported in jdbc, thus expecting SQLException
             statement.execute(sql);
@@ -147,10 +147,10 @@ public class IoTDBMetadataFetchTest {
 
     @Test
     public void ShowStorageGroupTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             String[] sqls = new String[]{
                     "show storage group"
@@ -190,10 +190,10 @@ public class IoTDBMetadataFetchTest {
 
     @Test
     public void DatabaseMetaDataTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             databaseMetaData = connection.getMetaData();
 
             AllColumns();
@@ -221,7 +221,7 @@ public class IoTDBMetadataFetchTest {
                 "root.ln.wf01.wt01.status,\n" +
                 "root.ln.wf01.wt01.temperature,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogColumn, "root", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogColumn, "root", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
@@ -245,7 +245,7 @@ public class IoTDBMetadataFetchTest {
         String standard = "Column,\n" +
                 "root.ln.wf01.wt01,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDevice, "ln", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogDevice, "ln", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
@@ -271,7 +271,7 @@ public class IoTDBMetadataFetchTest {
                 "root.ln.wf01.wt01.status,root.ln.wf01.wt01,BOOLEAN,PLAIN,\n" +
                 "root.ln.wf01.wt01.temperature,root.ln.wf01.wt01,FLOAT,RLE,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, "root", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogTimeseries, "root", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
@@ -296,12 +296,12 @@ public class IoTDBMetadataFetchTest {
         String standard = "DataType,\n" +
                 "BOOLEAN,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, "root.ln.wf01.wt01.status", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogTimeseries, "root.ln.wf01.wt01.status", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         StringBuilder resultStr = new StringBuilder();
         resultStr.append(resultSetMetaData.getColumnName(3)).append(",\n");
         while (resultSet.next()) {
-            resultStr.append(resultSet.getString(TsfileMetadataResultSet.GET_STRING_TIMESERIES_DATATYPE)).append(",");
+            resultStr.append(resultSet.getString(IoTDBMetadataResultSet.GET_STRING_TIMESERIES_DATATYPE)).append(",");
             resultStr.append("\n");
         }
         Assert.assertEquals(resultStr.toString(), standard);
@@ -314,7 +314,7 @@ public class IoTDBMetadataFetchTest {
         String standard = "Storage Group,\n" +
                 "root.ln.wf01.wt01,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogStorageGroup, null, null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogStorageGroup, null, null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();

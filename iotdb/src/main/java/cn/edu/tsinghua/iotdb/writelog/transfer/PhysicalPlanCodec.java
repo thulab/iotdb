@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.writelog.transfer;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.DeletePlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.InsertPlan;
 import cn.edu.tsinghua.iotdb.qp.physical.crud.UpdatePlan;
@@ -22,7 +22,7 @@ public enum PhysicalPlanCodec {
     UPDATEPLAN(SystemLogOperator.UPDATE, codecInstances.updatePlanCodec),
     DELETEPLAN(SystemLogOperator.DELETE, codecInstances.deletePlanCodec);
 
-    private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private static IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 
     public final int planCode;
     public final Codec<?> codec;

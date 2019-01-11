@@ -17,8 +17,8 @@ import cn.edu.tsinghua.tsfile.exception.write.WriteProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.exception.PathErrorException;
@@ -41,7 +41,7 @@ public class LoadDataUtils {
 	private boolean hasExtra = false;
 	private long totalPointCount = 0;
 	private FileNodeManager fileNodeManager;
-	private TsfileDBConfig conf = TsfileDBDescriptor.getInstance().getConfig();
+	private IoTDBConfig conf = IoTDBDescriptor.getInstance().getConfig();
 
 	public LoadDataUtils() {
 		writeInstanceMap = new HashSet<>();

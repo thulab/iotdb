@@ -37,7 +37,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class TsfileQueryResultSet implements ResultSet {
+public class IoTDBQueryResultSet implements ResultSet {
 
 	private Statement statement = null;
 	private String sql;
@@ -78,11 +78,11 @@ public class TsfileQueryResultSet implements ResultSet {
 	 */
 	private int maxRowsOrRowsLimit;
 
-	public TsfileQueryResultSet() {
+	public IoTDBQueryResultSet() {
 
 	}
 
-	public TsfileQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
+	public IoTDBQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
 								TS_SessionHandle sessionHandle, TSOperationHandle operationHandle, String sql,
 								String aggregations, List<String> columnTypeList)
 			throws SQLException {
@@ -133,7 +133,7 @@ public class TsfileQueryResultSet implements ResultSet {
 				}
 			}
 		} catch (NumberFormatException e) {
-			throw new TsfileSQLException("Out of range: LIMIT&SLIMIT parameter should be Int32.");
+			throw new IoTDBSQLException("Out of range: LIMIT&SLIMIT parameter should be Int32.");
 		}
 	}
 
@@ -419,7 +419,7 @@ public class TsfileQueryResultSet implements ResultSet {
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
-		return new TsfileResultMetadata(columnInfoList, operationType, columnTypeList);
+		return new IoTDBResultMetadata(columnInfoList, operationType, columnTypeList);
 	}
 
 	@Override

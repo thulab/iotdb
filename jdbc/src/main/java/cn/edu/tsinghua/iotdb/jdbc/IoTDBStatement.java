@@ -22,11 +22,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TsfileStatement implements Statement {
+public class IoTDBStatement implements Statement {
 
 	private ResultSet resultSet = null;
-	private TsfileConnection connection;
-	private int fetchSize = TsfileJDBCConfig.fetchSize;
+	private IoTDBConnection connection;
+	private int fetchSize = Config.fetchSize;
 	private int queryTimeout = 10;
 	private TSIService.Iface client = null;
 	private TS_SessionHandle sessionHandle = null;
@@ -58,7 +58,7 @@ public class TsfileStatement implements Statement {
 	 */
 	private SQLWarning warningChain = null;
 
-	public TsfileStatement(TsfileConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle,
+	public IoTDBStatement(IoTDBConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle,
 			int fetchSize, ZoneId zoneId) {
 		this.connection = connection;
 		this.client = client;
@@ -68,8 +68,8 @@ public class TsfileStatement implements Statement {
 		this.zoneId = zoneId;
 	}
 
-	public TsfileStatement(TsfileConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle, ZoneId zoneId) {
-		this(connection, client, sessionHandle, TsfileJDBCConfig.fetchSize, zoneId);
+	public IoTDBStatement(IoTDBConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle, ZoneId zoneId) {
+		this(connection, client, sessionHandle, Config.fetchSize, zoneId);
 	}
 
 	@Override
@@ -196,12 +196,12 @@ public class TsfileStatement implements Statement {
 			} else {
 				String path = cmdSplited[2];
 				DatabaseMetaData databaseMetaData = connection.getMetaData();
-				resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, path, null, null);
+				resultSet = databaseMetaData.getColumns(Constant.CatalogTimeseries, path, null, null);
 				return true;
 			}
 		} else if (sqlToLowerCase.equals(SHOW_STORAGE_GROUP_COMMAND_LOWERCASE)) {
 			DatabaseMetaData databaseMetaData = connection.getMetaData();
-			resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogStorageGroup, null, null, null);
+			resultSet = databaseMetaData.getColumns(Constant.CatalogStorageGroup, null, null, null);
 			return true;
 		} else {
 			TSExecuteStatementReq execReq = new TSExecuteStatementReq(sessionHandle, sql);
@@ -209,7 +209,7 @@ public class TsfileStatement implements Statement {
 			operationHandle = execResp.getOperationHandle();
 			Utils.verifySuccess(execResp.getStatus());
 			if (execResp.getOperationHandle().hasResultSet) {
-				resultSet = new TsfileQueryResultSet(this, execResp.getColumns(), client, sessionHandle,
+				resultSet = new IoTDBQueryResultSet(this, execResp.getColumns(), client, sessionHandle,
 						operationHandle, sql, execResp.getOperationType(), getColumnsType(execResp.getColumns()));
 				return true;
 			}
@@ -316,7 +316,7 @@ public class TsfileStatement implements Statement {
 		TSExecuteStatementResp execResp = client.executeQueryStatement(execReq);
 		operationHandle = execResp.getOperationHandle();
 		Utils.verifySuccess(execResp.getStatus());
-		resultSet = new TsfileQueryResultSet(this, execResp.getColumns(), client, sessionHandle, operationHandle, sql,
+		resultSet = new IoTDBQueryResultSet(this, execResp.getColumns(), client, sessionHandle, operationHandle, sql,
 				execResp.getOperationType(), getColumnsType(execResp.getColumns()));
 		return resultSet;
 	}
@@ -344,7 +344,7 @@ public class TsfileStatement implements Statement {
 		}
 	}
 
-	private int executeUpdateSQL(String sql) throws TException, TsfileSQLException {
+	private int executeUpdateSQL(String sql) throws TException, IoTDBSQLException {
 		TSExecuteStatementReq execReq = new TSExecuteStatementReq(sessionHandle, sql);
 		TSExecuteStatementResp execResp = client.executeUpdateStatement(execReq);
 		operationHandle = execResp.getOperationHandle();
@@ -486,7 +486,7 @@ public class TsfileStatement implements Statement {
 		if (fetchSize < 0) {
 			throw new SQLException(String.format("fetchSize %d must be >= 0!", fetchSize));
 		}
-		this.fetchSize = fetchSize == 0 ? TsfileJDBCConfig.fetchSize : fetchSize;
+		this.fetchSize = fetchSize == 0 ? Config.fetchSize : fetchSize;
 	}
 
 	@Override
@@ -539,7 +539,7 @@ public class TsfileStatement implements Statement {
 	private String getColumnType(String columnName) throws SQLException {
 		TSFetchMetadataReq req;
 		
-		req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_COLUMN_REQ);
+		req = new TSFetchMetadataReq(Constant.GLOBAL_COLUMN_REQ);
 		req.setColumnPath(columnName);
 
 		TSFetchMetadataResp resp;
@@ -547,7 +547,7 @@ public class TsfileStatement implements Statement {
 			resp = client.fetchMetadata(req);
 			Utils.verifySuccess(resp.getStatus());
 			return resp.getDataType();
-		} catch (TException | TsfileSQLException e) {
+		} catch (TException | IoTDBSQLException e) {
 			throw new SQLException(String.format("Cannot get column %s data type because %s", columnName, e.getMessage()));
 		}
 	}

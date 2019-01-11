@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.integration;
 
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.query.control.OpenedFilePathsManager;
 import cn.edu.tsinghua.iotdb.query.timegenerator.EngineTimeGenerator;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
@@ -66,7 +66,7 @@ public class IoTDBEngineTimeGeneratorTest {
 
         Thread.sleep(5000);
         insertData();
-        connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
     }
 
     @AfterClass
@@ -162,10 +162,10 @@ public class IoTDBEngineTimeGeneratorTest {
     }
 
     private static void insertData() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
 
             //create storage group and measurement

@@ -42,7 +42,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderConfig;
 import cn.edu.tsinghua.iotdb.postback.conf.PostBackSenderDescriptor;
 import cn.edu.tsinghua.iotdb.utils.PostbackUtils;
@@ -310,7 +310,7 @@ public class FileSenderImpl implements FileSender{
 //		try {
 //            Class.forName(JDBC_DRIVER_NAME);
 //			connection = DriverManager.getConnection(
-//					"jdbc:tsfile://localhost:" + TsfileDBDescriptor.getInstance().getConfig().rpcPort + "/", "root",
+//					"jdbc:iotdb://localhost:" + TsfileDBDescriptor.getInstance().getConfig().rpcPort + "/", "root",
 //					"root");
 //			statement = connection.createStatement();
 //			int count = 0;

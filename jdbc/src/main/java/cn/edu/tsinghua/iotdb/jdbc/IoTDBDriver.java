@@ -13,14 +13,14 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 
-public class TsfileDriver implements Driver {
-	private final String TSFILE_URL_PREFIX = TsfileJDBCConfig.TSFILE_URL_PREFIX+".*";
+public class IoTDBDriver implements Driver {
+	private final String TSFILE_URL_PREFIX = Config.IOTDB_URL_PREFIX+".*";
     
-	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TsfileDriver.class);
+	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(IoTDBDriver.class);
 	
 	static {
 		try {
-			DriverManager.registerDriver(new TsfileDriver());
+			DriverManager.registerDriver(new IoTDBDriver());
 		} catch (SQLException e) {
 			LOGGER.error("Error occurs when registering TsFile driver",e);
 		}
@@ -31,7 +31,7 @@ public class TsfileDriver implements Driver {
 	 */
 	private static final boolean TSFILE_JDBC_COMPLIANT = false;
 	
-	public TsfileDriver() {
+	public IoTDBDriver() {
 
 	}
 	
@@ -43,7 +43,7 @@ public class TsfileDriver implements Driver {
 	@Override
 	public Connection connect(String url, Properties info) throws SQLException {
 		try {
-			return acceptsURL(url) ? new TsfileConnection(url, info) : null;
+			return acceptsURL(url) ? new IoTDBConnection(url, info) : null;
 		} catch (TTransportException e) {
 			throw new SQLException("Connection Error, please check whether the network is avaliable or the server has started.");
 		}

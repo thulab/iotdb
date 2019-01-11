@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.qp.plan;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.ArgsErrorException;
 import cn.edu.tsinghua.iotdb.exception.qp.IllegalASTFormatException;
 import cn.edu.tsinghua.iotdb.exception.qp.LogicalOperatorException;
@@ -30,7 +30,7 @@ public class LogicalPlanSmallTest {
 
   @Before
   public void before() {
-    TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
         generator = new LogicalGenerator(config.getZoneID());
   }
 

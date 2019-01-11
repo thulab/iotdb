@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.writelog;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.writelog.transfer.PhysicalPlanLogTransfer;
 import cn.edu.tsinghua.iotdb.writelog.node.ExclusiveWriteLogNode;
 import cn.edu.tsinghua.iotdb.writelog.node.WriteLogNode;
@@ -25,7 +25,7 @@ import static junit.framework.TestCase.assertTrue;
 
 public class WriteLogNodeTest {
 
-    private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+    private IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 
     private boolean enableWal;
 

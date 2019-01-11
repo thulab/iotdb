@@ -5,12 +5,12 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
-public class TsfileResultMetadata implements ResultSetMetaData {
+public class IoTDBResultMetadata implements ResultSetMetaData {
 	private List<String> columnInfoList;
 	private String operationType;
 	private List<String> columnTypeList;
 	
-	public TsfileResultMetadata(List<String> columnInfoList, String operationType, List<String> columnTypeList) {
+	public IoTDBResultMetadata(List<String> columnInfoList, String operationType, List<String> columnTypeList) {
 		this.columnInfoList = columnInfoList;
 		this.operationType = operationType;
 		this.columnTypeList = columnTypeList;

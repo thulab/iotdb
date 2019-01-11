@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.edu.tsinghua.iotdb.utils.PostbackUtils;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.engine.filenode.IntervalFileNode;
@@ -50,11 +50,11 @@ public class ServerServiceImpl implements ServerService.Iface {
     // String2 means endTime
     private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
     private ThreadLocal<String> schemaFromSenderPath = new ThreadLocal<String>();
-    private TsfileDBConfig tsfileDBconfig = TsfileDBDescriptor.getInstance().getConfig();
+    private IoTDBConfig tsfileDBconfig = IoTDBDescriptor.getInstance().getConfig();
     private String postbackPath;
     private String dataPath = new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator; // Absolute seriesPath of IoTDB data directory
     private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs(); // Absolute paths of IoTDB bufferWrite directory
-    private TsfileDBConfig tsfileDBConfig = TsfileDBDescriptor.getInstance().getConfig();
+    private IoTDBConfig tsfileDBConfig = IoTDBDescriptor.getInstance().getConfig();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
     private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
@@ -174,7 +174,7 @@ public class ServerServiceImpl implements ServerService.Iface {
             Statement statement = null;
             try {
                 Class.forName(JDBC_DRIVER_NAME);
-                connection = DriverManager.getConnection("jdbc:tsfile://localhost:" + tsfileDBConfig.rpcPort + "/",
+                connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort + "/",
                         "root", "root");
                 statement = connection.createStatement();
 
@@ -332,7 +332,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //        Statement statement = null;
 //        try {
 //            Class.forName(JDBC_DRIVER_NAME);
-//            connection = DriverManager.getConnection("jdbc:tsfile://localhost:" + tsfileDBConfig.rpcPort + "/", "root",
+//            connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort + "/", "root",
 //                    "root");
 //            statement = connection.createStatement();
 //            int count = 0;
@@ -438,7 +438,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //        Statement statement = null;
 //        try {
 //            Class.forName(JDBC_DRIVER_NAME);
-//            connection = DriverManager.getConnection("jdbc:tsfile://localhost:" + tsfileDBConfig.rpcPort + "/", "root",
+//            connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort + "/", "root",
 //                    "root");
 //            statement = connection.createStatement();
 //            int count = 0;

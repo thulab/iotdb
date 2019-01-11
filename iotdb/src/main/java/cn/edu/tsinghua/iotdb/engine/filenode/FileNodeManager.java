@@ -1,8 +1,8 @@
 package cn.edu.tsinghua.iotdb.engine.filenode;
 
-import cn.edu.tsinghua.iotdb.conf.TsFileDBConstant;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConstant;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.Processor;
 import cn.edu.tsinghua.iotdb.engine.bufferwrite.BufferWriteProcessor;
@@ -58,7 +58,7 @@ public class FileNodeManager implements IStatistic, IService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeManager.class);
 	private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
-	private static final TsfileDBConfig TsFileDBConf = TsfileDBDescriptor.getInstance().getConfig();
+	private static final IoTDBConfig TsFileDBConf = IoTDBDescriptor.getInstance().getConfig();
 	private static final Directories directories = Directories.getInstance();
 	private final String baseDir;
 	/**
@@ -285,7 +285,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 				// write wal
 				try {
-					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+					if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
 						List<String> measurementList = new ArrayList<>();
 						List<String> insertValues = new ArrayList<>();
 						for (DataPoint dp : tsRecord.dataPointList) {
@@ -352,7 +352,7 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 				// write wal
 				try {
-					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+					if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
 						List<String> measurementList = new ArrayList<>();
 						List<String> insertValues = new ArrayList<>();
 						for (DataPoint dp : tsRecord.dataPointList) {
@@ -381,12 +381,12 @@ public class FileNodeManager implements IStatistic, IService {
 				}
 				insertType = 2;
 				if (bufferWriteProcessor
-						.getFileSize() > TsfileDBDescriptor.getInstance().getConfig().bufferwriteFileSizeThreshold) {
+						.getFileSize() > IoTDBDescriptor.getInstance().getConfig().bufferwriteFileSizeThreshold) {
 					LOGGER.info(
 							"The filenode processor {} will close the bufferwrite processor, because the size[{}] of tsfile {} reaches the threshold {}",
 							filenodeName, MemUtils.bytesCntToStr(bufferWriteProcessor.getFileSize()),
 							bufferWriteProcessor.getFileName(), MemUtils.bytesCntToStr(
-									TsfileDBDescriptor.getInstance().getConfig().bufferwriteFileSizeThreshold));
+									IoTDBDescriptor.getInstance().getConfig().bufferwriteFileSizeThreshold));
 					fileNodeProcessor.closeBufferWrite();
 				}
 			}
@@ -445,7 +445,7 @@ public class FileNodeManager implements IStatistic, IService {
 
 			// write wal
 			try {
-				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+				if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
 					overflowProcessor.getLogNode().write(
 							new UpdatePlan(startTime, endTime, v, new Path(deviceId + "." + measurementId)));
 				}
@@ -503,7 +503,7 @@ public class FileNodeManager implements IStatistic, IService {
 
 				// write wal
 				try {
-					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
+					if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
 						overflowProcessor.getLogNode()
 								.write(new DeletePlan(timestamp, new Path(deviceId + "." + measurementId)));
 					}
@@ -783,9 +783,9 @@ public class FileNodeManager implements IStatistic, IService {
 				FileUtils.deleteDirectory(new File(overflowPath));
 
 				MultiFileLogNodeManager.getInstance()
-						.deleteNode(processorName + TsFileDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX);
+						.deleteNode(processorName + IoTDBConstant.BUFFERWRITE_LOG_NODE_SUFFIX);
 				MultiFileLogNodeManager.getInstance()
-						.deleteNode(processorName + TsFileDBConstant.OVERFLOW_LOG_NODE_SUFFIX);
+						.deleteNode(processorName + IoTDBConstant.OVERFLOW_LOG_NODE_SUFFIX);
 				return true;
 			} catch (IOException e) {
 				LOGGER.error("Delete the filenode processor {} error.", processorName, e);

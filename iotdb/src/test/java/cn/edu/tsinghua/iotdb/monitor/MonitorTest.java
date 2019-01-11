@@ -11,8 +11,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.FileNodeManagerException;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -25,7 +25,7 @@ import cn.edu.tsinghua.tsfile.write.record.TSRecord;
  */
 
 public class MonitorTest {
-    private TsfileDBConfig tsdbconfig = TsfileDBDescriptor.getInstance().getConfig();
+    private IoTDBConfig tsdbconfig = IoTDBDescriptor.getInstance().getConfig();
 
     private FileNodeManager fManager = null;
     private StatMonitor statMonitor;

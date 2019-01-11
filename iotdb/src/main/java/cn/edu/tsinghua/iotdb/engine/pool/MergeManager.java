@@ -2,8 +2,8 @@ package cn.edu.tsinghua.iotdb.engine.pool;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 
 import java.util.concurrent.*;
@@ -18,7 +18,7 @@ public class MergeManager {
 	}
 
 	private MergeManager() {
-		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 		this.threadCnt = config.mergeConcurrentThreads;
 		pool = IoTDBThreadPoolFactory.newFixedThreadPool(threadCnt, ThreadName.MERGE_SERVICE.getName());
 	}
@@ -34,7 +34,7 @@ public class MergeManager {
 	public void reopen() throws ProcessorException {
 		if (!pool.isTerminated())
 			throw new ProcessorException("Merge pool is not terminated!");
-		TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+		IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 		pool = Executors.newFixedThreadPool(config.mergeConcurrentThreads);
 	}
 

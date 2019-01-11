@@ -1,8 +1,9 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,12 +40,12 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void allPrivilegesTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         Statement userStmt = userCon.createStatement();
 
         boolean caught = false;
@@ -145,25 +146,25 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void updatePasswordTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         userCon.close();
 
         adminStmt.execute("UPDATE USER tempuser SET PASSWORD newpw");
 
         boolean caught = false;
         try {
-            userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+            userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         } catch (SQLException e) {
             caught = true;
         }
         assertTrue(caught);
 
-        userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "newpw");
+        userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "newpw");
 
         userCon.close();
         adminCon.close();
@@ -171,13 +172,13 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void illegalGrantRevokeUserTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
 
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         Statement userStmt = userCon.createStatement();
 
         // grant a non-existing user
@@ -309,13 +310,13 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void createDeleteTimeSeriesTest() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
 
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         Statement userStmt = userCon.createStatement();
 
         // grant and revoke the user the privilege to create time series
@@ -395,13 +396,13 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void insertQueryTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
 
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         Statement userStmt = userCon.createStatement();
 
         adminStmt.execute("GRANT USER tempuser PRIVILEGES 'SET_STORAGE_GROUP' ON root.a");
@@ -457,13 +458,13 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void rolePrivilegeTest() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
 
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         Statement userStmt = userCon.createStatement();
 
         boolean caught = false;
@@ -513,8 +514,8 @@ public class IoTDBAuthorizationTest {
     @Test
     @Ignore
     public void authPerformanceTest() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER tempuser temppw");
@@ -525,7 +526,7 @@ public class IoTDBAuthorizationTest {
             adminStmt.execute("GRANT USER tempuser PRIVILEGES 'INSERT_TIMESERIES' ON root.a.b" + i);
         }
 
-        Connection userCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "tempuser", "temppw");
+        Connection userCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "tempuser", "temppw");
         Statement userStmt = userCon.createStatement();
 
         int insertCnt = 2000000;
@@ -556,8 +557,8 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListUser() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         try {
@@ -611,8 +612,8 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListRole() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         try {
@@ -663,8 +664,8 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListUserPrivileges() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER user1 password1");
@@ -727,8 +728,8 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListRolePrivileges() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE ROLE role1");
@@ -776,8 +777,8 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListUserRoles() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE USER chenduxiu orange");
@@ -824,8 +825,8 @@ public class IoTDBAuthorizationTest {
 
     @Test
     public void testListRoleUsers() throws SQLException, ClassNotFoundException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
-        Connection adminCon = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+        Class.forName(Config.JDBC_DRIVER_NAME);
+        Connection adminCon = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
         Statement adminStmt = adminCon.createStatement();
 
         adminStmt.execute("CREATE ROLE dalao");

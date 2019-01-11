@@ -40,9 +40,9 @@ import static org.mockito.Mockito.when;
  * CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE;
  */
 
-public class TsfileDatabaseMetadataTest {
+public class IoTDBDatabaseMetadataTest {
     @Mock
-    private TsfileConnection connection;
+    private IoTDBConnection connection;
 
     @Mock
     private TSIService.Iface client;
@@ -57,7 +57,7 @@ public class TsfileDatabaseMetadataTest {
     @Before
     public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(connection.getMetaData()).thenReturn(new TsfileDatabaseMetadata(connection, client));
+        when(connection.getMetaData()).thenReturn(new IoTDBDatabaseMetadata(connection, client));
 
         when(client.fetchMetadata(any(TSFetchMetadataReq.class))).thenReturn(fetchMetadataResp);
         when(fetchMetadataResp.getStatus()).thenReturn(Status_SUCCESS);
@@ -83,7 +83,7 @@ public class TsfileDatabaseMetadataTest {
                 "root.vehicle.d0.s1,\n" +
                 "root.vehicle.d0.s2,\n";
         try {
-            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogColumn, "root", null, null);
+            ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogColumn, "root", null, null);
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             int colCount = resultSetMetaData.getColumnCount();
             StringBuilder resultStr = new StringBuilder();
@@ -117,7 +117,7 @@ public class TsfileDatabaseMetadataTest {
         String standard = "Column,\n" +
                 "root.vehicle.d0,\n";
         try {
-            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDevice, "vehicle", null, null);
+            ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogDevice, "vehicle", null, null);
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             int colCount = resultSetMetaData.getColumnCount();
             StringBuilder resultStr = new StringBuilder();
@@ -171,7 +171,7 @@ public class TsfileDatabaseMetadataTest {
                 "root.vehicle.d0.s1,root.vehicle,INT64,RLE,\n" +
                 "root.vehicle.d0.s2,root.vehicle,FLOAT,RLE,\n";
         try {
-            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, "root", null, null);
+            ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogTimeseries, "root", null, null);
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             int colCount = resultSetMetaData.getColumnCount();
             StringBuilder resultStr = new StringBuilder();
@@ -211,12 +211,12 @@ public class TsfileDatabaseMetadataTest {
         String standard = "DataType,\n" +
                 "INT32,\n";
         try {
-            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogTimeseries, "root.vehicle.d0.s0", null, null);
+            ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogTimeseries, "root.vehicle.d0.s0", null, null);
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             StringBuilder resultStr = new StringBuilder();
             resultStr.append(resultSetMetaData.getColumnName(3)).append(",\n");
             while (resultSet.next()) {
-                resultStr.append(resultSet.getString(TsfileMetadataResultSet.GET_STRING_TIMESERIES_DATATYPE)).append(",");
+                resultStr.append(resultSet.getString(IoTDBMetadataResultSet.GET_STRING_TIMESERIES_DATATYPE)).append(",");
                 resultStr.append("\n");
             }
             Assert.assertEquals(resultStr.toString(), standard);
@@ -238,7 +238,7 @@ public class TsfileDatabaseMetadataTest {
         String standard = "Storage Group,\n" +
                 "root.vehicle,\n";
         try {
-            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogStorageGroup, null, null, null);
+            ResultSet resultSet = databaseMetaData.getColumns(Constant.CatalogStorageGroup, null, null, null);
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             int colCount = resultSetMetaData.getColumnCount();
             StringBuilder resultStr = new StringBuilder();
@@ -293,7 +293,7 @@ public class TsfileDatabaseMetadataTest {
 
         when(fetchMetadataResp.getMetadataInJson()).thenReturn(metadataInJson);
 
-        String res = ((TsfileDatabaseMetadata)databaseMetaData).getMetadataInJson();
+        String res = ((IoTDBDatabaseMetadata)databaseMetaData).getMetadataInJson();
         assertEquals(metadataInJson, res);
     }
 }

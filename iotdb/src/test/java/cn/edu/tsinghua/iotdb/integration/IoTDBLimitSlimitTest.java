@@ -1,7 +1,7 @@
 package cn.edu.tsinghua.iotdb.integration;
 
-import cn.edu.tsinghua.iotdb.jdbc.TsfileDatabaseMetadata;
-import cn.edu.tsinghua.iotdb.jdbc.TsfileJDBCConfig;
+import cn.edu.tsinghua.iotdb.jdbc.IoTDBDatabaseMetadata;
+import cn.edu.tsinghua.iotdb.jdbc.Config;
 import cn.edu.tsinghua.iotdb.service.IoTDB;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
 import org.junit.AfterClass;
@@ -146,13 +146,13 @@ public class IoTDBLimitSlimitTest {
     }
 
     private void executeSQL(String[] sqls) throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
             String result = "";
             Long now_start = 0L;
             boolean cmp = false;
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             for (String sql : sqls) {
                 //System.out.println("----" + sql);
                 if (cmp) {
@@ -160,7 +160,7 @@ public class IoTDBLimitSlimitTest {
                     cmp = false;
                 } else if (sql.equals("SHOW TIMESERIES")) {
                     DatabaseMetaData data = connection.getMetaData();
-                    result = ((TsfileDatabaseMetadata) data).getMetadataInJson();
+                    result = ((IoTDBDatabaseMetadata) data).getMetadataInJson();
                     cmp = true;
                 } else {
                     if (sql.contains("NOW()") && now_start == 0L) {
@@ -208,10 +208,10 @@ public class IoTDBLimitSlimitTest {
     }
 
     private static void insertData() throws ClassNotFoundException, SQLException {
-        Class.forName(TsfileJDBCConfig.JDBC_DRIVER_NAME);
+        Class.forName(Config.JDBC_DRIVER_NAME);
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:tsfile://127.0.0.1:6667/", "root", "root");
+            connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
             Statement statement = connection.createStatement();
             for (String sql : insertSqls) {
                 statement.execute(sql);

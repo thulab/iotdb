@@ -2,12 +2,12 @@ package cn.edu.tsinghua.iotdb.jdbc;
 
 import java.sql.SQLException;
 
-public class TsfileSQLException extends SQLException{
+public class IoTDBSQLException extends SQLException{
 	private String errorMessage;
 	
 	private static final long serialVersionUID = -3306001287342258977L;
 
-	public TsfileSQLException(String reason){
+	public IoTDBSQLException(String reason){
 		super(reason);
 	}
 	

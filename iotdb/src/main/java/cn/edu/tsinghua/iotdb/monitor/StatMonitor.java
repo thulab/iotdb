@@ -2,8 +2,8 @@ package cn.edu.tsinghua.iotdb.monitor;
 
 import cn.edu.tsinghua.iotdb.concurrent.IoTDBThreadPoolFactory;
 import cn.edu.tsinghua.iotdb.concurrent.ThreadName;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
 import cn.edu.tsinghua.iotdb.exception.*;
 import cn.edu.tsinghua.iotdb.metadata.MManager;
@@ -57,7 +57,7 @@ public class StatMonitor implements IService{
     private StatMonitor() {
         MManager mManager = MManager.getInstance();
         statisticMap = new HashMap<>();
-        TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+        IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
         statMonitorDetectFreqSec = config.statMonitorDetectFreqSec;
         statMonitorRetainIntervalSec = config.statMonitorRetainIntervalSec;
         backLoopPeriod = config.backLoopPeriodSec;
@@ -330,7 +330,7 @@ public class StatMonitor implements IService{
 	@Override
 	public void start() throws StartupException {
 		try {
-			if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
+			if (IoTDBDescriptor.getInstance().getConfig().enableStatMonitor){
 				activate();
 			}
 		} catch (Exception e) {
@@ -341,7 +341,7 @@ public class StatMonitor implements IService{
 
 	@Override
 	public void stop() {
-		if (TsfileDBDescriptor.getInstance().getConfig().enableStatMonitor){
+		if (IoTDBDescriptor.getInstance().getConfig().enableStatMonitor){
 			close();
 		}
 	}

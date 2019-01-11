@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class TsfileMetadataResultSet extends TsfileQueryResultSet {
+public class IoTDBMetadataResultSet extends IoTDBQueryResultSet {
 
 	private Iterator<?> columnItr;
 
@@ -37,7 +37,7 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
     	/**
      	* Constructor used for the result of DatabaseMetadata.getColumns()
      	*/
-		public TsfileMetadataResultSet(List<String> columns, Set<String> storageGroupSet,
+		public IoTDBMetadataResultSet(List<String> columns, Set<String> storageGroupSet,
 									   List<List<String>> showTimeseriesList) throws SQLException {
 			if (columns != null) {
 				type = MetadataType.COLUMN;
@@ -182,7 +182,7 @@ public class TsfileMetadataResultSet extends TsfileQueryResultSet {
 
 	@Override
 	public ResultSetMetaData getMetaData() throws SQLException {
-		return new TsfileMetadataResultMetadata(showLabels);
+		return new IoTDBMetadataResultMetadata(showLabels);
 	}
 
 	@Override

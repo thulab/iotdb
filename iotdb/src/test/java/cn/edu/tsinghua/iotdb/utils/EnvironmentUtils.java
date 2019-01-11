@@ -4,8 +4,8 @@ import cn.edu.tsinghua.iotdb.auth.AuthException;
 import cn.edu.tsinghua.iotdb.auth.authorizer.IAuthorizer;
 import cn.edu.tsinghua.iotdb.auth.authorizer.LocalFileAuthorizer;
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
-import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+import cn.edu.tsinghua.iotdb.conf.IoTDBConfig;
+import cn.edu.tsinghua.iotdb.conf.IoTDBDescriptor;
 import cn.edu.tsinghua.iotdb.engine.cache.RowGroupBlockMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.cache.TsFileMetaDataCache;
 import cn.edu.tsinghua.iotdb.engine.filenode.FileNodeManager;
@@ -38,7 +38,7 @@ public class EnvironmentUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentUtils.class);
 
-	private static TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
+	private static IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 	private static Directories directories = Directories.getInstance();
 	private static TSFileConfig tsfileConfig = TSFileDescriptor.getInstance().getConfig();
 

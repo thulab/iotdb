@@ -1,16 +1,16 @@
 package cn.edu.tsinghua.iotdb.jdbc;
 
-public class TsfileJDBCConfig {
+public class Config {
 	/**
 	 * The required prefix for the connection URL.
 	 */
-	public static final String TSFILE_URL_PREFIX = "jdbc:tsfile://";
+	public static final String IOTDB_URL_PREFIX = "jdbc:iotdb://";
 
-	public static final String TSFILE_DEFAULT_HOST = "localhost";
+	public static final String IOTDB_DEFAULT_HOST = "localhost";
 	/**
 	 * If host is provided, without a port.
 	 */
-	public static final int TSFILE_DEFAULT_PORT = 6667;
+	public static final int IOTDB_DEFAULT_PORT = 6667;
 
 	/**
 	 * tsfile's default series name
@@ -29,6 +29,6 @@ public class TsfileJDBCConfig {
 	public static int fetchSize = 10000;
 	public static int connectionTimeoutInMs = 0;
 
-	public static String JDBC_DRIVER_NAME = "cn.edu.tsinghua.iotdb.jdbc.TsfileDriver";
+	public static String JDBC_DRIVER_NAME = "cn.edu.tsinghua.iotdb.jdbc.IoTDBDriver";
 	
 }
