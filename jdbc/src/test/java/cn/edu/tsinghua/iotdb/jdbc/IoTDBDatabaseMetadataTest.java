@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  * (1) get all columns' name under a given path,
  * e.g., databaseMetaData.getColumns("col", "root", null, null);
  * (2) get all devices under a given column
- * e.g., databaseMetaData.getColumns(“device", "vehicle", null, null);
+ * e.g., databaseMetaData.getColumns("device", "vehicle", null, null);
  * (3) show timeseries path
  * e.g., databaseMetaData.getColumns("ts", "root.vehicle.d0.s0", null, null);
  * (4) show storage group

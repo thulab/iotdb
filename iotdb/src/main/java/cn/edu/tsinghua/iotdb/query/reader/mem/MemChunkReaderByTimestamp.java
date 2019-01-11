@@ -46,7 +46,7 @@ public class MemChunkReaderByTimestamp implements EngineReaderByTimeStamp {
 
     }
 
-    //TODO maybe an optimization : change timeValuePairIterator to list, using binary search
+    //TODO consider change timeValuePairIterator to List structure, and use binary search instead of sequential search
     @Override
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         while (hasNext()) {
