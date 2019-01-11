@@ -1,16 +1,15 @@
 package cn.edu.tsinghua.tsfile.write.chunk;
 
-import cn.edu.tsinghua.tsfile.utils.PublicBAOS;
 import cn.edu.tsinghua.tsfile.compress.Compressor;
+import cn.edu.tsinghua.tsfile.exception.write.PageException;
 import cn.edu.tsinghua.tsfile.file.header.PageHeader;
 import cn.edu.tsinghua.tsfile.file.metadata.enums.CompressionType;
 import cn.edu.tsinghua.tsfile.file.metadata.statistics.Statistics;
+import cn.edu.tsinghua.tsfile.utils.PublicBAOS;
 import cn.edu.tsinghua.tsfile.write.schema.MeasurementSchema;
-import cn.edu.tsinghua.tsfile.exception.write.PageException;
 import cn.edu.tsinghua.tsfile.write.writer.TsFileIOWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.nio.ch.DirectBuffer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -85,31 +84,17 @@ public class ChunkBuffer {
         if(compressor.getType().equals(CompressionType.UNCOMPRESSED)) {
             compressedSize=data.remaining();
         }else{
-            if (data.isDirect()) {
-                if (compressedData == null || compressedData.remaining() < maxSize) {
-                    if (compressedData != null) {
-                        ((DirectBuffer) compressedData).cleaner().clean();
-                    }
-                    compressedData = ByteBuffer.allocateDirect(maxSize);
-                }
-                try {
-                    compressedSize = compressor.compress(data, compressedData);
-                } catch (IOException e) {
-                    throw new PageException(
-                            "Error when writing a page, " + e.getMessage());
-                }
-            } else {
-                if (compressedBytes == null || compressedBytes.length < compressor.getMaxBytesForCompression(uncompressedSize)) {
-                    compressedBytes = new byte[compressor.getMaxBytesForCompression(uncompressedSize)];
-                }
-                try {
-                    compressedPosition = 0;
-                    compressedSize = compressor.compress(data.array(), data.position(), data.remaining(), compressedBytes);
-                } catch (IOException e) {
-                    throw new PageException(
-                            "Error when writing a page, " + e.getMessage());
-                }
-            }
+           // data is never a directByteBuffer now.
+           if (compressedBytes == null || compressedBytes.length < compressor.getMaxBytesForCompression(uncompressedSize)) {
+               compressedBytes = new byte[compressor.getMaxBytesForCompression(uncompressedSize)];
+           }
+           try {
+               compressedPosition = 0;
+               compressedSize = compressor.compress(data.array(), data.position(), data.remaining(), compressedBytes);
+           } catch (IOException e) {
+               throw new PageException(
+                       "Error when writing a page, " + e.getMessage());
+           }
         }
 
         int headerSize=0;
