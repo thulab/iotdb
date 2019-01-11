@@ -51,7 +51,7 @@ public class PerformanceTest {
         // this test write 1000000 * 3 logs and report elapsed time
         if (skip)
             return;
-        int[] batchSizes = new int[]{100, 500, 1000, 5000, 10000};
+        int[] batchSizes = new int[]{10000};
         int oldBatchSize = config.flushWalThreshold;
         for (int j = 0; j < batchSizes.length; j++) {
             config.flushWalThreshold = batchSizes[j];

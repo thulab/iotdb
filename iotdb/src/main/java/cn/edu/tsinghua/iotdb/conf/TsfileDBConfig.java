@@ -36,18 +36,30 @@ public class TsfileDBConfig {
 	 * operations
 	 */
 	public long flushWalPeriodInMs = 10000;
+
+	/**
+	 * The cycle when write ahead log is periodically forced to be written to disk(in
+	 * milliseconds) It is possible to lose at most force_wal_period_in_ms ms
+	 * operations
+     * If set to 0 it means force after every each write
+	 */
+	public long forceWalPeriodInMs = 10;
+
 	/**
 	 * Data directory
 	 */
 	public String dataDir = null;
+
 	/**
 	 * System directory
 	 */
 	public String sysDir = null;
+
 	/**
 	 * Wal directory
 	 */
 	public String walDir = null;
+
 	/**
 	 * Data directory of Overflow data
 	 */

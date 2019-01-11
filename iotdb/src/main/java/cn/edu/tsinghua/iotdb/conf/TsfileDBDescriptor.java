@@ -91,6 +91,7 @@ public class TsfileDBDescriptor {
 
 			conf.flushWalThreshold = Integer.parseInt(properties.getProperty("flush_wal_threshold", conf.flushWalThreshold+""));
 			conf.flushWalPeriodInMs = Integer.parseInt(properties.getProperty("flush_wal_period_in_ms", conf.flushWalPeriodInMs+""));
+			conf.forceWalPeriodInMs = Integer.parseInt(properties.getProperty("force_wal_period_in_ms", conf.forceWalPeriodInMs+""));
 			
 			conf.dataDir = properties.getProperty("data_dir", conf.dataDir);
 			conf.bufferWriteDirs = properties.getProperty("tsfile_dir", conf.default_tsfile_dir).split(",");

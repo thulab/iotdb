@@ -15,6 +15,7 @@ public enum ThreadName {
     STAT_MONITOR("StatMonitor-ServerServiceImpl"),
     FLUSH_SERVICE("Flush-ServerServiceImpl"),
     WAL_DAEMON("IoTDB-MultiFileLogNodeManager-Sync-Thread"),
+    WAL_FORCE_DAEMON("IoTDB-MultiFileLogNodeManager-Force-Thread"),
     INDEX_SERVICE("Index-ServerServiceImpl");
     
     private String name;

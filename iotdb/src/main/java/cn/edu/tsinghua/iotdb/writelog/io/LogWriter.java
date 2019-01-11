@@ -1,5 +1,8 @@
 package cn.edu.tsinghua.iotdb.writelog.io;
 
+import cn.edu.tsinghua.iotdb.conf.TsfileDBConfig;
+import cn.edu.tsinghua.iotdb.conf.TsfileDBDescriptor;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,9 +17,15 @@ public class LogWriter implements ILogWriter {
     private File logFile;
     private FileChannel outputStream;
     private CRC32 checkSummer = new CRC32();
+    private TsfileDBConfig config = TsfileDBDescriptor.getInstance().getConfig();
 
     public LogWriter(String logFilePath) {
         logFile = new File(logFilePath);
+    }
+
+    @Override
+    public void force() throws IOException {
+        outputStream.force(true);
     }
 
     @Override
@@ -37,7 +46,9 @@ public class LogWriter implements ILogWriter {
         }
         buffer.flip();
         outputStream.write(buffer);
-        outputStream.force(true);
+        if(config.forceWalPeriodInMs==0) {
+            outputStream.force(true);
+        }
     }
 
     @Override
