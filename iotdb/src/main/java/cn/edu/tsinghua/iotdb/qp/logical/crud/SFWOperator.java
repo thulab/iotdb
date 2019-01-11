@@ -23,8 +23,9 @@ public abstract class SFWOperator extends RootOperator {
 
     public void setSelectOperator(SelectOperator sel) {
         this.selectOperator = sel;
-        if(!sel.getAggregations().isEmpty())
+        if(!sel.getAggregations().isEmpty()) {
             hasAggregation = true;
+        }
     }
 
     public void setFromOperator(FromOperator from) {
@@ -54,8 +55,9 @@ public abstract class SFWOperator extends RootOperator {
      */
     public List<Path> getSelectedPaths() {
         List<Path> suffixPaths = null;
-        if (selectOperator != null)
+        if (selectOperator != null) {
             suffixPaths = selectOperator.getSuffixPaths();
+        }
         return suffixPaths;
     }
 

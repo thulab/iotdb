@@ -83,7 +83,7 @@ public class WriteLogNodeTest {
         assertEquals(bwInsertPlan.getTime(), bwInsertPlan2.getTime());
         assertEquals(bwInsertPlan.getValues(), bwInsertPlan2.getValues());
         assertEquals(bwInsertPlan.getPaths(), bwInsertPlan2.getPaths());
-        assertEquals(bwInsertPlan.getDeltaObject(), bwInsertPlan2.getDeltaObject());
+        assertEquals(bwInsertPlan.getDeviceId(), bwInsertPlan2.getDeviceId());
 
         logSize = raf.readInt();
         checksum = raf.readLong();

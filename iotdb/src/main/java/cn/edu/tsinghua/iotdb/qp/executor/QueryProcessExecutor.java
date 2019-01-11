@@ -43,70 +43,6 @@ public abstract class QueryProcessExecutor {
 		throw new UnsupportedOperationException();
 	}
 
-	//process MultiQueryPlan
-//	public QueryDataSet processQuery(PhysicalPlan plan) throws QueryProcessorException, IOException, FileNodeManagerException {
-//////		if(plan instanceof IndexQueryPlan){
-//////			return ((IndexQueryPlan) plan).fetchQueryDateSet(getFetchSize());
-//////		}
-////
-////		if(plan instanceof MultiQueryPlan) {
-////			MultiQueryPlan mergeQuery = (MultiQueryPlan) plan;
-////			List<SingleQueryPlan> selectPlans = mergeQuery.getSingleQueryPlans();
-////
-////			switch (mergeQuery.getType()) {
-////				case GROUPBY:
-////					return new QueryDataSetIterator(mergeQuery.getPaths(), getFetchSize(),
-////							mergeQuery.getAggregations(), getFilterStructure(selectPlans),
-////							mergeQuery.getUnit(), mergeQuery.getOrigin(), mergeQuery.getIntervals(), this);
-////
-////				case AGGREGATION:
-////					try {
-////						return aggregate(getAggrePair(mergeQuery.getPaths(), mergeQuery.getAggregations()), getFilterStructure(selectPlans));
-////					} catch (Exception e) {
-////						throw new QueryProcessorException("meet error in get QueryDataSet because " + e.getMessage());
-////					}
-////				case FILL:
-////					try {
-////						return fill(mergeQuery.getPaths(), mergeQuery.getQueryTime(), mergeQuery.getFillType());
-////					} catch (Exception e) {
-////						throw new QueryProcessorException("meet error in get QueryDataSet because " + e.getMessage());
-////					}
-////				default:
-////					throw new UnsupportedOperationException();
-////			}
-////		} else {
-////			return processQuery(plan);
-////		}
-////	}
-
-
-
-
-	//TODO 改 aggres 的结构
-	private List<Pair<Path, String>> getAggrePair(List<Path> paths, List<String> aggregations) {
-		List<Pair<Path, String>> aggres = new ArrayList<>();
-		for(int i = 0; i < paths.size(); i++) {
-			if(paths.size() == aggregations.size()) {
-				aggres.add(new Pair<>(paths.get(i), aggregations.get(i)));
-			} else {
-				aggres.add(new Pair<>(paths.get(i), aggregations.get(0)));
-			}
-		}
-		return aggres;
-	}
-
-
-
-//	private List<FilterStructure> getFilterStructure(List<SingleQueryPlan> selectPlans) {
-//		List<FilterStructure> filterStructures = new ArrayList<>();
-//		for(SingleQueryPlan selectPlan: selectPlans) {
-//			FilterExpression[] expressions = selectPlan.getFilters();
-//			FilterStructure filterStructure = new FilterStructure(expressions[0], expressions[1], expressions[2]);
-//			filterStructures.add(filterStructure);
-//		}
-//		return filterStructures;
-//	}
-
 	public void setFetchSize(int fetchSize) {
 		this.fetchSize.set(fetchSize);
 	}
@@ -124,10 +60,6 @@ public abstract class QueryProcessExecutor {
 	public abstract QueryDataSet groupBy(List<Pair<Path, String>> aggres, IExpression expression,
 										 long unit, long origin, List<Pair<Long, Long>> intervals, int fetchSize)
 			throws ProcessorException, IOException, PathErrorException;
-
-//	public abstract QueryDataSet fill(List<Path> fillPaths, long queryTime, Map<TSDataType, IFill> fillType)
-//			throws ProcessorException, IOException, PathErrorException;
-
 
 	/**
 	 * executeWithGlobalTimeFilter update command and return whether the operator is successful.
@@ -208,8 +140,8 @@ public abstract class QueryProcessExecutor {
 	/**
 	 * executeWithGlobalTimeFilter insert command and return whether the operator is successful.
 	 *
-	 * @param deltaObject
-	 *            deltaObject to be inserted
+	 * @param deviceId
+	 *            deviceId to be inserted
 	 * @param insertTime
 	 *            - it's time point but not a range
 	 * @param measurementList
@@ -218,7 +150,7 @@ public abstract class QueryProcessExecutor {
 	 * 			  values to be inserted
 	 * @return - Operate Type.
 	 */
-	public abstract int multiInsert(String deltaObject, long insertTime, List<String> measurementList,
+	public abstract int multiInsert(String deviceId, long insertTime, List<String> measurementList,
 									List<String> insertValues) throws ProcessorException;
 
 

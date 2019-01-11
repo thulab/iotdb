@@ -209,8 +209,9 @@ public class PhysicalGenerator {
         } else if (queryOperator.isFill()) {
             queryPlan = new FillQueryPlan();
             FilterOperator timeFilter = queryOperator.getFilterOperator();
-            if (!timeFilter.isSingle())
+            if (!timeFilter.isSingle()) {
                 throw new QueryProcessorException("Slice query must select a single time point");
+            }
             long time = Long.parseLong(((BasicFunctionOperator) timeFilter).getValue());
             ((FillQueryPlan) queryPlan).setQueryTime(time);
             ((FillQueryPlan) queryPlan).setFillType(queryOperator.getFillTypes());

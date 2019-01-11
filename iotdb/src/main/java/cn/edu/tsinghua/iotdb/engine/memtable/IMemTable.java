@@ -14,11 +14,11 @@ public interface IMemTable {
 
     Map<String, Map<String, IWritableMemChunk>> getMemTableMap();
 
-    void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue);
+    void write(String deviceId, String measurement, TSDataType dataType, long insertTime, String insertValue);
 
     int size();
 
-    TimeValuePairSorter query(String deltaObject, String measurement,TSDataType dataType);
+    TimeValuePairSorter query(String deviceId, String measurement,TSDataType dataType);
 
     /**
      * release all the memory resources

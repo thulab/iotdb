@@ -33,7 +33,7 @@ public class OverflowFileSizeControlTest {
     private Map<String, Action> parameters = null;
     private OverflowProcessor ofprocessor = null;
     private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
-    private String deltaObjectId = "root.vehicle.d0";
+    private String deviceId = "root.vehicle.d0";
     private String[] measurementIds = { "s0", "s1", "s2", "s3", "s4", "s5" };
     private TSDataType[] dataTypes = { TSDataType.INT32, TSDataType.INT64, TSDataType.FLOAT, TSDataType.DOUBLE,
             TSDataType.BOOLEAN, TSDataType.TEXT };
@@ -99,9 +99,9 @@ public class OverflowFileSizeControlTest {
             return;
         // insert one point: int
         try {
-            ofprocessor = new OverflowProcessor(nameSpacePath, parameters,FileSchemaUtils.constructFileSchema(deltaObjectId));
+            ofprocessor = new OverflowProcessor(nameSpacePath, parameters,FileSchemaUtils.constructFileSchema(deviceId));
             for (int i = 1; i < 1000000; i++) {
-            	TSRecord record = new TSRecord(i, deltaObjectId);
+            	TSRecord record = new TSRecord(i, deviceId);
             	record.addTuple(DataPoint.getDataPoint(dataTypes[0], measurementIds[0], String.valueOf(i)));
                 if(i % 100000 == 0)
                     System.out.println(i + "," + MemUtils.bytesCntToStr(ofprocessor.getFileSize()));

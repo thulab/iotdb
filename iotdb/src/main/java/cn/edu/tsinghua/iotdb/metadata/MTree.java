@@ -408,11 +408,11 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Extract the DeltaObjectType from given seriesPath
+	 * Extract the deviceType from given seriesPath
 	 * 
-	 * @return String represents the DeltaObjectId
+	 * @return String represents the deviceId
 	 */
-	public String getDeltaObjectTypeByPath(String path) throws PathErrorException {
+	public String getDeviceTypeByPath(String path) throws PathErrorException {
 		checkPath(path);
 		String[] nodes = path.split(separator);
 		if (nodes.length < 2) {
@@ -636,9 +636,9 @@ public class MTree implements Serializable {
 	}
 
 	/**
-	 * Get all DeltaObject type in current Metadata Tree
+	 * Get all device type in current Metadata Tree
 	 * 
-	 * @return a list contains all distinct DeltaObject type
+	 * @return a list contains all distinct device type
 	 */
 	public ArrayList<String> getAllType() {
 		ArrayList<String> res = new ArrayList<>();
@@ -678,28 +678,28 @@ public class MTree implements Serializable {
 	 * Get all delta objects for given type
 	 * 
 	 * @param type
-	 *            DeltaObject Type
+	 *            device Type
 	 * @return a list contains all delta objects for given type
 	 * @throws PathErrorException
 	 */
-	public ArrayList<String> getDeltaObjectForOneType(String type) throws PathErrorException {
+	public ArrayList<String> getDeviceForOneType(String type) throws PathErrorException {
 		String path = getRoot().getName() + "." + type;
 		checkPath(path);
-		HashMap<String, Integer> deltaObjectMap = new HashMap<>();
+		HashMap<String, Integer> deviceMap = new HashMap<>();
 		MNode typeNode = getRoot().getChild(type);
-		putDeltaObjectToMap(getRoot().getName(), typeNode, deltaObjectMap);
+		putDeviceToMap(getRoot().getName(), typeNode, deviceMap);
 		ArrayList<String> res = new ArrayList<>();
-		res.addAll(deltaObjectMap.keySet());
+		res.addAll(deviceMap.keySet());
 		return res;
 	}
 
-	private void putDeltaObjectToMap(String path, MNode node, HashMap<String, Integer> deltaObjectMap) {
+	private void putDeviceToMap(String path, MNode node, HashMap<String, Integer> deviceMap) {
 		if (node.isLeaf()) {
-			deltaObjectMap.put(path, 1);
+			deviceMap.put(path, 1);
 		} else {
 			for (String child : node.getChildren().keySet()) {
 				String newPath = path + "." + node.getName();
-				putDeltaObjectToMap(newPath, node.getChildren().get(child), deltaObjectMap);
+				putDeviceToMap(newPath, node.getChildren().get(child), deviceMap);
 			}
 		}
 	}

@@ -152,9 +152,9 @@ public class MGraph implements Serializable {
 		}
 
 	/**
-	 * Get all DeltaObject type in current Metadata Tree
-	 * @return a HashMap contains all distinct DeltaObject type separated by
-	 *         DeltaObject Type
+	 * Get all deviceId type in current Metadata Tree
+	 * @return a HashMap contains all distinct deviceId type separated by
+	 *         deviceId Type
 	 */
 	public Map<String, List<ColumnSchema>> getSchemaForAllType() throws PathErrorException {
 		Map<String, List<ColumnSchema>> res = new HashMap<>();
@@ -165,18 +165,18 @@ public class MGraph implements Serializable {
 		return res;
 	}
 
-	private ArrayList<String> getDeltaObjectForOneType(String type) throws PathErrorException {
-		return mTree.getDeltaObjectForOneType(type);
+	private ArrayList<String> getDeviceForOneType(String type) throws PathErrorException {
+		return mTree.getDeviceForOneType(type);
 	}
 
 	/**
-	 * Get all delta objects group by DeltaObject type
+	 * Get all delta objects group by deviceId type
 	 */
-	public Map<String, List<String>> getDeltaObjectForAllType() throws PathErrorException {
+	public Map<String, List<String>> getDeviceForAllType() throws PathErrorException {
 		Map<String, List<String>> res = new HashMap<>();
 		ArrayList<String> types = mTree.getAllType();
 		for (String type : types) {
-			res.put(type, getDeltaObjectForOneType(type));
+			res.put(type, getDeviceForOneType(type));
 		}
 		return res;
 	}
@@ -187,8 +187,8 @@ public class MGraph implements Serializable {
 	 */
 	public Metadata getMetadata() throws PathErrorException {
 		Map<String, List<ColumnSchema>> seriesMap = getSchemaForAllType();
-		Map<String, List<String>> deltaObjectMap = getDeltaObjectForAllType();
-		Metadata metadata = new Metadata(seriesMap, deltaObjectMap);
+		Map<String, List<String>> deviceIdMap = getDeviceForAllType();
+		Metadata metadata = new Metadata(seriesMap, deviceIdMap);
 		return metadata;
 	}
 
@@ -208,7 +208,7 @@ public class MGraph implements Serializable {
 	public ArrayList<ColumnSchema> getSchemaForOneType(String path) throws PathErrorException {
 		return mTree.getSchemaForOneType(path);
 	}
-	
+
 	/**
 	 * <p>Get all ColumnSchemas for the filenode seriesPath</p>
 	 * @param path
@@ -217,11 +217,11 @@ public class MGraph implements Serializable {
 	public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path){
 		return mTree.getSchemaForOneFileNode(path);
 	}
-	
+
 	public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path){
 		return mTree.getSchemaMapForOneFileNode(path);
 	}
-	
+
 	public Map<String, Integer> getNumSchemaMapForOneFileNode(String path){
 		return mTree.getNumSchemaMapForOneFileNode(path);
 	}
@@ -250,7 +250,7 @@ public class MGraph implements Serializable {
 	public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
 		return mTree.getFileNameByPathWithCheck(node, path);
 	}
-	
+
 	public boolean checkFileNameByPath(String path){
 		return mTree.checkFileNameByPath(path);
 	}
@@ -275,11 +275,11 @@ public class MGraph implements Serializable {
 	}
 
 	/**
-	 * Extract the DeltaObjectId from given seriesPath
-	 * @return String represents the DeltaObjectId
+	 * Extract the deviceId from given seriesPath
+	 * @return String represents the deviceId
 	 */
-	public String getDeltaObjectTypeByPath(String path) throws PathErrorException {
-		return mTree.getDeltaObjectTypeByPath(path);
+	public String getDeviceTypeByPath(String path) throws PathErrorException {
+		return mTree.getDeviceTypeByPath(path);
 	}
 	
 	/**

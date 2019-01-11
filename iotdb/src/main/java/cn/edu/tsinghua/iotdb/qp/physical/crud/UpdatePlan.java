@@ -67,8 +67,9 @@ public class UpdatePlan extends PhysicalPlan {
     @Override
     public List<Path> getPaths() {
         List<Path> ret = new ArrayList<>();
-        if (path != null)
+        if (path != null) {
             ret.add(path);
+        }
         return ret;
     }
 
@@ -86,8 +87,12 @@ public class UpdatePlan extends PhysicalPlan {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UpdatePlan that = (UpdatePlan) o;
         return Objects.equals(intervals, that.intervals) &&
                 Objects.equals(value, that.value) &&

@@ -38,14 +38,14 @@ public class ConcreteLogReplayer implements LogReplayer {
 
     private void multiInsert(InsertPlan insertPlan)
             throws PathErrorException, FileNodeManagerException {
-        String deltaObject = insertPlan.getDeltaObject();
+        String deviceId = insertPlan.getDeviceId();
         long insertTime = insertPlan.getTime();
         List<String> measurementList = insertPlan.getMeasurements();
         List<String> insertValues = insertPlan.getValues();
 
-        TSRecord tsRecord = new TSRecord(insertTime, deltaObject);
+        TSRecord tsRecord = new TSRecord(insertTime, deviceId);
         for (int i = 0; i < measurementList.size(); i++) {
-            String pathKey = deltaObject + "." + measurementList.get(i);
+            String pathKey = deviceId + "." + measurementList.get(i);
             TSDataType dataType = MManager.getInstance().getSeriesType(pathKey);
             String value = insertValues.get(i);
             DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementList.get(i), value);

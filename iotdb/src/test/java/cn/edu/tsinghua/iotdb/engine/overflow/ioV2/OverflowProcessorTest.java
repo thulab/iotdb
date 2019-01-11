@@ -63,7 +63,7 @@ public class OverflowProcessorTest {
 		assertEquals(false, processor.isFlush());
 		assertEquals(false, processor.isMerge());
 		// write update data
-		OverflowSeriesDataSource overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1,
+		OverflowSeriesDataSource overflowSeriesDataSource = processor.query(OverflowTestUtils.deviceId1,
 				OverflowTestUtils.measurementId1, null, OverflowTestUtils.dataType1);
 		assertEquals(OverflowTestUtils.dataType1, overflowSeriesDataSource.getDataType());
 		assertEquals(true, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
@@ -77,7 +77,7 @@ public class OverflowProcessorTest {
 		OverflowTestUtils.produceInsertData(processor);
 		TimeUnit.SECONDS.sleep(1);
 		assertEquals(false, processor.isFlush());
-		overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+		overflowSeriesDataSource = processor.query(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1,
 				null, OverflowTestUtils.dataType1);
 		assertEquals(OverflowTestUtils.dataType1, overflowSeriesDataSource.getDataType());
 		assertEquals(false, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
@@ -91,14 +91,14 @@ public class OverflowProcessorTest {
 		}
 		// flush synchronously
 		processor.close();
-		overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+		overflowSeriesDataSource = processor.query(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1,
 				null, OverflowTestUtils.dataType1);
 		assertEquals(true, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
 		assertEquals(1, overflowSeriesDataSource.getOverflowInsertFileList().size());
 		assertEquals(1,
 				overflowSeriesDataSource.getOverflowInsertFileList().get(0).getChunkMetaDataList().size());
 		processor.switchWorkToMerge();
-		overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+		overflowSeriesDataSource = processor.query(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1,
 				null, OverflowTestUtils.dataType1);
 		assertEquals(2, overflowSeriesDataSource.getOverflowInsertFileList().size());
 		assertEquals(1,
@@ -107,11 +107,11 @@ public class OverflowProcessorTest {
 				overflowSeriesDataSource.getOverflowInsertFileList().get(1).getChunkMetaDataList().size());
 		assertEquals(true, processor.isMerge());
 		assertEquals(false, processor.canBeClosed());
-		MergeSeriesDataSource mergeSeriesDataSource = processor.queryMerge(OverflowTestUtils.deltaObjectId1,
+		MergeSeriesDataSource mergeSeriesDataSource = processor.queryMerge(OverflowTestUtils.deviceId1,
 				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType1);
 		assertEquals(1, mergeSeriesDataSource.getInsertFile().getChunkMetaDataList().size());
 		processor.switchMergeToWork();
-		overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+		overflowSeriesDataSource = processor.query(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1,
 				null, OverflowTestUtils.dataType1);
 		processor.close();
 		processor.clear();
@@ -123,7 +123,7 @@ public class OverflowProcessorTest {
 		OverflowTestUtils.produceInsertData(processor);
 		processor.close();
 		// test query
-		OverflowSeriesDataSource overflowSeriesDataSource = processor.query(OverflowTestUtils.deltaObjectId1,
+		OverflowSeriesDataSource overflowSeriesDataSource = processor.query(OverflowTestUtils.deviceId1,
 				OverflowTestUtils.measurementId1, null, OverflowTestUtils.dataType2);
 		assertEquals(true, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
 		assertEquals(0,
@@ -140,10 +140,10 @@ public class OverflowProcessorTest {
 			TimeUnit.SECONDS.sleep(1);
 		} catch (InterruptedException e) {
 		}
-		processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1, null,
+		processor.query(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1, null,
 				OverflowTestUtils.dataType1);
 		OverflowTestUtils.produceInsertData(processor);
-		processor.query(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1, null,
+		processor.query(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1, null,
 				OverflowTestUtils.dataType2);
 		processor.close();
 		processor.clear();
@@ -161,7 +161,7 @@ public class OverflowProcessorTest {
 		// recovery query
 		assertEquals(false, overflowProcessor.isMerge());
 		overflowProcessor.switchWorkToMerge();
-		OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.query(OverflowTestUtils.deltaObjectId1,
+		OverflowSeriesDataSource overflowSeriesDataSource = overflowProcessor.query(OverflowTestUtils.deviceId1,
 				OverflowTestUtils.measurementId1, null, OverflowTestUtils.dataType1);
 		assertEquals(true, overflowSeriesDataSource.getReadableMemChunk().isEmpty());
 		assertEquals(2, overflowSeriesDataSource.getOverflowInsertFileList().size());

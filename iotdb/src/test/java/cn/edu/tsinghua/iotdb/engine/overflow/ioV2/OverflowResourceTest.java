@@ -46,11 +46,11 @@ public class OverflowResourceTest {
 	public void testOverflowInsert() throws IOException {
 		OverflowTestUtils.produceInsertData(support);
 		work.flush(OverflowTestUtils.getFileSchema(), support.getMemTabale(), null, "processorName");
-		List<ChunkMetaData> chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1,
+		List<ChunkMetaData> chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deviceId1,
 				OverflowTestUtils.measurementId1, OverflowTestUtils.dataType2);
 		assertEquals(0, chunkMetaDatas.size());
 		work.appendMetadatas();
-		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1,
 				OverflowTestUtils.dataType1);
 		assertEquals(1, chunkMetaDatas.size());
 		ChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
@@ -65,7 +65,7 @@ public class OverflowResourceTest {
 		fileOutputStream.close();
 		assertEquals(originlength + 20, insertFile.length());
 		work = new OverflowResource(filePath, dataPath);
-		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deltaObjectId1, OverflowTestUtils.measurementId1,
+		chunkMetaDatas = work.getInsertMetadatas(OverflowTestUtils.deviceId1, OverflowTestUtils.measurementId1,
 				OverflowTestUtils.dataType1);
 		assertEquals(1, chunkMetaDatas.size());
 		chunkMetaData = chunkMetaDatas.get(0);

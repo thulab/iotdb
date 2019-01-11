@@ -20,8 +20,9 @@ public class LoadDataPlan extends PhysicalPlan {
     @Override
     public List<Path> getPaths() {
         List<Path> ret = new ArrayList<>();
-        if (measureType != null)
+        if (measureType != null) {
             ret.add(new Path(measureType));
+        }
         return ret;
     }
 

@@ -27,8 +27,9 @@ public class RemoveNotOptimizer implements IFilterOptimizer {
     }
 
     private FilterOperator removeNot(FilterOperator filter) throws LogicalOperatorException {
-        if (filter.isLeaf())
+        if (filter.isLeaf()) {
             return filter;
+        }
         int tokenInt = filter.getTokenIntType();
         switch (tokenInt) {
             case KW_AND:

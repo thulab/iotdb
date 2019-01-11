@@ -46,20 +46,6 @@ public class PreviousFill extends IFill {
     } else {
       beforeTime = queryTime - beforeRange;
     }
-
-//        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
-//        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), queryTime, true);
-//        SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
-//
-//        String deltaObjectId = path.getDevice();
-//        String measurementId = path.getMeasurement();
-//        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("PreviousFill", -1);
-//
-//        FillRecordReader recordReader = (FillRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
-//                fillTimeFilter, null, null, recordReaderPrefix, ReaderType.FILL);
-//
-//        recordReader.getPreviousFillResult(result, fillTimeFilter, beforeTime, queryTime);
-
     return result;
   }
 }

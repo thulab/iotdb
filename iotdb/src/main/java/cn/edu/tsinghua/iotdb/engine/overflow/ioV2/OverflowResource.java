@@ -129,27 +129,27 @@ public class OverflowResource {
 			insertIO.getReader().read(bytesPosition, 0, POS_LENGTH);
 			position = BytesUtils.bytesToLong(bytesPosition);
 			for (ChunkGroupMetaData rowGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
-				String deltaObjectId = rowGroupMetaData.getDeviceID();
-				if (!insertMetadatas.containsKey(deltaObjectId)) {
-					insertMetadatas.put(deltaObjectId, new HashMap<>());
+				String deviceId = rowGroupMetaData.getDeviceID();
+				if (!insertMetadatas.containsKey(deviceId)) {
+					insertMetadatas.put(deviceId, new HashMap<>());
 				}
 				for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
 					String measurementId = chunkMetaData.getMeasurementUID();
-					if (!insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-						insertMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+					if (!insertMetadatas.get(deviceId).containsKey(measurementId)) {
+						insertMetadatas.get(deviceId).put(measurementId, new ArrayList<>());
 					}
-					insertMetadatas.get(deltaObjectId).get(measurementId).add(0, chunkMetaData);
+					insertMetadatas.get(deviceId).get(measurementId).add(0, chunkMetaData);
 				}
 			}
 		}
 	}
 
-	public List<ChunkMetaData> getInsertMetadatas(String deltaObjectId, String measurementId,
+	public List<ChunkMetaData> getInsertMetadatas(String deviceId, String measurementId,
 												  TSDataType dataType) {
 		List<ChunkMetaData> chunkMetaDatas = new ArrayList<>();
-		if (insertMetadatas.containsKey(deltaObjectId)) {
-			if (insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-				for (ChunkMetaData chunkMetaData : insertMetadatas.get(deltaObjectId).get(measurementId)) {
+		if (insertMetadatas.containsKey(deviceId)) {
+			if (insertMetadatas.get(deviceId).containsKey(measurementId)) {
+				for (ChunkMetaData chunkMetaData : insertMetadatas.get(deviceId).get(measurementId)) {
 					// filter
 					if (chunkMetaData.getTsDataType().equals(dataType)) {
 						chunkMetaDatas.add(chunkMetaData);
@@ -251,13 +251,13 @@ public class OverflowResource {
 		}
 	}
 
-	private void addInsertMetadata(String deltaObjectId, String measurementId, ChunkMetaData chunkMetaData) {
-		if (!insertMetadatas.containsKey(deltaObjectId)) {
-			insertMetadatas.put(deltaObjectId, new HashMap<>());
+	private void addInsertMetadata(String deviceId, String measurementId, ChunkMetaData chunkMetaData) {
+		if (!insertMetadatas.containsKey(deviceId)) {
+			insertMetadatas.put(deviceId, new HashMap<>());
 		}
-		if (!insertMetadatas.get(deltaObjectId).containsKey(measurementId)) {
-			insertMetadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+		if (!insertMetadatas.get(deviceId).containsKey(measurementId)) {
+			insertMetadatas.get(deviceId).put(measurementId, new ArrayList<>());
 		}
-		insertMetadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
+		insertMetadatas.get(deviceId).get(measurementId).add(chunkMetaData);
 	}
 }

@@ -66,19 +66,6 @@ public class LinearFill extends IFill{
       afterTime = queryTime + afterRange;
     }
 
-//        SingleSeriesFilterExpression leftFilter = gtEq(timeFilterSeries(), beforeTime, true);
-//        SingleSeriesFilterExpression rightFilter = ltEq(timeFilterSeries(), afterTime, true);
-//        SingleSeriesFilterExpression fillTimeFilter = (SingleSeriesFilterExpression) and(leftFilter, rightFilter);
-//
-//        String deltaObjectId = path.getDevice();
-//        String measurementId = path.getMeasurement();
-//        String recordReaderPrefix = ReadCachePrefix.addQueryPrefix("LinearFill", -1);
-//
-//        FillRecordReader recordReader = (FillRecordReader) RecordReaderFactory.getInstance().getRecordReader(deltaObjectId, measurementId,
-//                fillTimeFilter, null, null, recordReaderPrefix, ReaderType.FILL);
-//
-//        recordReader.getLinearFillResult(result, fillTimeFilter, beforeTime, queryTime, afterTime);
-
     return result;
   }
 }

@@ -28,8 +28,9 @@ public class QueryPlan extends PhysicalPlan{
      */
     public void checkPaths(QueryProcessExecutor executor) throws QueryProcessorException {
         for (Path path : paths) {
-            if (!executor.judgePathExists(path))
+            if (!executor.judgePathExists(path)) {
                 throw new QueryProcessorException("Path doesn't exist: " + path);
+            }
         }
     }
 

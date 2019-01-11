@@ -19,14 +19,6 @@ public class OverflowIOTest {
 	private OverflowIO io = null;
 	private TsFileInput reader = null;
 
-	private String deltaObjectId1 = "d1";
-	private String deltaObjectId2 = "d2";
-	private String measurementId1 = "s1";
-	private String measurementId2 = "s2";
-	private TSDataType dataType1 = TSDataType.INT32;
-	private TSDataType dataType2 = TSDataType.FLOAT;
-	private float error = 0.000001f;
-
 	@Before
 	public void setUp() throws Exception {
 		io = new OverflowIO(new OverflowIO.OverflowReadWriter(overflowFilePath));

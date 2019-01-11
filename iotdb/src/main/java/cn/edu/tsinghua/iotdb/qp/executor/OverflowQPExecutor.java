@@ -69,7 +69,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                 return flag;
             case INSERT:
                 InsertPlan insert = (InsertPlan) plan;
-                int result = multiInsert(insert.getDeltaObject(), insert.getTime(), insert.getMeasurements(),
+                int result = multiInsert(insert.getDeviceId(), insert.getTime(), insert.getMeasurements(),
                         insert.getValues());
                 return result > 0;
             case CREATE_ROLE:
@@ -113,17 +113,20 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     public TSDataType getSeriesType(Path path) throws PathErrorException {
-        if (path.equals(SQLConstant.RESERVED_TIME))
+        if (path.equals(SQLConstant.RESERVED_TIME)) {
             return TSDataType.INT64;
-        if (path.equals(SQLConstant.RESERVED_FREQ))
+        }
+        if (path.equals(SQLConstant.RESERVED_FREQ)) {
             return TSDataType.FLOAT;
+        }
         return MManager.getInstance().getSeriesType(path.getFullPath());
     }
 
     @Override
     public boolean judgePathExists(Path path) {
-        if (SQLConstant.isReservedPath(path))
+        if (SQLConstant.isReservedPath(path)) {
             return true;
+        }
         return MManager.getInstance().pathExist(path.getFullPath());
     }
 
@@ -148,17 +151,17 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     public boolean update(Path path, long startTime, long endTime, String value) throws ProcessorException {
-        String deltaObjectId = path.getDevice();
+        String deviceId = path.getDevice();
         String measurementId = path.getMeasurement();
         try {
-            String fullPath = deltaObjectId + "." + measurementId;
+            String fullPath = deviceId + "." + measurementId;
             if (!mManager.pathExist(fullPath)) {
                 throw new ProcessorException(String.format("Timeseries %s does not exist.", fullPath));
             }
             mManager.getFileNameByPath(fullPath);
             TSDataType dataType = mManager.getSeriesType(fullPath);
             value = checkValue(dataType, value);
-            fileNodeManager.update(deltaObjectId, measurementId, startTime, endTime, dataType, value);
+            fileNodeManager.update(deviceId, measurementId, startTime, endTime, dataType, value);
             return true;
         } catch (PathErrorException e) {
             throw new ProcessorException(e.getMessage());
@@ -170,7 +173,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     protected boolean delete(Path path, long timestamp) throws ProcessorException {
-        String deltaObjectId = path.getDevice();
+        String deviceId = path.getDevice();
         String measurementId = path.getMeasurement();
         try {
             if (!mManager.pathExist(path.getFullPath())) {
@@ -178,7 +181,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
             }
             mManager.getFileNameByPath(path.getFullPath());
             TSDataType type = mManager.getSeriesType(path.getFullPath());
-            fileNodeManager.delete(deltaObjectId, measurementId, timestamp, type);
+            fileNodeManager.delete(deviceId, measurementId, timestamp, type);
             return true;
         } catch (PathErrorException e) {
             throw new ProcessorException(e.getMessage());
@@ -191,12 +194,12 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     @Override
     // return 0: failed, 1: Overflow, 2:Bufferwrite
     public int insert(Path path, long timestamp, String value) throws ProcessorException {
-        String deltaObjectId = path.getDevice();
+        String deviceId = path.getDevice();
         String measurementId = path.getMeasurement();
 
         try {
-            TSDataType type = mManager.getSeriesType(deltaObjectId + "," + measurementId);
-            TSRecord tsRecord = new TSRecord(timestamp, deltaObjectId);
+            TSDataType type = mManager.getSeriesType(deviceId + "," + measurementId);
+            TSRecord tsRecord = new TSRecord(timestamp, deviceId);
             DataPoint dataPoint = DataPoint.getDataPoint(type, measurementId, value);
             tsRecord.addTuple(dataPoint);
             return fileNodeManager.insert(tsRecord, false);
@@ -210,20 +213,20 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     }
 
     @Override
-    public int multiInsert(String deltaObject, long insertTime, List<String> measurementList, List<String> insertValues)
+    public int multiInsert(String deviceId, long insertTime, List<String> measurementList, List<String> insertValues)
             throws ProcessorException {
         try {
-            TSRecord tsRecord = new TSRecord(insertTime, deltaObject);
+            TSRecord tsRecord = new TSRecord(insertTime, deviceId);
 
-            MNode node = mManager.getNodeByDeltaObjectIDFromCache(deltaObject);
+            MNode node = mManager.getNodeByDeviceIdFromCache(deviceId);
 
             for (int i = 0; i < measurementList.size(); i++) {
                 if (!node.hasChild(measurementList.get(i))) {
-                    throw new ProcessorException(String.format("Current deltaObjectId[%s] does not contains measurement:%s", deltaObject, measurementList.get(i)));
+                    throw new ProcessorException(String.format("Current deviceId[%s] does not contains measurement:%s", deviceId, measurementList.get(i)));
                 }
                 MNode measurementNode = node.getChild(measurementList.get(i));
                 if (!measurementNode.isLeaf()) {
-                    throw new ProcessorException(String.format("Current Path is not leaf node. %s.%s", deltaObject, measurementList.get(i)));
+                    throw new ProcessorException(String.format("Current Path is not leaf node. %s.%s", deviceId, measurementList.get(i)));
                 }
 
                 TSDataType dataType = measurementNode.getSchema().dataType;
@@ -285,24 +288,29 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
         try {
             switch (authorType) {
                 case UPDATE_USER:
-                    if (!authorizer.updateUserPassword(userName, newPassword))
+                    if (!authorizer.updateUserPassword(userName, newPassword)) {
                         throw new ProcessorException("password " + newPassword + " is illegal");
+                    }
                     return true;
                 case CREATE_USER:
-                    if (!authorizer.createUser(userName, password))
+                    if (!authorizer.createUser(userName, password)) {
                         throw new ProcessorException("User " + userName + " already exists");
+                    }
                     return true;
                 case CREATE_ROLE:
-                    if (!authorizer.createRole(roleName))
+                    if (!authorizer.createRole(roleName)) {
                         throw new ProcessorException("Role " + roleName + " already exists");
+                    }
                     return true;
                 case DROP_USER:
-                    if (!authorizer.deleteUser(userName))
+                    if (!authorizer.deleteUser(userName)) {
                         throw new ProcessorException("User " + userName + " does not exist");
+                    }
                     return true;
                 case DROP_ROLE:
-                    if (!authorizer.deleteRole(roleName))
+                    if (!authorizer.deleteRole(roleName)) {
                         throw new ProcessorException("Role " + roleName + " does not exist");
+                    }
                     return true;
                 case GRANT_ROLE:
                     for (int i : permissions) {
@@ -313,43 +321,50 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     return true;
                 case GRANT_USER:
                     for (int i : permissions) {
-                        if (!authorizer.grantPrivilegeToUser(userName, nodeName.getFullPath(), i))
+                        if (!authorizer.grantPrivilegeToUser(userName, nodeName.getFullPath(), i)) {
                             throw new ProcessorException("User " + userName + " already has " + PrivilegeType.values()[i] + " on " + nodeName.getFullPath());
+                        }
                     }
                     return true;
                 case GRANT_ROLE_TO_USER:
-                    if (!authorizer.grantRoleToUser(roleName, userName))
+                    if (!authorizer.grantRoleToUser(roleName, userName)) {
                         throw new ProcessorException("User " + userName + " already has role " + roleName);
+                    }
                     return true;
                 case REVOKE_USER:
                     for (int i : permissions) {
-                        if (!authorizer.revokePrivilegeFromUser(userName, nodeName.getFullPath(), i))
+                        if (!authorizer.revokePrivilegeFromUser(userName, nodeName.getFullPath(), i)) {
                             throw new ProcessorException("User " + userName + " does not have " + PrivilegeType.values()[i] + " on " + nodeName);
+                        }
                     }
                     return true;
                 case REVOKE_ROLE:
                     for (int i : permissions) {
-                        if (!authorizer.revokePrivilegeFromRole(roleName, nodeName.getFullPath(), i))
+                        if (!authorizer.revokePrivilegeFromRole(roleName, nodeName.getFullPath(), i)) {
                             throw new ProcessorException("Role " + roleName + " does not have " + PrivilegeType.values()[i] + " on " + nodeName);
+                        }
                     }
                     return true;
                 case REVOKE_ROLE_FROM_USER:
-                    if (!authorizer.revokeRoleFromUser(roleName, userName))
+                    if (!authorizer.revokeRoleFromUser(roleName, userName)) {
                         throw new ProcessorException("User " + userName + " does not have role " + roleName);
+                    }
                     return true;
                 case LIST_ROLE:
                     roleList = authorizer.listAllRoles();
                     msg = new StringBuilder("Roles are : [ \n");
-                    for (String role : roleList)
+                    for (String role : roleList) {
                         msg.append(role).append("\n");
+                    }
                     msg.append("]");
                     // TODO : use a more elegant way to pass message.
                     throw new ProcessorException(msg.toString());
                 case LIST_USER:
                     userList = authorizer.listAllUsers();
                     msg = new StringBuilder("Users are : [ \n");
-                    for (String user : userList)
+                    for (String user : userList) {
                         msg.append(user).append("\n");
+                    }
                     msg.append("]");
                     throw new ProcessorException(msg.toString());
                 case LIST_ROLE_USERS:
@@ -361,8 +376,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     msg = new StringBuilder("Users are : [ \n");
                     for (String userN : userList) {
                         User userObj = authorizer.getUser(userN);
-                        if (userObj != null && userObj.hasRole(roleName))
+                        if (userObj != null && userObj.hasRole(roleName)) {
                             msg.append(userN).append("\n");
+                        }
                     }
                     msg.append("]");
                     throw new ProcessorException(msg.toString());
@@ -383,8 +399,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     role = authorizer.getRole(roleName);
                     if (role != null) {
                         for (PathPrivilege pathPrivilege : role.privilegeList) {
-                            if (nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
+                            if (nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path)) {
                                 msg.append(pathPrivilege.toString());
+                            }
                         }
                     } else {
                         throw new ProcessorException("No such role : " + roleName);
@@ -393,13 +410,15 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                     throw new ProcessorException(msg.toString());
                 case LIST_USER_PRIVILEGE:
                     user = authorizer.getUser(userName);
-                    if (user == null)
+                    if (user == null) {
                         throw new ProcessorException("No such user : " + userName);
+                    }
                     msg = new StringBuilder("Privileges are : [ \n");
                     msg.append("From itself : {\n");
                     for (PathPrivilege pathPrivilege : user.privilegeList) {
-                        if (nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
+                        if (nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path)) {
                             msg.append(pathPrivilege.toString());
+                        }
                     }
                     msg.append("}\n");
                     for (String roleN : user.roleList) {
@@ -407,8 +426,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
                         if (role != null) {
                             msg.append("From role ").append(roleN).append(" : {\n");
                             for (PathPrivilege pathPrivilege : role.privilegeList) {
-                                if (nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path))
+                                if (nodeName == null || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path)) {
                                     msg.append(pathPrivilege.toString());
+                                }
                             }
                             msg.append("}\n");
                         }

@@ -257,18 +257,18 @@ public class FileNodeManager implements IStatistic, IService {
 			LOGGER.error("The insert time lt 0, {}.", tsRecord);
 			throw new FileNodeManagerException("The insert time lt 0, the tsrecord is " + tsRecord);
 		}
-		String deltaObjectId = tsRecord.deviceId;
+		String deviceId = tsRecord.deviceId;
 
 		if (!isMonitor) {
 			statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_POINTS.name())
 					.addAndGet(tsRecord.dataPointList.size());
 		}
 
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+		FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, true);
 		int insertType = 0;
 
 		try {
-			long lastUpdateTime = fileNodeProcessor.getFlushLastUpdateTime(deltaObjectId);
+			long lastUpdateTime = fileNodeProcessor.getFlushLastUpdateTime(deviceId);
 			String filenodeName = fileNodeProcessor.getProcessorName();
 			if (timestamp < lastUpdateTime) {
 				// get overflow processor
@@ -304,7 +304,7 @@ public class FileNodeManager implements IStatistic, IService {
 				// write overflow data
 				try {
 					overflowProcessor.insert(tsRecord);
-					fileNodeProcessor.changeTypeToChanged(deltaObjectId, timestamp);
+					fileNodeProcessor.changeTypeToChanged(deviceId, timestamp);
 					fileNodeProcessor.setOverflowed(true);
 					// if (shouldMerge) {
 					// LOGGER.info(
@@ -369,8 +369,8 @@ public class FileNodeManager implements IStatistic, IService {
 					throw new FileNodeManagerException(e);
 				}
 				// Write data
-				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId);
-				fileNodeProcessor.setLastUpdateTime(deltaObjectId, timestamp);
+				fileNodeProcessor.setIntervalFileNodeStartTime(deviceId);
+				fileNodeProcessor.setLastUpdateTime(deviceId, timestamp);
 				try {
 					bufferWriteProcessor.write(tsRecord);
 				} catch (BufferWriteProcessorException e) {
@@ -412,13 +412,13 @@ public class FileNodeManager implements IStatistic, IService {
 		return insertType;
 	}
 
-	public void update(String deltaObjectId, String measurementId, long startTime, long endTime, TSDataType type,
+	public void update(String deviceId, String measurementId, long startTime, long endTime, TSDataType type,
 			String v) throws FileNodeManagerException {
 
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+		FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, true);
 		try {
 
-			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
+			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deviceId);
 			if (startTime > lastUpdateTime) {
 				LOGGER.warn("The update range is error, startTime {} is great than lastUpdateTime {}", startTime,
 						lastUpdateTime);
@@ -438,16 +438,16 @@ public class FileNodeManager implements IStatistic, IService {
 						filenodeName, startTime, endTime);
 				throw new FileNodeManagerException(e);
 			}
-			overflowProcessor.update(deltaObjectId, measurementId, startTime, endTime, type, v);
+			overflowProcessor.update(deviceId, measurementId, startTime, endTime, type, v);
 			// change the type of tsfile to overflowed
-			fileNodeProcessor.changeTypeToChanged(deltaObjectId, startTime, endTime);
+			fileNodeProcessor.changeTypeToChanged(deviceId, startTime, endTime);
 			fileNodeProcessor.setOverflowed(true);
 
 			// write wal
 			try {
 				if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 					overflowProcessor.getLogNode().write(
-							new UpdatePlan(startTime, endTime, v, new Path(deltaObjectId + "." + measurementId)));
+							new UpdatePlan(startTime, endTime, v, new Path(deviceId + "." + measurementId)));
 				}
 			} catch (IOException e) {
 				throw new FileNodeManagerException(e);
@@ -463,12 +463,12 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public void delete(String deltaObjectId, String measurementId, long timestamp, TSDataType type)
+	public void delete(String deviceId, String measurementId, long timestamp, TSDataType type)
 			throws FileNodeManagerException {
 
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+		FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, true);
 		try {
-			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deltaObjectId);
+			long lastUpdateTime = fileNodeProcessor.getLastUpdateTime(deviceId);
 			// no tsfile data, the delete operation is invalid
 			if (lastUpdateTime == -1) {
 				LOGGER.warn("The last update time is -1, delete overflow is invalid, the filenode processor is {}",
@@ -487,9 +487,9 @@ public class FileNodeManager implements IStatistic, IService {
 							filenodeName, timestamp);
 					throw new FileNodeManagerException(e);
 				}
-				overflowProcessor.delete(deltaObjectId, measurementId, timestamp, type);
+				overflowProcessor.delete(deviceId, measurementId, timestamp, type);
 				// change the type of tsfile to overflowed
-				fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
+				fileNodeProcessor.changeTypeToChangedForDelete(deviceId, timestamp);
 				fileNodeProcessor.setOverflowed(true);
 				// if (shouldMerge) {
 				// LOGGER.info(
@@ -498,14 +498,14 @@ public class FileNodeManager implements IStatistic, IService {
 				// filenodeName);
 				// fileNodeProcessor.submitToMerge();
 				// }
-				fileNodeProcessor.changeTypeToChangedForDelete(deltaObjectId, timestamp);
+				fileNodeProcessor.changeTypeToChangedForDelete(deviceId, timestamp);
 				fileNodeProcessor.setOverflowed(true);
 
 				// write wal
 				try {
 					if (TsfileDBDescriptor.getInstance().getConfig().enableWal) {
 						overflowProcessor.getLogNode()
-								.write(new DeletePlan(timestamp, new Path(deltaObjectId + "." + measurementId)));
+								.write(new DeletePlan(timestamp, new Path(deviceId + "." + measurementId)));
 					}
 				} catch (IOException e) {
 					throw new FileNodeManagerException(e);
@@ -516,8 +516,8 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public int beginQuery(String deltaObjectId) throws FileNodeManagerException {
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+	public int beginQuery(String deviceId) throws FileNodeManagerException {
+		FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, true);
 		try {
 			LOGGER.debug("Get the FileNodeProcessor: filenode is {}, begin query.",
 					fileNodeProcessor.getProcessorName());
@@ -530,9 +530,9 @@ public class FileNodeManager implements IStatistic, IService {
 
 	public QueryDataSource query(SingleSeriesExpression seriesExpression)
 			throws FileNodeManagerException {
-		String deltaObjectId = seriesExpression.getSeriesPath().getDevice();
+		String deviceId = seriesExpression.getSeriesPath().getDevice();
 		String measurementId = seriesExpression.getSeriesPath().getMeasurement();
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, false);
+		FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, false);
 		LOGGER.debug("Get the FileNodeProcessor: filenode is {}, query.", fileNodeProcessor.getProcessorName());
 		try {
 			QueryDataSource queryDataSource = null;
@@ -542,14 +542,14 @@ public class FileNodeManager implements IStatistic, IService {
 					fileNodeProcessor.getOverflowProcessor(fileNodeProcessor.getProcessorName());
 				} catch (IOException e) {
 					LOGGER.error("Get the overflow processor failed, the filenode is {}, query is {},{}",
-							fileNodeProcessor.getProcessorName(), deltaObjectId, measurementId);
+							fileNodeProcessor.getProcessorName(), deviceId, measurementId);
 					throw new FileNodeManagerException(e);
 				}
 			}
 			try {
-				queryDataSource = fileNodeProcessor.query(deltaObjectId, measurementId, seriesExpression.getFilter());
+				queryDataSource = fileNodeProcessor.query(deviceId, measurementId, seriesExpression.getFilter());
 			} catch (FileNodeProcessorException e) {
-				LOGGER.error("Query error: the deltaObjectId {}, the measurementId {}", deltaObjectId, measurementId,
+				LOGGER.error("Query error: the deviceId {}, the measurementId {}", deviceId, measurementId,
 						e);
 				throw new FileNodeManagerException(e);
 			}
@@ -560,9 +560,9 @@ public class FileNodeManager implements IStatistic, IService {
 		}
 	}
 
-	public void endQuery(String deltaObjectId, int token) throws FileNodeManagerException {
+	public void endQuery(String deviceId, int token) throws FileNodeManagerException {
 
-		FileNodeProcessor fileNodeProcessor = getProcessor(deltaObjectId, true);
+		FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, true);
 		try {
 			LOGGER.debug("Get the FileNodeProcessor: {}, filenode is {}, end query.",
 					fileNodeProcessor.getProcessorName());

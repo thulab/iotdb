@@ -17,14 +17,14 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class OFRowGroupListMetadata {
 
-	private String deltaObjectId;
+	private String deviceId;
 	private List<OFSeriesListMetadata> seriesList;
 
 	private OFRowGroupListMetadata() {
 	}
 
-	public OFRowGroupListMetadata(String deltaObjectId) {
-		this.deltaObjectId = deltaObjectId;
+	public OFRowGroupListMetadata(String deviceId) {
+		this.deviceId = deviceId;
 		seriesList  = new ArrayList<>();
 	}
 
@@ -47,17 +47,17 @@ public class OFRowGroupListMetadata {
 
 	@Override
 	public String toString() {
-		return String.format("OFRowGroupListMetadata{ deltaObject id: %s, series Lists: %s }", deltaObjectId,
+		return String.format("OFRowGroupListMetadata{ deviceId id: %s, series Lists: %s }", deviceId,
 				seriesList.toString());
 	}
 
-	public String getDeltaObjectId() {
-		return deltaObjectId;
+	public String getdeviceId() {
+		return deviceId;
 	}
 
 	public int serializeTo(OutputStream outputStream) throws IOException {
 		int byteLen = 0;
-		byteLen += ReadWriteIOUtils.write(deltaObjectId,outputStream);
+		byteLen += ReadWriteIOUtils.write(deviceId,outputStream);
 		int size = seriesList.size();
 		byteLen += ReadWriteIOUtils.write(size,outputStream);
 		for(OFSeriesListMetadata ofSeriesListMetadata:seriesList){
@@ -72,7 +72,7 @@ public class OFRowGroupListMetadata {
 
 	public static OFRowGroupListMetadata deserializeFrom(InputStream inputStream) throws IOException {
 		OFRowGroupListMetadata ofRowGroupListMetadata = new OFRowGroupListMetadata();
-		ofRowGroupListMetadata.deltaObjectId = ReadWriteIOUtils.readString(inputStream);
+		ofRowGroupListMetadata.deviceId = ReadWriteIOUtils.readString(inputStream);
 		int size = ReadWriteIOUtils.readInt(inputStream);
 		List<OFSeriesListMetadata> list = new ArrayList<>();
 		for(int i = 0;i<size;i++){

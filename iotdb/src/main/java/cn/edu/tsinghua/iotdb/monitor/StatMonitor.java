@@ -79,7 +79,7 @@ public class StatMonitor implements IService{
 
     /**
      * @param hashMap       key is statParams name, values is AtomicLong type
-     * @param statGroupDeltaName is the deltaObject seriesPath of this module
+     * @param statGroupDeltaName is the deviceId seriesPath of this module
      * @param curTime       TODO need to be fixed because it may contain overflow
      * @return TSRecord contains the DataPoints of a statGroupDeltaName
      */

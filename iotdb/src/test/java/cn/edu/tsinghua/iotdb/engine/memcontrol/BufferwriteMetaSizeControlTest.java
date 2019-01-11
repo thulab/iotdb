@@ -161,7 +161,7 @@ public class BufferwriteMetaSizeControlTest {
 
 	}
 
-	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String deltaObjectType)
+	private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String deviceType)
 			throws WriteProcessException {
 		JSONArray rowGroup = new JSONArray();
 
@@ -181,7 +181,7 @@ public class BufferwriteMetaSizeControlTest {
 		}
 		JSONObject jsonSchema = new JSONObject();
 		jsonSchema.put(JsonFormatConstant.JSON_SCHEMA, rowGroup);
-		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, deltaObjectType);
+		jsonSchema.put(JsonFormatConstant.DELTA_TYPE, deviceType);
 		return new FileSchema(jsonSchema);
 	}
 }

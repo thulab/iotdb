@@ -114,7 +114,7 @@ public class BufferWriteProcessor extends Processor {
     /**
      * write one data point to the bufferwrite
      *
-     * @param deltaObjectId device name
+     * @param deviceId device name
      * @param measurementId sensor name
      * @param timestamp timestamp of the data point
      * @param dataType the data type of the value
@@ -123,9 +123,9 @@ public class BufferWriteProcessor extends Processor {
      * false -otherwise
      * @throws BufferWriteProcessorException  if a flushing operation occurs and failed.
      */
-    public boolean write(String deltaObjectId, String measurementId, long timestamp, TSDataType dataType, String value)
+    public boolean write(String deviceId, String measurementId, long timestamp, TSDataType dataType, String value)
             throws BufferWriteProcessorException {
-        TSRecord record = new TSRecord(timestamp, deltaObjectId);
+        TSRecord record = new TSRecord(timestamp, deviceId);
         DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, value);
         record.addTuple(dataPoint);
         return write(record);
@@ -180,23 +180,23 @@ public class BufferWriteProcessor extends Processor {
     /**
      * get the one (or two) chunk(s) in the memtable ( and the other one in flushing status and then compact them into one TimeValuePairSorter).
      * Then get its (or their) ChunkMetadata(s).
-     * @param deltaObjectId device id
+     * @param deviceId device id
      * @param measurementId sensor id
      * @param dataType data type
      * @return corresponding chunk data and chunk metadata in memory
      */
-    public Pair<ReadOnlyMemChunk, List<ChunkMetaData>> queryBufferWriteData(String deltaObjectId,
+    public Pair<ReadOnlyMemChunk, List<ChunkMetaData>> queryBufferWriteData(String deviceId,
                                                                                String measurementId, TSDataType dataType) {
         flushQueryLock.lock();
         try {
             MemSeriesLazyMerger memSeriesLazyMerger = new MemSeriesLazyMerger();
             if (isFlush) {
-                memSeriesLazyMerger.addMemSeries(flushMemTable.query(deltaObjectId, measurementId, dataType));
+                memSeriesLazyMerger.addMemSeries(flushMemTable.query(deviceId, measurementId, dataType));
             }
-            memSeriesLazyMerger.addMemSeries(workMemTable.query(deltaObjectId, measurementId, dataType));
+            memSeriesLazyMerger.addMemSeries(workMemTable.query(deviceId, measurementId, dataType));
             ReadOnlyMemChunk timeValuePairSorter = new ReadOnlyMemChunk(dataType, memSeriesLazyMerger);
             return new Pair<>(timeValuePairSorter,
-                    writer.getMetadatas(deltaObjectId, measurementId, dataType));
+                    writer.getMetadatas(deviceId, measurementId, dataType));
         } finally {
             flushQueryLock.unlock();
         }

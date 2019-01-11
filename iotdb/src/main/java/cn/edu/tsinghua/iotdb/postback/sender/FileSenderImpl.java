@@ -319,11 +319,11 @@ public class FileSenderImpl implements FileSender{
 //				input = new TsRandomAccessLocalFileReader(filePath);
 //				cn.edu.tsinghua.tsfile.read.FileReader reader = new cn.edu.tsinghua.tsfile.read.FileReader(
 //						input);
-//				Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
-//				Iterator<String> it = deltaObjectMap.keySet().iterator();
+//				Map<String, TsDevice> deviceIdMap = reader.getFileMetaData().getDeviceMap();
+//				Iterator<String> it = deviceIdMap.keySet().iterator();
 //				while (it.hasNext()) {
 //					String key = it.next(); // key represent device
-//					TsDeltaObject deltaObj = deltaObjectMap.get(key);
+//					TsDevice deltaObj = deviceIdMap.get(key);
 //					String sql = String.format(deleteFormat, key, deltaObj.endTime);
 //					statement.addBatch(sql);
 //					count++;

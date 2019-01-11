@@ -58,6 +58,7 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
         this.isSingle = isSingle;
     }
 
+    @Override
     public int getTokenIntType() {
         return tokenIntType;
     }
@@ -146,10 +147,11 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
 
         for (int i = 1; i < childOperators.size(); i++) {
             currentPair = childOperators.get(i).transformToSingleQueryFilter(executor);
-            if (!path.equals(currentPair.right))
+            if (!path.equals(currentPair.right)) {
                 throw new LogicalOperatorException(
                         ("transformToSingleFilter: paths among children are not inconsistent: one is:"
                                 + path + ",another is:" + currentPair.right));
+            }
             switch (tokenIntType) {
                 case KW_AND:
                     retFilter.setFilter(FilterFactory.and(retFilter.getFilter(), currentPair.left.getFilter()));
@@ -232,8 +234,9 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
         ret.tokenSymbol = tokenSymbol;
         ret.isLeaf = isLeaf;
         ret.isSingle = isSingle;
-        if (singlePath != null)
+        if (singlePath != null) {
             ret.singlePath = singlePath.clone();
+        }
         for (FilterOperator filterOperator : this.childOperators) {
             ret.addChildOperator(filterOperator.clone());
         }

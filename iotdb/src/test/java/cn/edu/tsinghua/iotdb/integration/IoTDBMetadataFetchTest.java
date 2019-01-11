@@ -197,7 +197,7 @@ public class IoTDBMetadataFetchTest {
             databaseMetaData = connection.getMetaData();
 
             AllColumns();
-            DeltaObject();
+            Device();
             ShowTimeseriesPath1();
             ShowTimeseriesPath2();
             ShowStorageGroup();
@@ -241,11 +241,11 @@ public class IoTDBMetadataFetchTest {
     /**
      * get all delta objects under a given column
      */
-    private void DeltaObject() throws SQLException {
+    private void Device() throws SQLException {
         String standard = "Column,\n" +
                 "root.ln.wf01.wt01,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDeltaObject, "ln", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDevice, "ln", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();

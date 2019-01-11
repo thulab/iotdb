@@ -23,7 +23,7 @@ public class RowGroupBlockMetaDataCache {
 	private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
 	private static final int cacheSize = 100;
 
-	/** key: the file path + DeltaObjectId */
+	/** key: the file path + deviceId */
 	private LinkedHashMap<String, TsDeviceMetadata> LRUCache;
 
 	private AtomicLong cacheHintNum = new AtomicLong();
@@ -53,7 +53,7 @@ public class RowGroupBlockMetaDataCache {
 		}
 	}
 
-	/*
+	/**
 	 * the default LRU cache size is 100. The singleton pattern.
 	 */
 	private static class RowGroupBlockMetaDataCacheSingleton {
@@ -69,10 +69,10 @@ public class RowGroupBlockMetaDataCache {
 	}
 
 
-	public TsDeviceMetadata get(String filePath, String deltaObjectId, TsFileMetaData fileMetaData) throws IOException {
-		/** The key(the tsfile path and deltaObjectId) for the LRUCahe */
+	public TsDeviceMetadata get(String filePath, String deviceId, TsFileMetaData fileMetaData) throws IOException {
+		// The key(the tsfile path and deviceId) for the LRUCache
 
-		String jointPath = filePath + deltaObjectId;
+		String jointPath = filePath + deviceId;
 		jointPath = jointPath.intern();
 		synchronized (LRUCache) {
 			cacheRequestNum.incrementAndGet();
@@ -96,7 +96,7 @@ public class RowGroupBlockMetaDataCache {
 				LOGGER.debug("Cache didn't hint: the number of requests for cache is {}", cacheRequestNum.get());
 			}
 			TsDeviceMetadata blockMetaData = TsFileMetadataUtils.getTsRowGroupBlockMetaData(filePath,
-					deltaObjectId, fileMetaData);
+					deviceId, fileMetaData);
 			synchronized (LRUCache) {
 				LRUCache.put(jointPath, blockMetaData);
 				return LRUCache.get(jointPath);

@@ -10,7 +10,7 @@ import cn.edu.tsinghua.tsfile.read.common.Path;
 
 
 public class InsertPlan extends PhysicalPlan {
-	private String deltaObject;
+	private String deviceId;
 	private List<String> measurements;
 	private List<String> values;
     private long time;
@@ -19,19 +19,19 @@ public class InsertPlan extends PhysicalPlan {
     // 1 : BufferWrite Insert  2 : Overflow Insert
     private int insertType;
 
-    public InsertPlan(String deltaObject, long insertTime, List<String> measurementList, List<String> insertValues) {
+    public InsertPlan(String deviceId, long insertTime, List<String> measurementList, List<String> insertValues) {
         super(false, Operator.OperatorType.INSERT);
         this.time = insertTime;
-        this.deltaObject = deltaObject;
+        this.deviceId = deviceId;
         this.measurements = measurementList;
         this.values = insertValues;
     }
 
-    public InsertPlan(int insertType, String deltaObject, long insertTime, List<String> measurementList, List<String> insertValues) {
+    public InsertPlan(int insertType, String deviceId, long insertTime, List<String> measurementList, List<String> insertValues) {
         super(false, Operator.OperatorType.INSERT);
         this.insertType = insertType;
         this.time = insertTime;
-        this.deltaObject = deltaObject;
+        this.deviceId = deviceId;
         this.measurements = measurementList;
         this.values = insertValues;
     }
@@ -49,7 +49,7 @@ public class InsertPlan extends PhysicalPlan {
         List<Path> ret = new ArrayList<>();
         
         for(String m : measurements){
-        	ret.add(new Path(deltaObject + "." + m));
+        	ret.add(new Path(deviceId + "." + m));
         }
         return ret;
     }
@@ -62,12 +62,12 @@ public class InsertPlan extends PhysicalPlan {
 		this.insertType = insertType;
 	}
 
-	public String getDeltaObject() {
-        return this.deltaObject;
+	public String getDeviceId() {
+        return this.deviceId;
     }
 
-    public void setDeltaObject(String deltaObject) {
-        this.deltaObject = deltaObject;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
 	public List<String> getMeasurements() {
@@ -88,11 +88,15 @@ public class InsertPlan extends PhysicalPlan {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         InsertPlan that = (InsertPlan) o;
         return time == that.time &&
-                Objects.equals(deltaObject, that.deltaObject) &&
+                Objects.equals(deviceId, that.deviceId) &&
                 Objects.equals(measurements, that.measurements) &&
                 Objects.equals(values, that.values);
     }

@@ -133,8 +133,9 @@ public class QueryProcessor {
         ConcatPathOptimizer concatPathOptimizer = new ConcatPathOptimizer(executor);
         root = (SFWOperator) concatPathOptimizer.transform(root);
         FilterOperator filter = root.getFilterOperator();
-        if (filter == null)
+        if (filter == null) {
             return root;
+        }
         RemoveNotOptimizer removeNot = new RemoveNotOptimizer();
         filter = removeNot.optimize(filter);
         DNFFilterOptimizer dnf = new DNFFilterOptimizer();

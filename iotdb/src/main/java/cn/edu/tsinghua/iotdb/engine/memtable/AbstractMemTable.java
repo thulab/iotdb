@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public abstract class AbstractMemTable implements IMemTable{
+public abstract class AbstractMemTable implements IMemTable {
 
     @Override
     public Map<String, Map<String, IWritableMemChunk>> getMemTableMap() {
@@ -23,19 +23,18 @@ public abstract class AbstractMemTable implements IMemTable{
      * check whether the given seriesPath is within this memtable.
      *
      * @return true if seriesPath is within this memtable
-     *
      */
-    private boolean checkPath(String deltaObject, String measurement) {
-        return memTableMap.containsKey(deltaObject) &&
-                memTableMap.get(deltaObject).containsKey(measurement);
+    private boolean checkPath(String deviceId, String measurement) {
+        return memTableMap.containsKey(deviceId) &&
+                memTableMap.get(deviceId).containsKey(measurement);
     }
 
-    private IWritableMemChunk createIfNotExistAndGet(String deltaObject, String measurement, TSDataType dataType) {
-        if(!memTableMap.containsKey(deltaObject)) {
-            memTableMap.put(deltaObject, new HashMap<>());
+    private IWritableMemChunk createIfNotExistAndGet(String deviceId, String measurement, TSDataType dataType) {
+        if (!memTableMap.containsKey(deviceId)) {
+            memTableMap.put(deviceId, new HashMap<>());
         }
-        Map<String, IWritableMemChunk> memSeries = memTableMap.get(deltaObject);
-        if(!memSeries.containsKey(measurement)) {
+        Map<String, IWritableMemChunk> memSeries = memTableMap.get(deviceId);
+        if (!memSeries.containsKey(measurement)) {
             memSeries.put(measurement, genMemSeries(dataType));
         }
         return memSeries.get(measurement);
@@ -44,9 +43,9 @@ public abstract class AbstractMemTable implements IMemTable{
     protected abstract IWritableMemChunk genMemSeries(TSDataType dataType);
 
     @Override
-    public void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue) {
-        IWritableMemChunk memSeries = createIfNotExistAndGet(deltaObject, measurement, dataType);
-        memSeries.write(insertTime,insertValue);
+    public void write(String deviceId, String measurement, TSDataType dataType, long insertTime, String insertValue) {
+        IWritableMemChunk memSeries = createIfNotExistAndGet(deviceId, measurement, dataType);
+        memSeries.write(insertTime, insertValue);
     }
 
     @Override
@@ -61,7 +60,7 @@ public abstract class AbstractMemTable implements IMemTable{
     }
 
     @Override
-    public void clear(){
+    public void clear() {
         memTableMap.clear();
     }
 
@@ -72,10 +71,10 @@ public abstract class AbstractMemTable implements IMemTable{
 
 
     @Override
-    public TimeValuePairSorter query(String deltaObject, String measurement, TSDataType dataType) {
-        if(!checkPath(deltaObject,measurement))
+    public TimeValuePairSorter query(String deviceId, String measurement, TSDataType dataType) {
+        if (!checkPath(deviceId, measurement))
             return new WritableMemChunk(dataType);
-        return memTableMap.get(deltaObject).get(measurement);
+        return memTableMap.get(deviceId).get(measurement);
     }
 
 }

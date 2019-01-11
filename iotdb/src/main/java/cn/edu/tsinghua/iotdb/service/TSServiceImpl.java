@@ -221,11 +221,11 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
 				try {
                     			String column = req.getColumnPath();
                     			metadata = MManager.getInstance().getMetadata();
-                    			Map<String, List<String>> deltaObjectMap = metadata.getDeltaObjectMap();
-                    			if (deltaObjectMap == null || !deltaObjectMap.containsKey(column)) {
+                    			Map<String, List<String>> deviceMap = metadata.getDeviceMap();
+                    			if (deviceMap == null || !deviceMap.containsKey(column)) {
                         			resp.setColumnsList(new ArrayList<>());
                     			} else {
-						resp.setColumnsList(deltaObjectMap.get(column));
+						resp.setColumnsList(deviceMap.get(column));
                     			}
                 		} catch (PathErrorException e) {
                     			LOGGER.error("cannot get delta object map", e);

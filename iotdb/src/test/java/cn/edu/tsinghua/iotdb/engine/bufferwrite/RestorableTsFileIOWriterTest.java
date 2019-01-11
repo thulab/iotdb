@@ -190,25 +190,25 @@ public class RestorableTsFileIOWriterTest {
 	public void testFlushAndGetMetadata() throws IOException {
 		writer = new RestorableTsFileIOWriter(processorName, insertPath);
 
-		assertEquals(0, writer.getMetadatas(MemTableTestUtils.deltaObjectId0,
+		assertEquals(0, writer.getMetadatas(MemTableTestUtils.deviceId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 
 		IMemTable memTable = new PrimitiveMemTable();
-		MemTableTestUtils.produceData(memTable, 10, 100, MemTableTestUtils.deltaObjectId0,
+		MemTableTestUtils.produceData(memTable, 10, 100, MemTableTestUtils.deviceId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0);
 
 		MemTableFlushUtil.flushMemTable(MemTableTestUtils.getFileSchema(), writer, memTable);
 		writer.flush();
 
-		assertEquals(0, writer.getMetadatas(MemTableTestUtils.deltaObjectId0,
+		assertEquals(0, writer.getMetadatas(MemTableTestUtils.deviceId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 		writer.appendMetadata();
-		assertEquals(1, writer.getMetadatas(MemTableTestUtils.deltaObjectId0,
+		assertEquals(1, writer.getMetadatas(MemTableTestUtils.deviceId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
-		MemTableTestUtils.produceData(memTable, 200, 300, MemTableTestUtils.deltaObjectId0,
+		MemTableTestUtils.produceData(memTable, 200, 300, MemTableTestUtils.deviceId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0);
 		writer.appendMetadata();
-		assertEquals(1, writer.getMetadatas(MemTableTestUtils.deltaObjectId0,
+		assertEquals(1, writer.getMetadatas(MemTableTestUtils.deviceId0,
 				MemTableTestUtils.measurementId0, MemTableTestUtils.dataType0).size());
 
 		writer.endFile(MemTableTestUtils.getFileSchema());

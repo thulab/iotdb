@@ -72,8 +72,9 @@ public class LogicalGenerator {
      */
     private void analyze(ASTNode astNode) throws QueryProcessorException, ArgsErrorException {
         Token token = astNode.getToken();
-        if (token == null)
+        if (token == null) {
             throw new QueryProcessorException("given token is null");
+        }
         int tokenIntType = token.getType();
         switch (tokenIntType) {
             case TSParser.TOK_INSERT:
@@ -180,8 +181,9 @@ public class LogicalGenerator {
             default:
                 throw new QueryProcessorException("Not supported TSParser type" + tokenIntType);
         }
-        for (Node node : astNode.getChildren())
+        for (Node node : astNode.getChildren()) {
             analyze((ASTNode) node);
+        }
     }
 
     private void analyzeSlimit(ASTNode astNode) throws LogicalOperatorException {
@@ -410,8 +412,9 @@ public class LogicalGenerator {
     }
 
     private void analyzeUpdate(ASTNode astNode) throws QueryProcessorException {
-        if (astNode.getChildCount() > 3)
+        if (astNode.getChildCount() > 3) {
             throw new LogicalOperatorException("UPDATE clause doesn't support multi-update yet.");
+        }
         UpdateOperator updateOp = new UpdateOperator(SQLConstant.TOK_UPDATE);
         initializedOperator = updateOp;
         FromOperator fromOp = new FromOperator(TSParser.TOK_FROM);
@@ -506,16 +509,19 @@ public class LogicalGenerator {
         } else if (tokenIntType == TSParser.TOK_PATH) {
             Path selectPath = parsePath(astNode);
             selectOp.addSelectPath(selectPath);
-        } else
+        } else {
             throw new LogicalOperatorException("children SELECT clause must all be seriesPath like root.a.b, actual:" + astNode.dump());
+        }
         ((SFWOperator) initializedOperator).setSelectOperator(selectOp);
     }
 
     private void analyzeWhere(ASTNode astNode) throws LogicalOperatorException {
-        if (astNode.getType() != TSParser.TOK_WHERE)
+        if (astNode.getType() != TSParser.TOK_WHERE) {
             throw new LogicalOperatorException("given node is not WHERE! please check whether SQL statement is correct.");
-        if (astNode.getChildCount() != 1)
+        }
+        if (astNode.getChildCount() != 1) {
             throw new LogicalOperatorException("where clause has" + astNode.getChildCount() + " child, please check whether SQL grammar is correct.");
+        }
         FilterOperator whereOp = new FilterOperator(SQLConstant.TOK_WHERE);
         ASTNode child = astNode.getChild(0);
         analyzeWhere(child, child.getType(), whereOp);
@@ -569,8 +575,9 @@ public class LogicalGenerator {
     private void analyzeGroupBy(ASTNode astNode) throws LogicalOperatorException {
         SelectOperator selectOp = ((QueryOperator) initializedOperator).getSelectOperator();
 
-        if(selectOp.getSuffixPaths().size() != selectOp.getAggregations().size())
+        if(selectOp.getSuffixPaths().size() != selectOp.getAggregations().size()) {
             throw new LogicalOperatorException("Group by must bind each seriesPath with an aggregation function");
+        }
         ((QueryOperator) initializedOperator).setGroupBy(true);
         int childCount = astNode.getChildCount();
 
@@ -628,8 +635,9 @@ public class LogicalGenerator {
      */
     private void analyzeFill(ASTNode node) throws LogicalOperatorException {
         FilterOperator filterOperator = ((SFWOperator) initializedOperator).getFilterOperator();
-        if(!filterOperator.isLeaf() || filterOperator.getTokenIntType() != SQLConstant.EQUAL)
+        if(!filterOperator.isLeaf() || filterOperator.getTokenIntType() != SQLConstant.EQUAL) {
             throw new LogicalOperatorException("Only \"=\" can be used in fill function");
+        }
 
         Map<TSDataType, IFill> fillTypes = new HashMap<>();
         int childNum = node.getChildCount();
@@ -675,13 +683,15 @@ public class LogicalGenerator {
             case INT64:
             case FLOAT:
             case DOUBLE:
-                if (type != TSParser.TOK_LINEAR && type != TSParser.TOK_PREVIOUS)
+                if (type != TSParser.TOK_LINEAR && type != TSParser.TOK_PREVIOUS) {
                     throw new LogicalOperatorException(String.format("type %s cannot use %s fill function", dataType, TSParser.tokenNames[type]));
+                }
                 return;
             case BOOLEAN:
             case TEXT:
-                if (type != TSParser.TOK_PREVIOUS)
+                if (type != TSParser.TOK_PREVIOUS) {
                     throw new LogicalOperatorException(String.format("type %s cannot use %s fill function", dataType, TSParser.tokenNames[type]));
+                }
         }
     }
 
@@ -711,8 +721,9 @@ public class LogicalGenerator {
 
     private long parseTimeUnit(ASTNode node) throws LogicalOperatorException {
         long timeInterval = Long.valueOf(node.getChild(0).getText());
-        if (timeInterval <= 0)
+        if (timeInterval <= 0) {
             throw new LogicalOperatorException("Interval must more than 0.");
+        }
         String granu = node.getChild(1).getText();
         switch (granu) {
             case "w":
@@ -733,22 +744,26 @@ public class LogicalGenerator {
 
 
     private Pair<Path, String> parseLeafNode(ASTNode node) throws LogicalOperatorException {
-        if (node.getChildCount() != 2)
+        if (node.getChildCount() != 2) {
             throw new LogicalOperatorException("error format in SQL statement, please check whether SQL statement is correct.");
+        }
         ASTNode col = node.getChild(0);
-        if (col.getType() != TSParser.TOK_PATH)
+        if (col.getType() != TSParser.TOK_PATH) {
             throw new LogicalOperatorException("error format in SQL statement, please check whether SQL statement is correct.");
+        }
         Path seriesPath = parsePath(col);
         ASTNode rightKey = node.getChild(1);
         String seriesValue;
-        if (rightKey.getType() == TSParser.TOK_PATH)
+        if (rightKey.getType() == TSParser.TOK_PATH) {
             seriesValue = parsePath(rightKey).getFullPath();
-        else if (rightKey.getType() == TSParser.TOK_DATETIME) {
-            if(!seriesPath.equals(SQLConstant.RESERVED_TIME))
+        } else if (rightKey.getType() == TSParser.TOK_DATETIME) {
+            if(!seriesPath.equals(SQLConstant.RESERVED_TIME)) {
                 throw new LogicalOperatorException("Date can only be used to time");
+            }
             seriesValue = parseTokenTime(rightKey);
-        } else
+        } else {
             seriesValue = rightKey.getText();
+        }
         return new Pair<>(seriesPath, seriesValue);
     }
 
@@ -798,8 +813,9 @@ public class LogicalGenerator {
     }
 
     private String parseStringWithQuoto(String src) throws IllegalASTFormatException {
-        if (src.length() < 3 || src.charAt(0) != '\'' || src.charAt(src.length() - 1) != '\'')
+        if (src.length() < 3 || src.charAt(0) != '\'' || src.charAt(src.length() - 1) != '\'') {
             throw new IllegalASTFormatException("error format for string with quoto:" + src);
+        }
         return src.substring(1, src.length() - 1);
     }
 
@@ -809,11 +825,13 @@ public class LogicalGenerator {
         // be root
         // if (childCount < 3 ||
         // !SQLConstant.ROOT.equals(astNode.getChild(1).getText().toLowerCase()))
-        if (childCount < 3 || !SQLConstant.ROOT.equals(astNode.getChild(1).getText()))
+        if (childCount < 3 || !SQLConstant.ROOT.equals(astNode.getChild(1).getText())) {
             throw new IllegalASTFormatException("data load command: child count < 3\n" + astNode.dump());
+        }
         String csvPath = astNode.getChild(0).getText();
-        if (csvPath.length() < 3 || csvPath.charAt(0) != '\'' || csvPath.charAt(csvPath.length() - 1) != '\'')
+        if (csvPath.length() < 3 || csvPath.charAt(0) != '\'' || csvPath.charAt(csvPath.length() - 1) != '\'') {
             throw new IllegalASTFormatException("data load: error format csvPath:" + csvPath);
+        }
         StringContainer sc = new StringContainer(SystemConstant.PATH_SEPARATOR);
         sc.addTail(SQLConstant.ROOT);
         for (int i = 2; i < childCount; i++) {
