@@ -942,9 +942,9 @@
 //		}
 //	}
 //
-//	private void createBufferwriteFile(long begin, long end, String... deltaObjects) {
+//	private void createBufferwriteFile(long begin, long end, String... deviceIds) {
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
-//		for (String deviceId : deltaObjects) {
+//		for (String deviceId : deviceIds) {
 //			for (long i = begin; i <= end; i++) {
 //				TSRecord record = new TSRecord(i, deviceId);
 //				DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(i));

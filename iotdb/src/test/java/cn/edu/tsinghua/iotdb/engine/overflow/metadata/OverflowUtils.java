@@ -82,7 +82,7 @@ public class OverflowUtils {
 	public static void isOFRowGroupListMetadataEqual(OFRowGroupListMetadata ofRowGroupListMetadata1, OFRowGroupListMetadata ofRowGroupListMetadata2){
 		if(isTwoObjectsNotNULL(ofRowGroupListMetadata1,
 						ofRowGroupListMetadata2,"OFRowGroupListMetadata")){
-			assertTrue(ofRowGroupListMetadata1.getDeltaObjectId().equals(ofRowGroupListMetadata2.getDeltaObjectId()));
+			assertTrue(ofRowGroupListMetadata1.getdeviceId().equals(ofRowGroupListMetadata2.getdeviceId()));
 			List<OFSeriesListMetadata> list1 = ofRowGroupListMetadata1.getSeriesList();
 			List<OFSeriesListMetadata> list2 = ofRowGroupListMetadata2.getSeriesList();
 			assertEquals(list1.size(),list2.size());

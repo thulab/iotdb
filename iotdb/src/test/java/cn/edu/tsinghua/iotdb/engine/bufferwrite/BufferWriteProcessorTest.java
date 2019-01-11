@@ -60,7 +60,7 @@ public class BufferWriteProcessorTest {
 	private Map<String, Action> parameters = new HashMap<>();
 	private BufferWriteProcessor bufferwrite;
 	private Directories directories = Directories.getInstance();
-	private String deltaObjectId = "root.vehicle.d0";
+	private String deviceId = "root.vehicle.d0";
 	private String measurementId = "s0";
 	private TSDataType dataType = TSDataType.INT32;
 
@@ -92,14 +92,14 @@ public class BufferWriteProcessorTest {
 	@Test
 	public void testWriteAndAbnormalRecover()
 			throws WriteProcessException, InterruptedException, IOException, ProcessorException {
-		bufferwrite = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
-				FileSchemaUtils.constructFileSchema(deltaObjectId));
+		bufferwrite = new BufferWriteProcessor(directories.getFolderForTest(), deviceId, insertPath, parameters,
+				FileSchemaUtils.constructFileSchema(deviceId));
 		for (int i = 1; i < 100; i++) {
-			bufferwrite.write(deltaObjectId, measurementId, i, dataType, String.valueOf(i));
+			bufferwrite.write(deviceId, measurementId, i, dataType, String.valueOf(i));
 		}
 		// waiting for the end of flush
 		TimeUnit.SECONDS.sleep(2);
-		File dataFile = PathUtils.getBufferWriteDir(deltaObjectId);
+		File dataFile = PathUtils.getBufferWriteDir(deviceId);
 		// check file
 		String restoreFilePath = insertPath + ".restore";
 		File restoreFile = new File(dataFile, restoreFilePath);
@@ -115,12 +115,12 @@ public class BufferWriteProcessorTest {
 		restoreFile.renameTo(file);
 		bufferwrite.close();
 		file.renameTo(restoreFile);
-		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
-				FileSchemaUtils.constructFileSchema(deltaObjectId));
+		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deviceId, insertPath, parameters,
+				FileSchemaUtils.constructFileSchema(deviceId));
 		assertEquals(true, insertFile.exists());
 		assertEquals(insertFileLength, insertFile.length());
 		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
-				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
+				.queryBufferWriteData(deviceId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
 		ChunkMetaData chunkMetaData = pair.right.get(0);
@@ -132,22 +132,22 @@ public class BufferWriteProcessorTest {
 
 	@Test
 	public void testWriteAndNormalRecover() throws WriteProcessException, ProcessorException, InterruptedException {
-		bufferwrite = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
-				FileSchemaUtils.constructFileSchema(deltaObjectId));
+		bufferwrite = new BufferWriteProcessor(directories.getFolderForTest(), deviceId, insertPath, parameters,
+				FileSchemaUtils.constructFileSchema(deviceId));
 		for (int i = 1; i < 100; i++) {
-			bufferwrite.write(deltaObjectId, measurementId, i, dataType, String.valueOf(i));
+			bufferwrite.write(deviceId, measurementId, i, dataType, String.valueOf(i));
 		}
 		// waiting for the end of flush
 		TimeUnit.SECONDS.sleep(2);
-		File dataFile = PathUtils.getBufferWriteDir(deltaObjectId);
+		File dataFile = PathUtils.getBufferWriteDir(deviceId);
 		// check file
 		String restoreFilePath = insertPath + ".restore";
 		File restoreFile = new File(dataFile, restoreFilePath);
 		assertEquals(true, restoreFile.exists());
-		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
-				FileSchemaUtils.constructFileSchema(deltaObjectId));
+		BufferWriteProcessor bufferWriteProcessor = new BufferWriteProcessor(directories.getFolderForTest(), deviceId, insertPath, parameters,
+				FileSchemaUtils.constructFileSchema(deviceId));
 		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferWriteProcessor
-				.queryBufferWriteData(deltaObjectId, measurementId, dataType);
+				.queryBufferWriteData(deviceId, measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
 		ChunkMetaData chunkMetaData = pair.right.get(0);
@@ -160,25 +160,25 @@ public class BufferWriteProcessorTest {
 
 	@Test
 	public void testWriteAndQuery() throws WriteProcessException, InterruptedException, ProcessorException {
-		bufferwrite = new BufferWriteProcessor(directories.getFolderForTest(), deltaObjectId, insertPath, parameters,
-				FileSchemaUtils.constructFileSchema(deltaObjectId));
+		bufferwrite = new BufferWriteProcessor(directories.getFolderForTest(), deviceId, insertPath, parameters,
+				FileSchemaUtils.constructFileSchema(deviceId));
 		assertEquals(false, bufferwrite.isFlush());
 		assertEquals(true, bufferwrite.canBeClosed());
 		assertEquals(0, bufferwrite.memoryUsage());
 		assertEquals(TsFileIOWriter.magicStringBytes.length, bufferwrite.getFileSize());
 		assertEquals(0, bufferwrite.getMetaSize());
 		for (int i = 1; i <= 85; i++) {
-			bufferwrite.write(deltaObjectId, measurementId, i, dataType, String.valueOf(i));
+			bufferwrite.write(deviceId, measurementId, i, dataType, String.valueOf(i));
 			assertEquals(i * 12, bufferwrite.memoryUsage());
 		}
-		bufferwrite.write(deltaObjectId, measurementId, 86, dataType, String.valueOf(86));
+		bufferwrite.write(deviceId, measurementId, 86, dataType, String.valueOf(86));
 		assertEquals(true, bufferwrite.isFlush());
 		// sleep to the end of flush
 		TimeUnit.SECONDS.sleep(2);
 		assertEquals(false, bufferwrite.isFlush());
 		assertEquals(0, bufferwrite.memoryUsage());
 		// query result
-		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deltaObjectId,
+		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(deviceId,
 				measurementId, dataType);
 		assertEquals(true, pair.left.isEmpty());
 		assertEquals(1, pair.right.size());
@@ -186,10 +186,10 @@ public class BufferWriteProcessorTest {
 		assertEquals(measurementId, chunkMetaData.getMeasurementUID());
 		assertEquals(dataType, chunkMetaData.getTsDataType());
 		for (int i = 87; i <= 100; i++) {
-			bufferwrite.write(deltaObjectId, measurementId, i, dataType, String.valueOf(i));
+			bufferwrite.write(deviceId, measurementId, i, dataType, String.valueOf(i));
 			assertEquals((i - 86) * 12, bufferwrite.memoryUsage());
 		}
-		pair = bufferwrite.queryBufferWriteData(deltaObjectId, measurementId, dataType);
+		pair = bufferwrite.queryBufferWriteData(deviceId, measurementId, dataType);
 		ReadOnlyMemChunk rawSeriesChunk = (ReadOnlyMemChunk) pair.left;
 		assertEquals(false, rawSeriesChunk.isEmpty());
 		assertEquals(87, rawSeriesChunk.getMinTimestamp());

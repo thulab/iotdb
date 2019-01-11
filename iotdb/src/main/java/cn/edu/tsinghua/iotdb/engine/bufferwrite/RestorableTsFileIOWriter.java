@@ -121,16 +121,16 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
 	private void recoverMetadata(List<ChunkGroupMetaData> rowGroupMetaDatas) {
 		//TODO it is better if we can consider the problem caused by deletion and re-create time series here.
 		for (ChunkGroupMetaData rowGroupMetaData : rowGroupMetaDatas) {
-			String deltaObjectId = rowGroupMetaData.getDeviceID();
-			if (!metadatas.containsKey(deltaObjectId)) {
-				metadatas.put(deltaObjectId, new HashMap<>());
+			String deviceId = rowGroupMetaData.getDeviceID();
+			if (!metadatas.containsKey(deviceId)) {
+				metadatas.put(deviceId, new HashMap<>());
 			}
 			for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
 				String measurementId = chunkMetaData.getMeasurementUID();
-				if (!metadatas.get(deltaObjectId).containsKey(measurementId)) {
-					metadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+				if (!metadatas.get(deviceId).containsKey(measurementId)) {
+					metadatas.get(deviceId).put(measurementId, new ArrayList<>());
 				}
-				metadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
+				metadatas.get(deviceId).get(measurementId).add(chunkMetaData);
 			}
 		}
 	}
@@ -201,17 +201,17 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
 
 	/**
 	 * get chunks' metadata from memory
-	 * @param deltaObjectId the device id
+	 * @param deviceId the device id
 	 * @param measurementId the sensor id
 	 * @param dataType the value type
 	 * @return chunks' metadata
 	 */
-	List<ChunkMetaData> getMetadatas(String deltaObjectId, String measurementId,
+	List<ChunkMetaData> getMetadatas(String deviceId, String measurementId,
 									 TSDataType dataType) {
 		List<ChunkMetaData> chunkMetaDatas = new ArrayList<>();
-		if (metadatas.containsKey(deltaObjectId)) {
-			if (metadatas.get(deltaObjectId).containsKey(measurementId)) {
-				for (ChunkMetaData chunkMetaData : metadatas.get(deltaObjectId).get(measurementId)) {
+		if (metadatas.containsKey(deviceId)) {
+			if (metadatas.get(deviceId).containsKey(measurementId)) {
+				for (ChunkMetaData chunkMetaData : metadatas.get(deviceId).get(measurementId)) {
 					// filter: if a device'sensor is defined as float type, and data has been persistent.
 					// Then someone deletes the timeseries and recreate it with Int type. We have to ignore all the stale data.
 					if (dataType.equals(chunkMetaData.getTsDataType())) {
@@ -260,14 +260,14 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
 		}
 	}
 
-	private void addInsertMetadata(String deltaObjectId, String measurementId, ChunkMetaData chunkMetaData) {
-		if (!metadatas.containsKey(deltaObjectId)) {
-			metadatas.put(deltaObjectId, new HashMap<>());
+	private void addInsertMetadata(String deviceId, String measurementId, ChunkMetaData chunkMetaData) {
+		if (!metadatas.containsKey(deviceId)) {
+			metadatas.put(deviceId, new HashMap<>());
 		}
-		if (!metadatas.get(deltaObjectId).containsKey(measurementId)) {
-			metadatas.get(deltaObjectId).put(measurementId, new ArrayList<>());
+		if (!metadatas.get(deviceId).containsKey(measurementId)) {
+			metadatas.get(deviceId).put(measurementId, new ArrayList<>());
 		}
-		metadatas.get(deltaObjectId).get(measurementId).add(chunkMetaData);
+		metadatas.get(deviceId).get(measurementId).add(chunkMetaData);
 	}
 
 
