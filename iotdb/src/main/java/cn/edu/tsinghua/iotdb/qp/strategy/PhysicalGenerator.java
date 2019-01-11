@@ -254,7 +254,7 @@ public class PhysicalGenerator {
         }
     }
 
-    //TODO after group by, fill, aggregation refactor completion, substitute with this method: transformQuery
+    //TODO after group by, fill, aggregation refactor completion, substitute transformQuery with this method
     private PhysicalPlan transformQueryV2(QueryOperator queryOperator) throws QueryProcessorException, ProcessorException {
 
         QueryPlan queryPlan;
