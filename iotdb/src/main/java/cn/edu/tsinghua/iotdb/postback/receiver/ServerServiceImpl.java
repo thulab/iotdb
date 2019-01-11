@@ -292,11 +292,11 @@ public class ServerServiceImpl implements ServerService.Iface {
 //                try {
 //                    input = new TsRandomAccessLocalFileReader(fileTF.getAbsolutePath());
 //                    FileReader reader = new FileReader(input);
-//                    Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
-//                    Iterator<String> it = deltaObjectMap.keySet().iterator();
+//                    Map<String, TsDevice> deviceIdMap = reader.getFileMetaData().getDeviceMap();
+//                    Iterator<String> it = deviceIdMap.keySet().iterator();
 //                    while (it.hasNext()) {
 //                        String key = it.next().toString(); // key represent device
-//                        TsDeltaObject deltaObj = deltaObjectMap.get(key);
+//                        TsDevice deltaObj = deviceIdMap.get(key);
 //                        startTimeMap.put(key, deltaObj.startTime);
 //                        endTimeMap.put(key, deltaObj.endTime);
 //                    }
@@ -339,11 +339,11 @@ public class ServerServiceImpl implements ServerService.Iface {
 //
 //            input = new TsRandomAccessLocalFileReader(filePath);
 //            FileReader reader = new FileReader(input);
-//            Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
-//            Iterator<String> it = deltaObjectMap.keySet().iterator();
+//            Map<String, TsdeviceId> deviceIdMap = reader.getFileMetaData().getDeviceMap();
+//            Iterator<String> it = deviceIdMap.keySet().iterator();
 //            while (it.hasNext()) {
 //                String key = it.next().toString(); // key represent devices
-//                TsDeltaObject deltaObj = deltaObjectMap.get(key);
+//                TsdeviceId deltaObj = deviceIdMap.get(key);
 //                TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
 //                blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input, deltaObj.offset,
 //                        deltaObj.metadataBlockSize));
@@ -445,11 +445,11 @@ public class ServerServiceImpl implements ServerService.Iface {
 //
 //            input = new TsRandomAccessLocalFileReader(filePath);
 //            FileReader reader = new FileReader(input);
-//            Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
-//            Iterator<String> it = deltaObjectMap.keySet().iterator();
+//            Map<String, TsdeviceId> deviceIdMap = reader.getFileMetaData().getDeviceMap();
+//            Iterator<String> it = deviceIdMap.keySet().iterator();
 //            while (it.hasNext()) {
 //                String key = it.next().toString(); // key represent devices
-//                TsDeltaObject deltaObj = deltaObjectMap.get(key);
+//                TsdeviceId deltaObj = deviceIdMap.get(key);
 //                TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
 //                blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input, deltaObj.offset,
 //                        deltaObj.metadataBlockSize));
