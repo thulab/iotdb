@@ -113,9 +113,9 @@ public class OverflowIO extends TsFileIOWriter {
 		if (overflowTrees.isEmpty()) {
 			return ofRowGroupListMetadatas;
 		} else {
-			for (String deltaObjectId : overflowTrees.keySet()) {
-				Map<String, OverflowSeriesImpl> seriesMap = overflowTrees.get(deltaObjectId);
-				OFRowGroupListMetadata rowGroupListMetadata = new OFRowGroupListMetadata(deltaObjectId);
+			for (String deviceId : overflowTrees.keySet()) {
+				Map<String, OverflowSeriesImpl> seriesMap = overflowTrees.get(deviceId);
+				OFRowGroupListMetadata rowGroupListMetadata = new OFRowGroupListMetadata(deviceId);
 				for (String measurementId : seriesMap.keySet()) {
 					ChunkMetaData current = flush(seriesMap.get(measurementId));
 					ArrayList<ChunkMetaData> timeSeriesList = new ArrayList<>();

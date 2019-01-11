@@ -292,7 +292,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //                try {
 //                    input = new TsRandomAccessLocalFileReader(fileTF.getAbsolutePath());
 //                    FileReader reader = new FileReader(input);
-//                    Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
+//                    Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
 //                    Iterator<String> it = deltaObjectMap.keySet().iterator();
 //                    while (it.hasNext()) {
 //                        String key = it.next().toString(); // key represent device
@@ -339,7 +339,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //
 //            input = new TsRandomAccessLocalFileReader(filePath);
 //            FileReader reader = new FileReader(input);
-//            Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
+//            Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
 //            Iterator<String> it = deltaObjectMap.keySet().iterator();
 //            while (it.hasNext()) {
 //                String key = it.next().toString(); // key represent devices
@@ -375,7 +375,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //                    String sql_front = null;
 //                    for (Field field : fields) {
 //                        if (field.toString() != "null") {
-//                            sql_front = "insert into " + field.deltaObjectId + "(timestamp";
+//                            sql_front = "insert into " + field.deviceId + "(timestamp";
 //                            break;
 //                        }
 //                    }
@@ -445,7 +445,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //
 //            input = new TsRandomAccessLocalFileReader(filePath);
 //            FileReader reader = new FileReader(input);
-//            Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
+//            Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
 //            Iterator<String> it = deltaObjectMap.keySet().iterator();
 //            while (it.hasNext()) {
 //                String key = it.next().toString(); // key represent devices
@@ -483,7 +483,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //                        String sql;
 //                        for (Field field : fields) { // get all data with the timesery in the postback file
 //                            if (field.toString() != "null") {
-//                                sql = String.format(sqlFormat, field.deltaObjectId, field.measurementId.toString(),
+//                                sql = String.format(sqlFormat, field.deviceId, field.measurementId.toString(),
 //                                        record.timestamp, "%s");
 //                                if (field.dataType == TSDataType.TEXT) {
 //                                    newDataPoint.put(sql, "'" + field.toString() + "'");
@@ -507,7 +507,7 @@ public class ServerServiceImpl implements ServerService.Iface {
 //                                String sql;
 //                                for (Field field : fields) {
 //                                    if (field.toString() != "null") {
-//                                        sql = String.format(sqlFormat, field.deltaObjectId,
+//                                        sql = String.format(sqlFormat, field.deviceId,
 //                                                field.measurementId.toString(), recordOverlap.timestamp, "%s");
 //                                        if (field.dataType == TSDataType.TEXT) {
 //                                            originDataPoint.put(sql, "'" + field.toString() + "'");
@@ -600,9 +600,9 @@ public class ServerServiceImpl implements ServerService.Iface {
                     Map<String, Long> endTimeI = fileNodeStartTime.get().get(filesPath.get(i));
                     Map<String, Long> startTimeJ = fileNodeStartTime.get().get(filesPath.get(j));
                     Map<String, Long> endTimeJ = fileNodeStartTime.get().get(filesPath.get(j));
-                    for (String deltaObject : endTimeI.keySet()) {
-                        if (startTimeJ.containsKey(deltaObject)
-                                && startTimeI.get(deltaObject) > endTimeJ.get(deltaObject)) {
+                    for (String deviceId : endTimeI.keySet()) {
+                        if (startTimeJ.containsKey(deviceId)
+                                && startTimeI.get(deviceId) > endTimeJ.get(deviceId)) {
                             swapOrNot = true;
                             break;
                         }

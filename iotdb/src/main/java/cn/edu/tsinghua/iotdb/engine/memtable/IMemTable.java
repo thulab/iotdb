@@ -18,7 +18,7 @@ public interface IMemTable {
 
     int size();
 
-    TimeValuePairSorter query(String deltaObject, String measurement,TSDataType dataType);
+    TimeValuePairSorter query(String deviceId, String measurement,TSDataType dataType);
 
     /**
      * release all the memory resources

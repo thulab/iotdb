@@ -319,7 +319,7 @@ public class FileSenderImpl implements FileSender{
 //				input = new TsRandomAccessLocalFileReader(filePath);
 //				cn.edu.tsinghua.tsfile.read.FileReader reader = new cn.edu.tsinghua.tsfile.read.FileReader(
 //						input);
-//				Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeltaObjectMap();
+//				Map<String, TsDeltaObject> deltaObjectMap = reader.getFileMetaData().getDeviceMap();
 //				Iterator<String> it = deltaObjectMap.keySet().iterator();
 //				while (it.hasNext()) {
 //					String key = it.next(); // key represent device

@@ -154,9 +154,9 @@ public enum PhysicalPlanCodec {
                 buffer.put((byte) plan.getInsertType());
                 buffer.putLong(plan.getTime());
 
-                byte[] deltaObjectBytes = BytesUtils.StringToBytes(plan.getDeviceId());
-                buffer.putInt(deltaObjectBytes.length);
-                buffer.put(deltaObjectBytes);
+                byte[] deviceBytes = BytesUtils.StringToBytes(plan.getDeviceId());
+                buffer.putInt(deviceBytes.length);
+                buffer.put(deviceBytes);
 
                 List<String> measurementList = plan.getMeasurements();
                 buffer.putInt(measurementList.size());
@@ -188,7 +188,7 @@ public enum PhysicalPlanCodec {
                 int deltaObjLen = buffer.getInt();
                 byte[] deltaObjBytes = new byte[deltaObjLen];
                 buffer.get(deltaObjBytes);
-                String deltaObject = BytesUtils.bytesToString(deltaObjBytes);
+                String device = BytesUtils.bytesToString(deltaObjBytes);
 
                 int mmListLength = buffer.getInt();
                 List<String> measurementsList = new ArrayList<>(mmListLength);
@@ -208,7 +208,7 @@ public enum PhysicalPlanCodec {
                     valuesList.add(BytesUtils.bytesToString(valueBytes));
                 }
 
-                InsertPlan ans = new InsertPlan(deltaObject, time, measurementsList, valuesList);
+                InsertPlan ans = new InsertPlan(device, time, measurementsList, valuesList);
                 ans.setInsertType(insertType);
                 return ans;
             }

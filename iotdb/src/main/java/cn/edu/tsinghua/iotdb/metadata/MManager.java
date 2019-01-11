@@ -339,16 +339,16 @@ public class MManager {
     }
 
     /**
-     * Extract the DeltaObjectId from given seriesPath
+     * Extract the deviceId from given seriesPath
      *
      * @param path
-     * @return String represents the DeltaObjectId
+     * @return String represents the deviceId
      */
-    public String getDeltaObjectTypeByPath(String path) throws PathErrorException {
+    public String getDeviceTypeByPath(String path) throws PathErrorException {
 
         lock.readLock().lock();
         try {
-            return mGraph.getDeltaObjectTypeByPath(path);
+            return mGraph.getDeviceTypeByPath(path);
         } finally {
             lock.readLock().unlock();
         }
@@ -402,10 +402,10 @@ public class MManager {
     }
 
     /**
-     * Get all DeltaObject type in current Metadata Tree
+     * Get all device type in current Metadata Tree
      *
-     * @return a HashMap contains all distinct DeltaObject type separated by
-     * DeltaObject Type
+     * @return a HashMap contains all distinct device type separated by
+     * device Type
      * @throws PathErrorException
      */
     public Map<String, List<ColumnSchema>> getSchemaForAllType() throws PathErrorException {
@@ -683,10 +683,10 @@ public class MManager {
         }
     }
 
-    public MNode getNodeByDeviceIdFromCache(String deltaObjectID) throws PathErrorException {
+    public MNode getNodeByDeviceIdFromCache(String deviceId) throws PathErrorException {
         lock.readLock().lock();
         try {
-            return mNodeCache.get(deltaObjectID);
+            return mNodeCache.get(deviceId);
         } catch (CacheException e) {
             throw new PathErrorException(e);
         } finally {

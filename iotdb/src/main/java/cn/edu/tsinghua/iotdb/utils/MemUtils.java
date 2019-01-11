@@ -49,7 +49,7 @@ public class MemUtils {
 	 */
 	public static long getTsRecordMemBufferwrite(TSRecord record) {
 		long memUsed = 8; // time
-		memUsed += 8; // deltaObjectId reference
+		memUsed += 8; // deviceId reference
 		memUsed += getStringMem(record.deviceId);
 		for (DataPoint dataPoint : record.dataPointList) {
 			memUsed += 8; // dataPoint reference

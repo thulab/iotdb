@@ -34,16 +34,16 @@ public class TsFileMetadataUtils {
 		}
 	}
 
-	public static TsDeviceMetadata getTsRowGroupBlockMetaData(String filePath, String deltaObjectId,
+	public static TsDeviceMetadata getTsRowGroupBlockMetaData(String filePath, String deviceId,
 															  TsFileMetaData fileMetaData) throws IOException {
-		if (!fileMetaData.getDeviceMap().containsKey(deltaObjectId)) {
+		if (!fileMetaData.getDeviceMap().containsKey(deviceId)) {
 			return null;
 		} else {
 			TsFileSequenceReader reader = null;
 			try {
 				reader = new TsFileSequenceReader(filePath);
-				long offset = fileMetaData.getDeviceMap().get(deltaObjectId).getOffset();
-				int size = fileMetaData.getDeviceMap().get(deltaObjectId).getLen();
+				long offset = fileMetaData.getDeviceMap().get(deviceId).getOffset();
+				int size = fileMetaData.getDeviceMap().get(deviceId).getLen();
 				ByteBuffer data = ByteBuffer.allocate(size);
 				reader.readRaw(offset, size, data);
 				data.flip();

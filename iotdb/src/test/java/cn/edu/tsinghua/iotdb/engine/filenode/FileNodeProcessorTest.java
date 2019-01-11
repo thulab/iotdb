@@ -47,9 +47,9 @@
 //
 //	private FileNodeProcessor processor = null;
 //
-//	private String deltaObjectId = "root.vehicle.d0";
+//	private String deviceId = "root.vehicle.d0";
 //
-//	private String deltaObjectId2 = "root.vehicle.d2";
+//	private String deviceId2 = "root.vehicle.d2";
 //
 //	private String measurementId = "s0";
 //
@@ -101,7 +101,7 @@
 //
 //		MetadataManagerHelper.initMetadata();
 //
-//		nameSpacePath = MManager.getInstance().getFileNameByPath(deltaObjectId);
+//		nameSpacePath = MManager.getInstance().getFileNameByPath(deviceId);
 //		EnvironmentUtils.envSetUp();
 //	}
 //
@@ -121,14 +121,14 @@
 //		try {
 //			// nameSpacePath
 //			processor = new FileNodeProcessor(config.fileNodeDir, nameSpacePath, parameters);
-//			assertEquals(-1, processor.getLastUpdateTime(deltaObjectId));
-//			assertEquals(-1, processor.getLastUpdateTime(deltaObjectId2));
-//			processor.setLastUpdateTime(deltaObjectId, 20);
-//			processor.setLastUpdateTime(deltaObjectId2, 21);
-//			assertEquals(20, processor.getLastUpdateTime(deltaObjectId));
-//			assertEquals(21, processor.getLastUpdateTime(deltaObjectId2));
-//			processor.setLastUpdateTime(deltaObjectId, -1);
-//			processor.setLastUpdateTime(deltaObjectId2, -1);
+//			assertEquals(-1, processor.getLastUpdateTime(deviceId));
+//			assertEquals(-1, processor.getLastUpdateTime(deviceId2));
+//			processor.setLastUpdateTime(deviceId, 20);
+//			processor.setLastUpdateTime(deviceId2, 21);
+//			assertEquals(20, processor.getLastUpdateTime(deviceId));
+//			assertEquals(21, processor.getLastUpdateTime(deviceId2));
+//			processor.setLastUpdateTime(deviceId, -1);
+//			processor.setLastUpdateTime(deviceId2, -1);
 //			assertEquals(false, processor.hasBufferwriteProcessor());
 //			assertEquals(false, processor.hasOverflowProcessor());
 //
@@ -137,27 +137,27 @@
 //			BufferWriteProcessor bfprocessor = processor.getBufferWriteProcessor(nameSpacePath, lastUpdateTime);
 //
 //			String filename = bfprocessor.getFileName();
-//			assertEquals(true, new File(PathUtils.getBufferWriteDir(deltaObjectId), filename).exists());
+//			assertEquals(true, new File(PathUtils.getBufferWriteDir(deviceId), filename).exists());
 //			// add intervalFileNode
 //			processor.addIntervalFileNode(lastUpdateTime, filename);
-//			bfprocessor.write(deltaObjectId, measurementId, lastUpdateTime, TSDataType.INT32, String.valueOf(10));
+//			bfprocessor.write(deviceId, measurementId, lastUpdateTime, TSDataType.INT32, String.valueOf(10));
 //			assertEquals(true, bfprocessor.isNewProcessor());
 //			bfprocessor.setNewProcessor(false);
-//			//processor.setIntervalFileNodeStartTime(deltaObjectId, lastUpdateTime);
-//			processor.setLastUpdateTime(deltaObjectId, lastUpdateTime);
+//			//processor.setIntervalFileNodeStartTime(deviceId, lastUpdateTime);
+//			processor.setLastUpdateTime(deviceId, lastUpdateTime);
 //			assertEquals(true, filename.startsWith(String.valueOf(lastUpdateTime)));
 //			assertEquals(true, bfprocessor.canBeClosed());
 //			assertEquals(bfprocessor, processor.getBufferWriteProcessor());
 //
 //			// get overflow processor
 //			OverflowProcessor ofprocessor = null; 
-////					processor.getOverflowProcessor(deltaObjectId, parameters);
+////					processor.getOverflowProcessor(deviceId, parameters);
 //			assertEquals(ofprocessor, processor.getOverflowProcessor());
-//			ofprocessor.insert(deltaObjectId, measurementId, 5, TSDataType.INT32, String.valueOf(5));
+//			ofprocessor.insert(deviceId, measurementId, 5, TSDataType.INT32, String.valueOf(5));
 //
 //			String overflowfile = ofprocessor.getFileName();
-//			assertEquals(true, new File(PathUtils.getOverflowWriteDir(deltaObjectId), overflowfile).exists());
-//			String overflowfileRestorePath = new File(PathUtils.getOverflowWriteDir(deltaObjectId), overflowfile)
+//			assertEquals(true, new File(PathUtils.getOverflowWriteDir(deviceId), overflowfile).exists());
+//			String overflowfileRestorePath = new File(PathUtils.getOverflowWriteDir(deviceId), overflowfile)
 //					.getPath() + ".restore";
 //			assertEquals(false, new File(overflowfileRestorePath).exists());
 //			// close processor
@@ -183,24 +183,24 @@
 //		try {
 //			// test memory data in index
 //			processor = new FileNodeProcessor(config.fileNodeDir, nameSpacePath, parameters);
-//			BufferWriteProcessor bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 1);
+//			BufferWriteProcessor bfprocessor = processor.getBufferWriteProcessor(deviceId, 1);
 //			bfprocessor.setNewProcessor(false);
 //			processor.addIntervalFileNode(1, bfprocessor.getFileRelativePath());
 //			// write data into buffer write processor
-//			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
-//			//processor.setIntervalFileNodeStartTime(deltaObjectId, 1);
-//			processor.setLastUpdateTime(deltaObjectId, 1);
+//			bfprocessor.write(deviceId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
+//			//processor.setIntervalFileNodeStartTime(deviceId, 1);
+//			processor.setLastUpdateTime(deviceId, 1);
 //			for (int i = 2; i < 11; i++) {
-//				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				//processor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				processor.setLastUpdateTime(deltaObjectId, i);
+//				bfprocessor = processor.getBufferWriteProcessor(deviceId, i);
+//				bfprocessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				//processor.setIntervalFileNodeStartTime(deviceId, i);
+//				processor.setLastUpdateTime(deviceId, i);
 //			}
 //			if (!processor.hasOverflowProcessor()) {
-//				processor.getOverflowProcessor(deltaObjectId, parameters);
+//				processor.getOverflowProcessor(deviceId, parameters);
 //			}
 //			int token = processor.addMultiPassLock();
-//			QueryStructure queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
+//			QueryStructure queryResult = processor.query(deviceId, measurementId, null, null, null);
 //			processor.removeMultiPassLock(token);
 //			DynamicOneColumnData bufferwritedataindex = queryResult.getCurrentPage();
 //			Pair<List<ByteArrayInputStream>, CompressionTypeName> right = queryResult.getPageList();
@@ -211,7 +211,7 @@
 //			assertEquals(true, right != null);
 //			assertEquals(1, right.left.size());
 //			for (ByteArrayInputStream stream : right.left) {
-//				DynamicOneColumnData columnData = PageTestUtils.pageToDynamic(stream, right.right, deltaObjectId,
+//				DynamicOneColumnData columnData = PageTestUtils.pageToDynamic(stream, right.right, deviceId,
 //						measurementId);
 //				columnData.mergeRecord(bufferwritedataindex);
 //				bufferwritedataindex = columnData;
@@ -224,8 +224,8 @@
 //			assertEquals(0, bufferwritedataindisk.size());
 //			assertEquals(1, bufferwritedatainfiles.size());
 //			IntervalFileNode temp = bufferwritedatainfiles.get(0);
-//			assertEquals(1, temp.getStartTime(deltaObjectId));
-//			assertEquals(-1, temp.getEndTime(deltaObjectId));
+//			assertEquals(1, temp.getStartTime(deviceId));
+//			assertEquals(-1, temp.getEndTime(deviceId));
 //			assertEquals(false, bufferwritedatainfiles.get(0).isClosed());
 //			assertEquals(null, overflowResult.get(0));
 //			assertEquals(null, overflowResult.get(1));
@@ -234,22 +234,22 @@
 //
 //			// test memory data in unclosed buffer write file
 //			for (int i = 11; i < 1000; i++) {
-//				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				processor.setLastUpdateTime(deltaObjectId, i);
+//				bfprocessor = processor.getBufferWriteProcessor(deviceId, i);
+//				bfprocessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				processor.setIntervalFileNodeStartTime(deviceId, i);
+//				processor.setLastUpdateTime(deviceId, i);
 //				if (i == 400) {
 //					break;
 //				}
 //			}
 //
 //			if (!processor.hasOverflowProcessor()) {
-//				processor.getOverflowProcessor(deltaObjectId, parameters);
+//				processor.getOverflowProcessor(deviceId, parameters);
 //			}
 //			Thread.sleep(100);// wait to flush end
-//			assertEquals(400, processor.getLastUpdateTime(deltaObjectId));
+//			assertEquals(400, processor.getLastUpdateTime(deviceId));
 //			token = processor.addMultiPassLock();
-//			queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
+//			queryResult = processor.query(deviceId, measurementId, null, null, null);
 //			processor.removeMultiPassLock(token);
 //			bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 //			bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
@@ -264,29 +264,29 @@
 //			processor.close();
 //
 //			// test data in closed bufferwrite file
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 401);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			bfprocessor = processor.getBufferWriteProcessor(deviceId, 401);
 //			bfprocessor.setNewProcessor(false);
 //			processor.addIntervalFileNode(401, bfprocessor.getFileRelativePath());
 //			// write data into buffer write processor
-//			bfprocessor.write(deltaObjectId, measurementId, 401, TSDataType.INT32, String.valueOf(401));
-//			processor.setIntervalFileNodeStartTime(deltaObjectId, 401);
-//			processor.setLastUpdateTime(deltaObjectId, 401);
+//			bfprocessor.write(deviceId, measurementId, 401, TSDataType.INT32, String.valueOf(401));
+//			processor.setIntervalFileNodeStartTime(deviceId, 401);
+//			processor.setLastUpdateTime(deviceId, 401);
 //			for (int i = 402; i < 1000; i++) {
-//				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				processor.setLastUpdateTime(deltaObjectId, i);
+//				bfprocessor = processor.getBufferWriteProcessor(deviceId, i);
+//				bfprocessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				processor.setIntervalFileNodeStartTime(deviceId, i);
+//				processor.setLastUpdateTime(deviceId, i);
 //				if (i == 800) {
 //					break;
 //				}
 //			}
 //			if (!processor.hasOverflowProcessor()) {
-//				processor.getOverflowProcessor(deltaObjectId, parameters);
+//				processor.getOverflowProcessor(deviceId, parameters);
 //			}
 //			Thread.sleep(100);// wait to flush end
 //			token = processor.addMultiPassLock();
-//			queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
+//			queryResult = processor.query(deviceId, measurementId, null, null, null);
 //			processor.removeMultiPassLock(token);
 //			bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 //			bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
@@ -295,60 +295,60 @@
 //			assertEquals(2, bufferwritedatainfiles.size());
 //			IntervalFileNode intervalFileNode = bufferwritedatainfiles.get(0);
 //			assertEquals(true, intervalFileNode.isClosed());
-//			assertEquals(1, intervalFileNode.getStartTime(deltaObjectId));
-//			assertEquals(400, intervalFileNode.getEndTime(deltaObjectId));
+//			assertEquals(1, intervalFileNode.getStartTime(deviceId));
+//			assertEquals(400, intervalFileNode.getEndTime(deviceId));
 //			assertEquals(OverflowChangeType.NO_CHANGE, intervalFileNode.overflowChangeType);
 //			assertEquals(false, bufferwritedatainfiles.get(1).isClosed());
-//			assertEquals(401, bufferwritedatainfiles.get(1).getStartTime(deltaObjectId));
-//			assertEquals(-1, bufferwritedatainfiles.get(1).getEndTime(deltaObjectId));
+//			assertEquals(401, bufferwritedatainfiles.get(1).getStartTime(deviceId));
+//			assertEquals(-1, bufferwritedatainfiles.get(1).getEndTime(deviceId));
 //			assertEquals(null, overflowResult.get(0));
 //			assertEquals(null, overflowResult.get(1));
 //			assertEquals(null, overflowResult.get(2));
 //			assertEquals(null, overflowResult.get(3));
 //			processor.close();
 //
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 801);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			bfprocessor = processor.getBufferWriteProcessor(deviceId, 801);
 //			bfprocessor.setNewProcessor(false);
 //			processor.addIntervalFileNode(801, bfprocessor.getFileRelativePath());
-//			bfprocessor.write(deltaObjectId, measurementId, 801, TSDataType.INT32, String.valueOf(801));
-//			processor.setLastUpdateTime(deltaObjectId, 801);
+//			bfprocessor.write(deviceId, measurementId, 801, TSDataType.INT32, String.valueOf(801));
+//			processor.setLastUpdateTime(deviceId, 801);
 //			for (int i = 802; i < 820; i++) {
-//				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				processor.setLastUpdateTime(deltaObjectId, i);
+//				bfprocessor = processor.getBufferWriteProcessor(deviceId, i);
+//				bfprocessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				processor.setIntervalFileNodeStartTime(deviceId, i);
+//				processor.setLastUpdateTime(deviceId, i);
 //			}
 //			processor.close();
 //
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, 820);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			bfprocessor = processor.getBufferWriteProcessor(deviceId, 820);
 //			bfprocessor.setNewProcessor(false);
 //			processor.addIntervalFileNode(820, bfprocessor.getFileRelativePath());
-//			bfprocessor.write(deltaObjectId, measurementId, 820, TSDataType.INT32, String.valueOf(820));
-//			processor.setLastUpdateTime(deltaObjectId, 820);
+//			bfprocessor.write(deviceId, measurementId, 820, TSDataType.INT32, String.valueOf(820));
+//			processor.setLastUpdateTime(deviceId, 820);
 //			for (int i = 821; i < 840; i++) {
-//				bfprocessor = processor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				processor.setLastUpdateTime(deltaObjectId, i);
+//				bfprocessor = processor.getBufferWriteProcessor(deviceId, i);
+//				bfprocessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				processor.setIntervalFileNodeStartTime(deviceId, i);
+//				processor.setLastUpdateTime(deviceId, i);
 //			}
 //			processor.close();
 //
 //			// file range: 1-400 401-800 801-819 820-839
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
 //			// assertEquals(false, tempFile.exists());
 //
 //			// overflow data
-//			OverflowProcessor ofprocessor = processor.getOverflowProcessor(deltaObjectId, parameters);
-//			ofprocessor.update(deltaObjectId, measurementId, 2, 10, TSDataType.INT32, String.valueOf(1001));
-//			processor.changeTypeToChanged(deltaObjectId, 2, 10);
-//			ofprocessor.update(deltaObjectId, measurementId, 802, 810, TSDataType.INT32, String.valueOf(2000));
-//			processor.changeTypeToChanged(deltaObjectId, 802, 810);
+//			OverflowProcessor ofprocessor = processor.getOverflowProcessor(deviceId, parameters);
+//			ofprocessor.update(deviceId, measurementId, 2, 10, TSDataType.INT32, String.valueOf(1001));
+//			processor.changeTypeToChanged(deviceId, 2, 10);
+//			ofprocessor.update(deviceId, measurementId, 802, 810, TSDataType.INT32, String.valueOf(2000));
+//			processor.changeTypeToChanged(deviceId, 802, 810);
 //
 //			token = processor.addMultiPassLock();
 //			assertEquals(false, processor.canBeClosed());
-//			queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
+//			queryResult = processor.query(deviceId, measurementId, null, null, null);
 //			bufferwritedataindex = queryResult.getCurrentPage();
 //			bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 //			bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
@@ -396,7 +396,7 @@
 //	@Test
 //	public void testQueryToken() {
 //		try {
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
 //			processor.writeLock();
 //			int token = processor.addMultiPassLock();
 //			assertEquals(0, token);
@@ -424,28 +424,28 @@
 //
 //		FileNodeProcessor fileNodeProcessor = null;
 //		try {
-//			fileNodeProcessor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			BufferWriteProcessor bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deltaObjectId, 1);
+//			fileNodeProcessor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			BufferWriteProcessor bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deviceId, 1);
 //			bfprocessor.setNewProcessor(false);
 //			fileNodeProcessor.addIntervalFileNode(1, bfprocessor.getFileRelativePath());
 //			// write data into buffer write processor
-//			bfprocessor.write(deltaObjectId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
-//			fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, 1);
-//			fileNodeProcessor.setLastUpdateTime(deltaObjectId, 1);
+//			bfprocessor.write(deviceId, measurementId, 1, TSDataType.INT32, String.valueOf(1));
+//			fileNodeProcessor.setIntervalFileNodeStartTime(deviceId, 1);
+//			fileNodeProcessor.setLastUpdateTime(deviceId, 1);
 //			for (int i = 2; i < 1000; i++) {
-//				bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfprocessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				fileNodeProcessor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				fileNodeProcessor.setLastUpdateTime(deltaObjectId, i);
+//				bfprocessor = fileNodeProcessor.getBufferWriteProcessor(deviceId, i);
+//				bfprocessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				fileNodeProcessor.setIntervalFileNodeStartTime(deviceId, i);
+//				fileNodeProcessor.setLastUpdateTime(deviceId, i);
 //				if (i == 400) {
 //					break;
 //				}
 //			}
 //			Thread.sleep(100);
 //			if (!fileNodeProcessor.hasOverflowProcessor()) {
-//				fileNodeProcessor.getOverflowProcessor(deltaObjectId, parameters);
+//				fileNodeProcessor.getOverflowProcessor(deviceId, parameters);
 //			}
-//			QueryStructure queryResult = fileNodeProcessor.query(deltaObjectId, measurementId, null, null, null);
+//			QueryStructure queryResult = fileNodeProcessor.query(deviceId, measurementId, null, null, null);
 //			List<RowGroupMetaData> bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 //			List<IntervalFileNode> bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
 //			List<Object> overflowResult = queryResult.getAllOverflowData();
@@ -458,13 +458,13 @@
 //			assertEquals(null, overflowResult.get(3));
 //
 //			// not close and restore the bufferwrite file
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
 //			processor.writeLock();
 //			assertEquals(true, processor.shouldRecovery());
 //			processor.fileNodeRecovery();
 //			assertEquals(true, processor.hasBufferwriteProcessor());
 //			assertEquals(true, processor.hasOverflowProcessor());
-//			queryResult = processor.query(deltaObjectId, measurementId, null, null, null);
+//			queryResult = processor.query(deviceId, measurementId, null, null, null);
 //			bufferwritedataindisk = queryResult.getBufferwriteDataInDisk();
 //			bufferwritedatainfiles = queryResult.getBufferwriteDataInFiles();
 //			overflowResult = queryResult.getAllOverflowData();
@@ -501,8 +501,8 @@
 //		for (int i = 1; i <= 3; i++) {
 //			// i * 100, i * 100 + 99
 //			IntervalFileNode node = new IntervalFileNode(OverflowChangeType.NO_CHANGE, "bufferfiletest" + i);
-//			node.setStartTime(deltaObjectId, i * 100);
-//			node.setEndTime(deltaObjectId, i * 100 + 99);
+//			node.setStartTime(deviceId, i * 100);
+//			node.setEndTime(deviceId, i * 100 + 99);
 //			// create file
 //			createFile(node.getFilePath());
 //			checkFile(node.getFilePath());
@@ -514,15 +514,15 @@
 //		checkFile(unusedFilename);
 //		FileNodeProcessorStatus fileNodeProcessorState = FileNodeProcessorStatus.WAITING;
 //		Map<String, Long> lastUpdateTimeMap = new HashMap<>();
-//		lastUpdateTimeMap.put(deltaObjectId, (long) 500);
+//		lastUpdateTimeMap.put(deviceId, (long) 500);
 //		fileNodeProcessorStore = new FileNodeProcessorStore(false,lastUpdateTimeMap, emptyIntervalFileNode, newFilenodes,
 //				fileNodeProcessorState, 0);
 //
-//		File file = PathUtils.getFileNodeDir(deltaObjectId);
+//		File file = PathUtils.getFileNodeDir(deviceId);
 //		if (!file.exists()) {
 //			file.mkdirs();
 //		}
-//		String filenodestorePath = new File(file, deltaObjectId).getPath() + ".restore";
+//		String filenodestorePath = new File(file, deviceId).getPath() + ".restore";
 //		SerializeUtil<FileNodeProcessorStore> serializeUtil = new SerializeUtil<>();
 //		try {
 //			serializeUtil.serialize(fileNodeProcessorStore, filenodestorePath);
@@ -534,7 +534,7 @@
 //
 //		// test recovery from waiting
 //		try {
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
 //			processor.writeLock();
 //			assertEquals(true, processor.shouldRecovery());
 //			// recovery
@@ -580,7 +580,7 @@
 //
 //	private void checkUnFile(String filename) {
 //
-//		File dataDir = PathUtils.getFileNodeDir(deltaObjectId);
+//		File dataDir = PathUtils.getFileNodeDir(deviceId);
 //		if (!dataDir.exists()) {
 //			dataDir.mkdirs();
 //		}
@@ -609,18 +609,18 @@
 //	 */
 //	private void createBufferwriteFile(long begin, long end) throws Exception {
 //		try {
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			BufferWriteProcessor bfProcessor = processor.getBufferWriteProcessor(deltaObjectId, begin);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			BufferWriteProcessor bfProcessor = processor.getBufferWriteProcessor(deviceId, begin);
 //			assertEquals(true, bfProcessor.isNewProcessor());
 //			bfProcessor.write(measurementId, measurementId, begin, TSDataType.INT32, String.valueOf(begin));
-//			processor.setLastUpdateTime(deltaObjectId, begin);
+//			processor.setLastUpdateTime(deviceId, begin);
 //			bfProcessor.setNewProcessor(false);
 //			processor.addIntervalFileNode(begin, bfProcessor.getFileRelativePath());
 //			for (long i = begin; i <= end; i++) {
-//				bfProcessor = processor.getBufferWriteProcessor(deltaObjectId, i);
-//				bfProcessor.write(deltaObjectId, measurementId, i, TSDataType.INT32, String.valueOf(i));
-//				processor.setIntervalFileNodeStartTime(deltaObjectId, i);
-//				processor.setLastUpdateTime(deltaObjectId, i);
+//				bfProcessor = processor.getBufferWriteProcessor(deviceId, i);
+//				bfProcessor.write(deviceId, measurementId, i, TSDataType.INT32, String.valueOf(i));
+//				processor.setIntervalFileNodeStartTime(deviceId, i);
+//				processor.setLastUpdateTime(deviceId, i);
 //			}
 //			processor.close();
 //		} catch (FileNodeProcessorException e) {
@@ -649,10 +649,10 @@
 //
 //	private void createOverflowInsert(long time, int value) {
 //		try {
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			OverflowProcessor ofProcessor = processor.getOverflowProcessor(deltaObjectId, parameters);
-//			ofProcessor.insert(deltaObjectId, measurementId, time, TSDataType.INT32, String.valueOf(value));
-//			processor.changeTypeToChanged(deltaObjectId, time);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			OverflowProcessor ofProcessor = processor.getOverflowProcessor(deviceId, parameters);
+//			ofProcessor.insert(deviceId, measurementId, time, TSDataType.INT32, String.valueOf(value));
+//			processor.changeTypeToChanged(deviceId, time);
 //			processor.close();
 //			Thread.sleep(10);
 //		} catch (FileNodeProcessorException e) {
@@ -669,10 +669,10 @@
 //
 //	private void createOverflowUpdate(long begin, long end, int value) {
 //		try {
-//			processor = new FileNodeProcessor(config.fileNodeDir, deltaObjectId, parameters);
-//			OverflowProcessor ofProcessor = processor.getOverflowProcessor(deltaObjectId, parameters);
-//			ofProcessor.update(deltaObjectId, measurementId, begin, end, TSDataType.INT32, String.valueOf(value));
-//			processor.changeTypeToChanged(deltaObjectId, begin, end);
+//			processor = new FileNodeProcessor(config.fileNodeDir, deviceId, parameters);
+//			OverflowProcessor ofProcessor = processor.getOverflowProcessor(deviceId, parameters);
+//			ofProcessor.update(deviceId, measurementId, begin, end, TSDataType.INT32, String.valueOf(value));
+//			processor.changeTypeToChanged(deviceId, begin, end);
 //			processor.close();
 //			Thread.sleep(10);
 //		} catch (FileNodeProcessorException e) {

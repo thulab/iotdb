@@ -30,10 +30,10 @@
 //
 //	private TSFileConfig tsconfig = TSFileDescriptor.getInstance().getConfig();
 //
-//	private String deltaObjectId0 = "root.vehicle.d0";
-//	private String deltaObjectId2 = "root.vehicle.d2";
+//	private String deviceId0 = "root.vehicle.d0";
+//	private String deviceId2 = "root.vehicle.d2";
 //
-//	private String deltaObjectId1 = "root.vehicle.d1";
+//	private String deviceId1 = "root.vehicle.d1";
 //
 //	private String measurementId = "s0";
 //
@@ -78,35 +78,35 @@
 //
 //		// write buffer file
 //		// file 0: d0[10,20]
-//		createBufferwriteFile(10, 20, deltaObjectId0);
+//		createBufferwriteFile(10, 20, deviceId0);
 //		closeBufferwrite();
 //		// file 1: d1[10,20]
-//		createBufferwriteFile(10, 20, deltaObjectId1);
+//		createBufferwriteFile(10, 20, deviceId1);
 //		closeBufferwrite();
 //		// file 2: d2[10,20]
-//		createBufferwriteFile(10, 20, deltaObjectId2);
+//		createBufferwriteFile(10, 20, deviceId2);
 //		closeBufferwrite();
 //		// file 3: d0,d1[30,40]
-//		createBufferwriteFile(30, 40, deltaObjectId0, deltaObjectId1);
+//		createBufferwriteFile(30, 40, deviceId0, deviceId1);
 //		closeBufferwrite();
 //		// file 4: d0,d1,d2[50,60]
-//		createBufferwriteFile(50, 60, deltaObjectId0, deltaObjectId1, deltaObjectId2);
+//		createBufferwriteFile(50, 60, deviceId0, deviceId1, deviceId2);
 //		closeBufferwrite();
 //		// file 5: d0,d1,d2[70,..80)
-//		createBufferwriteFile(70, 80, deltaObjectId0, deltaObjectId1, deltaObjectId2);
+//		createBufferwriteFile(70, 80, deviceId0, deviceId1, deviceId2);
 //
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //
 //		try {
-//			int token = fileNodeManager.beginQuery(deltaObjectId0);
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
-//			fileNodeManager.endQuery(deltaObjectId0, token);
+//			int token = fileNodeManager.beginQuery(deviceId0);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
+//			fileNodeManager.endQuery(deviceId0, token);
 //			// assert query result
 //			DynamicOneColumnData pagecache = queryStructure.getCurrentPage();
 //			assertEquals(1, queryStructure.getPageList().left.size());
 //			for (ByteArrayInputStream stream : queryStructure.getPageList().left) {
 //				DynamicOneColumnData old = PageTestUtils.pageToDynamic(stream, queryStructure.getPageList().right,
-//						deltaObjectId0, measurementId);
+//						deviceId0, measurementId);
 //				old.mergeRecord(pagecache);
 //				pagecache = old;
 //			}
@@ -119,71 +119,71 @@
 //			IntervalFileNode temp = bufferwriteDataInFiles.get(0);
 //			assertEquals(1, temp.getStartTimeMap().size());
 //			for (String d : temp.getStartTimeMap().keySet()) {
-//				assertEquals(deltaObjectId0, d);
-//				assertEquals(10, temp.getStartTime(deltaObjectId0));
+//				assertEquals(deviceId0, d);
+//				assertEquals(10, temp.getStartTime(deviceId0));
 //			}
 //			assertEquals(1, temp.getEndTimeMap().size());
 //			for (String d : temp.getEndTimeMap().keySet()) {
-//				assertEquals(deltaObjectId0, d);
-//				assertEquals(20, temp.getEndTime(deltaObjectId0));
+//				assertEquals(deviceId0, d);
+//				assertEquals(20, temp.getEndTime(deviceId0));
 //			}
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// second file
 //			temp = bufferwriteDataInFiles.get(1);
 //			assertEquals(1, temp.getStartTimeMap().size());
 //			for (String d : temp.getStartTimeMap().keySet()) {
-//				assertEquals(deltaObjectId1, d);
-//				assertEquals(10, temp.getStartTime(deltaObjectId1));
+//				assertEquals(deviceId1, d);
+//				assertEquals(10, temp.getStartTime(deviceId1));
 //			}
 //			assertEquals(1, temp.getEndTimeMap().size());
 //			for (String d : temp.getEndTimeMap().keySet()) {
-//				assertEquals(deltaObjectId1, d);
-//				assertEquals(20, temp.getEndTime(deltaObjectId1));
+//				assertEquals(deviceId1, d);
+//				assertEquals(20, temp.getEndTime(deviceId1));
 //			}
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// third file
 //			temp = bufferwriteDataInFiles.get(2);
 //			assertEquals(1, temp.getStartTimeMap().size());
 //			for (String d : temp.getStartTimeMap().keySet()) {
-//				assertEquals(deltaObjectId2, d);
-//				assertEquals(10, temp.getStartTime(deltaObjectId2));
+//				assertEquals(deviceId2, d);
+//				assertEquals(10, temp.getStartTime(deviceId2));
 //			}
 //			assertEquals(1, temp.getEndTimeMap().size());
 //			for (String d : temp.getEndTimeMap().keySet()) {
-//				assertEquals(deltaObjectId2, d);
-//				assertEquals(20, temp.getEndTime(deltaObjectId2));
+//				assertEquals(deviceId2, d);
+//				assertEquals(20, temp.getEndTime(deviceId2));
 //			}
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// fourth file
 //			temp = bufferwriteDataInFiles.get(3);
 //			assertEquals(2, temp.getStartTimeMap().size());
 //			assertEquals(2, temp.getEndTimeMap().size());
-//			assertEquals(30, temp.getStartTime(deltaObjectId0));
-//			assertEquals(30, temp.getStartTime(deltaObjectId1));
-//			assertEquals(40, temp.getEndTime(deltaObjectId0));
-//			assertEquals(40, temp.getEndTime(deltaObjectId1));
+//			assertEquals(30, temp.getStartTime(deviceId0));
+//			assertEquals(30, temp.getStartTime(deviceId1));
+//			assertEquals(40, temp.getEndTime(deviceId0));
+//			assertEquals(40, temp.getEndTime(deviceId1));
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// fifth file
 //			temp = bufferwriteDataInFiles.get(4);
 //			assertEquals(3, temp.getStartTimeMap().size());
 //			assertEquals(3, temp.getEndTimeMap().size());
-//			assertEquals(50, temp.getStartTime(deltaObjectId0));
-//			assertEquals(50, temp.getStartTime(deltaObjectId1));
-//			assertEquals(50, temp.getStartTime(deltaObjectId2));
-//			assertEquals(60, temp.getEndTime(deltaObjectId0));
-//			assertEquals(60, temp.getEndTime(deltaObjectId1));
-//			assertEquals(60, temp.getEndTime(deltaObjectId2));
+//			assertEquals(50, temp.getStartTime(deviceId0));
+//			assertEquals(50, temp.getStartTime(deviceId1));
+//			assertEquals(50, temp.getStartTime(deviceId2));
+//			assertEquals(60, temp.getEndTime(deviceId0));
+//			assertEquals(60, temp.getEndTime(deviceId1));
+//			assertEquals(60, temp.getEndTime(deviceId2));
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// sixth
 //			temp = bufferwriteDataInFiles.get(5);
 //			assertEquals(3, temp.getStartTimeMap().size());
 //			assertEquals(0, temp.getEndTimeMap().size());
-//			assertEquals(70, temp.getStartTime(deltaObjectId0));
-//			assertEquals(70, temp.getStartTime(deltaObjectId1));
-//			assertEquals(70, temp.getStartTime(deltaObjectId2));
-//			assertEquals(-1, temp.getEndTime(deltaObjectId0));
-//			assertEquals(-1, temp.getEndTime(deltaObjectId1));
-//			assertEquals(-1, temp.getEndTime(deltaObjectId2));
+//			assertEquals(70, temp.getStartTime(deviceId0));
+//			assertEquals(70, temp.getStartTime(deviceId1));
+//			assertEquals(70, temp.getStartTime(deviceId2));
+//			assertEquals(-1, temp.getEndTime(deviceId0));
+//			assertEquals(-1, temp.getEndTime(deviceId1));
+//			assertEquals(-1, temp.getEndTime(deviceId2));
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //
 //			assertEquals(true, fileNodeManager.deleteAll());
@@ -206,7 +206,7 @@
 //		// oveflow data
 //
 //		// insert d0 time = 5
-//		TSRecord record = new TSRecord(5, deltaObjectId0);
+//		TSRecord record = new TSRecord(5, deviceId0);
 //		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(5));
 //		record.addTuple(dataPoint);
 //		try {
@@ -216,7 +216,7 @@
 //			e.printStackTrace();
 //		}
 //		// insert d2 time = 5
-//		record = new TSRecord(5, deltaObjectId2);
+//		record = new TSRecord(5, deviceId2);
 //		record.addTuple(dataPoint);
 //		try {
 //			fileNodeManager.insert(record, false);
@@ -226,7 +226,7 @@
 //		}
 //
 //		// insert d1 time = 65
-//		record = new TSRecord(65, deltaObjectId1);
+//		record = new TSRecord(65, deviceId1);
 //		record.addTuple(dataPoint);
 //		try {
 //			fileNodeManager.insert(record, false);
@@ -236,9 +236,9 @@
 //		}
 //		// query
 //		try {
-//			int token = fileNodeManager.beginQuery(deltaObjectId0);
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
-//			fileNodeManager.endQuery(deltaObjectId0, token);
+//			int token = fileNodeManager.beginQuery(deviceId0);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
+//			fileNodeManager.endQuery(deviceId0, token);
 //			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(5, insert.getTime(0));
@@ -249,71 +249,71 @@
 //			IntervalFileNode temp = bufferwriteDataInFiles.get(0);
 //			assertEquals(1, temp.getStartTimeMap().size());
 //			for (String d : temp.getStartTimeMap().keySet()) {
-//				assertEquals(deltaObjectId0, d);
-//				assertEquals(10, temp.getStartTime(deltaObjectId0));
+//				assertEquals(deviceId0, d);
+//				assertEquals(10, temp.getStartTime(deviceId0));
 //			}
 //			assertEquals(1, temp.getEndTimeMap().size());
 //			for (String d : temp.getEndTimeMap().keySet()) {
-//				assertEquals(deltaObjectId0, d);
-//				assertEquals(20, temp.getEndTime(deltaObjectId0));
+//				assertEquals(deviceId0, d);
+//				assertEquals(20, temp.getEndTime(deviceId0));
 //			}
 //			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 //			// second file
 //			temp = bufferwriteDataInFiles.get(1);
 //			assertEquals(1, temp.getStartTimeMap().size());
 //			for (String d : temp.getStartTimeMap().keySet()) {
-//				assertEquals(deltaObjectId1, d);
-//				assertEquals(10, temp.getStartTime(deltaObjectId1));
+//				assertEquals(deviceId1, d);
+//				assertEquals(10, temp.getStartTime(deviceId1));
 //			}
 //			assertEquals(1, temp.getEndTimeMap().size());
 //			for (String d : temp.getEndTimeMap().keySet()) {
-//				assertEquals(deltaObjectId1, d);
-//				assertEquals(20, temp.getEndTime(deltaObjectId1));
+//				assertEquals(deviceId1, d);
+//				assertEquals(20, temp.getEndTime(deviceId1));
 //			}
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// third file
 //			temp = bufferwriteDataInFiles.get(2);
 //			assertEquals(1, temp.getStartTimeMap().size());
 //			for (String d : temp.getStartTimeMap().keySet()) {
-//				assertEquals(deltaObjectId2, d);
-//				assertEquals(10, temp.getStartTime(deltaObjectId2));
+//				assertEquals(deviceId2, d);
+//				assertEquals(10, temp.getStartTime(deviceId2));
 //			}
 //			assertEquals(1, temp.getEndTimeMap().size());
 //			for (String d : temp.getEndTimeMap().keySet()) {
-//				assertEquals(deltaObjectId2, d);
-//				assertEquals(20, temp.getEndTime(deltaObjectId2));
+//				assertEquals(deviceId2, d);
+//				assertEquals(20, temp.getEndTime(deviceId2));
 //			}
 //			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 //			// fourth file
 //			temp = bufferwriteDataInFiles.get(3);
 //			assertEquals(2, temp.getStartTimeMap().size());
 //			assertEquals(2, temp.getEndTimeMap().size());
-//			assertEquals(30, temp.getStartTime(deltaObjectId0));
-//			assertEquals(30, temp.getStartTime(deltaObjectId1));
-//			assertEquals(40, temp.getEndTime(deltaObjectId0));
-//			assertEquals(40, temp.getEndTime(deltaObjectId1));
+//			assertEquals(30, temp.getStartTime(deviceId0));
+//			assertEquals(30, temp.getStartTime(deviceId1));
+//			assertEquals(40, temp.getEndTime(deviceId0));
+//			assertEquals(40, temp.getEndTime(deviceId1));
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //			// fifth file
 //			temp = bufferwriteDataInFiles.get(4);
 //			assertEquals(3, temp.getStartTimeMap().size());
 //			assertEquals(3, temp.getEndTimeMap().size());
-//			assertEquals(50, temp.getStartTime(deltaObjectId0));
-//			assertEquals(50, temp.getStartTime(deltaObjectId1));
-//			assertEquals(50, temp.getStartTime(deltaObjectId2));
-//			assertEquals(60, temp.getEndTime(deltaObjectId0));
-//			assertEquals(60, temp.getEndTime(deltaObjectId1));
-//			assertEquals(60, temp.getEndTime(deltaObjectId2));
+//			assertEquals(50, temp.getStartTime(deviceId0));
+//			assertEquals(50, temp.getStartTime(deviceId1));
+//			assertEquals(50, temp.getStartTime(deviceId2));
+//			assertEquals(60, temp.getEndTime(deviceId0));
+//			assertEquals(60, temp.getEndTime(deviceId1));
+//			assertEquals(60, temp.getEndTime(deviceId2));
 //			assertEquals(OverflowChangeType.CHANGED, temp.overflowChangeType);
 //			// sixth
 //			temp = bufferwriteDataInFiles.get(5);
 //			assertEquals(3, temp.getStartTimeMap().size());
 //			assertEquals(3, temp.getEndTimeMap().size());
-//			assertEquals(70, temp.getStartTime(deltaObjectId0));
-//			assertEquals(70, temp.getStartTime(deltaObjectId1));
-//			assertEquals(70, temp.getStartTime(deltaObjectId2));
-//			assertEquals(80, temp.getEndTime(deltaObjectId0));
-//			assertEquals(80, temp.getEndTime(deltaObjectId1));
-//			assertEquals(80, temp.getEndTime(deltaObjectId2));
+//			assertEquals(70, temp.getStartTime(deviceId0));
+//			assertEquals(70, temp.getStartTime(deviceId1));
+//			assertEquals(70, temp.getStartTime(deviceId2));
+//			assertEquals(80, temp.getEndTime(deviceId0));
+//			assertEquals(80, temp.getEndTime(deviceId1));
+//			assertEquals(80, temp.getEndTime(deviceId2));
 //			assertEquals(OverflowChangeType.NO_CHANGE, temp.overflowChangeType);
 //
 //			assertEquals(true, fileNodeManager.deleteAll());
@@ -331,21 +331,21 @@
 //	public void testOverflowEmptyAndMerge1() {
 //
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
-//		createBufferwriteFile(100, 100, deltaObjectId0, deltaObjectId1, deltaObjectId2);
+//		createBufferwriteFile(100, 100, deviceId0, deviceId1, deviceId2);
 //		closeBufferwrite();
 //		// query check
 //		try {
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
 //			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
 //			assertEquals(3, temp.getStartTimeMap().size());
 //			assertEquals(3, temp.getEndTimeMap().size());
-//			assertEquals(100, temp.getStartTime(deltaObjectId0));
-//			assertEquals(100, temp.getEndTime(deltaObjectId0));
-//			assertEquals(100, temp.getStartTime(deltaObjectId1));
-//			assertEquals(100, temp.getEndTime(deltaObjectId1));
-//			assertEquals(100, temp.getStartTime(deltaObjectId2));
-//			assertEquals(100, temp.getEndTime(deltaObjectId2));
+//			assertEquals(100, temp.getStartTime(deviceId0));
+//			assertEquals(100, temp.getEndTime(deviceId0));
+//			assertEquals(100, temp.getStartTime(deviceId1));
+//			assertEquals(100, temp.getEndTime(deviceId1));
+//			assertEquals(100, temp.getStartTime(deviceId2));
+//			assertEquals(100, temp.getEndTime(deviceId2));
 //			fileNodeManager.deleteAll();
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
@@ -353,9 +353,9 @@
 //		}
 //		// delete
 //		try {
-//			fileNodeManager.delete(deltaObjectId0, measurementId, 101, dataType);
-//			fileNodeManager.delete(deltaObjectId1, measurementId, 101, dataType);
-//			fileNodeManager.delete(deltaObjectId2, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId0, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId1, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId2, measurementId, 101, dataType);
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
@@ -382,7 +382,7 @@
 //		}
 //		// query check
 //		try {
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			assertEquals(0, queryStructure.getBufferwriteDataInFiles().size());
 //			assertEquals(null, queryStructure.getBufferwriteDataInDisk());
 //		} catch (FileNodeManagerException e) {
@@ -390,19 +390,19 @@
 //			fail(e.getMessage());
 //		}
 //		// overflow data
-//		TSRecord record = new TSRecord(5, deltaObjectId0);
+//		TSRecord record = new TSRecord(5, deviceId0);
 //		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(5));
 //		record.addTuple(dataPoint);
 //		try {
 //			fileNodeManager.insert(record, false);
-//			record = new TSRecord(5, deltaObjectId1);
+//			record = new TSRecord(5, deviceId1);
 //			record.addTuple(dataPoint);
 //			fileNodeManager.insert(record, false);
-//			record = new TSRecord(10, deltaObjectId2);
+//			record = new TSRecord(10, deviceId2);
 //			record.addTuple(dataPoint);
 //			fileNodeManager.insert(record, false);
 //			// query check
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId2, measurementId, null, null, null);
 //			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(10, insert.getTime(0));
@@ -418,15 +418,15 @@
 //			while (!fileNodeManager.deleteAll()) {
 //				Thread.sleep(1000);
 //			}
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
 //			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
-//			assertEquals(5, temp.getStartTime(deltaObjectId0));
-//			assertEquals(5, temp.getEndTime(deltaObjectId0));
-//			assertEquals(5, temp.getStartTime(deltaObjectId1));
-//			assertEquals(5, temp.getEndTime(deltaObjectId1));
-//			assertEquals(10, temp.getStartTime(deltaObjectId2));
-//			assertEquals(10, temp.getEndTime(deltaObjectId2));
+//			assertEquals(5, temp.getStartTime(deviceId0));
+//			assertEquals(5, temp.getEndTime(deviceId0));
+//			assertEquals(5, temp.getStartTime(deviceId1));
+//			assertEquals(5, temp.getEndTime(deviceId1));
+//			assertEquals(10, temp.getStartTime(deviceId2));
+//			assertEquals(10, temp.getEndTime(deviceId2));
 //			assertEquals(true, fileNodeManager.deleteAll());
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
@@ -441,13 +441,13 @@
 //	public void testOverflowEmptyAndMerge2() {
 //
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
-//		createBufferwriteFile(100, 100, deltaObjectId0, deltaObjectId1, deltaObjectId2);
+//		createBufferwriteFile(100, 100, deviceId0, deviceId1, deviceId2);
 //		closeBufferwrite();
 //		// delete
 //		try {
-//			fileNodeManager.delete(deltaObjectId0, measurementId, 101, dataType);
-//			fileNodeManager.delete(deltaObjectId1, measurementId, 101, dataType);
-//			fileNodeManager.delete(deltaObjectId2, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId0, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId1, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId2, measurementId, 101, dataType);
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
@@ -472,19 +472,19 @@
 //			fail(e.getMessage());
 //		}
 //		// overflow data
-//		TSRecord record = new TSRecord(5, deltaObjectId0);
+//		TSRecord record = new TSRecord(5, deviceId0);
 //		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(5));
 //		record.addTuple(dataPoint);
 //		try {
 //			fileNodeManager.insert(record, false);
-//			record = new TSRecord(5, deltaObjectId1);
+//			record = new TSRecord(5, deviceId1);
 //			record.addTuple(dataPoint);
 //			fileNodeManager.insert(record, false);
-//			record = new TSRecord(10, deltaObjectId2);
+//			record = new TSRecord(10, deviceId2);
 //			record.addTuple(dataPoint);
 //			fileNodeManager.insert(record, false);
 //			// query check
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId2, measurementId, null, null, null);
 //			DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0);
 //			assertEquals(1, insert.valueLength);
 //			assertEquals(10, insert.getTime(0));
@@ -494,7 +494,7 @@
 //			fail(e.getMessage());
 //		}
 //		// buffer data
-//		record = new TSRecord(20, deltaObjectId2);
+//		record = new TSRecord(20, deviceId2);
 //		record.addTuple(dataPoint);
 //		try {
 //			fileNodeManager.insert(record, false);
@@ -508,15 +508,15 @@
 //			while (!fileNodeManager.deleteAll()) {
 //				Thread.sleep(3000);
 //			}
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			assertEquals(1, queryStructure.getBufferwriteDataInFiles().size());
 //			IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
-//			assertEquals(5, temp.getStartTime(deltaObjectId0));
-//			assertEquals(5, temp.getEndTime(deltaObjectId0));
-//			assertEquals(5, temp.getStartTime(deltaObjectId1));
-//			assertEquals(5, temp.getEndTime(deltaObjectId1));
-//			assertEquals(10, temp.getStartTime(deltaObjectId2));
-//			assertEquals(20, temp.getEndTime(deltaObjectId2));
+//			assertEquals(5, temp.getStartTime(deviceId0));
+//			assertEquals(5, temp.getEndTime(deviceId0));
+//			assertEquals(5, temp.getStartTime(deviceId1));
+//			assertEquals(5, temp.getEndTime(deviceId1));
+//			assertEquals(10, temp.getStartTime(deviceId2));
+//			assertEquals(20, temp.getEndTime(deviceId2));
 //			assertEquals(true, fileNodeManager.deleteAll());
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
@@ -529,14 +529,14 @@
 //
 //	@Deprecated
 //	public void testFileEmptyMergeAnaWriteDebug() {
-//		createBufferwriteFile(10, 20, deltaObjectId0);
+//		createBufferwriteFile(10, 20, deviceId0);
 //		closeBufferwrite();
-//		createBufferwriteFile(10, 20, deltaObjectId1);
+//		createBufferwriteFile(10, 20, deviceId1);
 //		closeBufferwrite();
-//		createBufferwriteFile(100, 100, deltaObjectId2);
+//		createBufferwriteFile(100, 100, deviceId2);
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //		try {
-//			fileNodeManager.delete(deltaObjectId2, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId2, measurementId, 101, dataType);
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
@@ -557,36 +557,36 @@
 //			fail(e1.getMessage());
 //		}
 //		try {
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			if (queryStructure.getBufferwriteDataInFiles().size() == 2) {
 //				assertEquals(2, queryStructure.getBufferwriteDataInFiles().size());
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
-//				assertEquals(10, temp.getStartTime(deltaObjectId0));
-//				assertEquals(20, temp.getEndTime(deltaObjectId0));
+//				assertEquals(10, temp.getStartTime(deviceId0));
+//				assertEquals(20, temp.getEndTime(deviceId0));
 //				temp = queryStructure.getBufferwriteDataInFiles().get(1);
-//				assertEquals(10, temp.getStartTime(deltaObjectId1));
-//				assertEquals(20, temp.getEndTime(deltaObjectId1));
+//				assertEquals(10, temp.getStartTime(deviceId1));
+//				assertEquals(20, temp.getEndTime(deviceId1));
 //			} else {
 //				assertEquals(3, queryStructure.getBufferwriteDataInFiles().size());
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(10, temp.getStartTime(deltaObjectId0));
-//				assertEquals(20, temp.getEndTime(deltaObjectId0));
+//				assertEquals(10, temp.getStartTime(deviceId0));
+//				assertEquals(20, temp.getEndTime(deviceId0));
 //				temp = queryStructure.getBufferwriteDataInFiles().get(1);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(10, temp.getStartTime(deltaObjectId1));
-//				assertEquals(20, temp.getEndTime(deltaObjectId1));
+//				assertEquals(10, temp.getStartTime(deviceId1));
+//				assertEquals(20, temp.getEndTime(deviceId1));
 //				temp = queryStructure.getBufferwriteDataInFiles().get(2);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(200, temp.getStartTime(deltaObjectId2));
-//				assertEquals(-1, temp.getEndTime(deltaObjectId2));
+//				assertEquals(200, temp.getStartTime(deviceId2));
+//				assertEquals(-1, temp.getEndTime(deviceId2));
 //			}
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
 //		}
 //		// add empty overflow data
-//		TSRecord record = new TSRecord(5, deltaObjectId2);
+//		TSRecord record = new TSRecord(5, deviceId2);
 //		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(5));
 //		record.addTuple(dataPoint);
 //		try {
@@ -595,9 +595,9 @@
 //			e.printStackTrace();
 //			fail(e.getMessage());
 //		}
-//		record = new TSRecord(200, deltaObjectId2);
+//		record = new TSRecord(200, deviceId2);
 //		record.addTuple(dataPoint);
-//		TSRecord overflow = new TSRecord(2, deltaObjectId2);
+//		TSRecord overflow = new TSRecord(2, deviceId2);
 //		overflow.addTuple(dataPoint);
 //		// merge data
 //		try {
@@ -609,7 +609,7 @@
 //				System.out.println("wait to merge end, 1000ms...");
 //				Thread.sleep(1000);
 //			}
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId2, measurementId, null, null, null);
 //			if (queryStructure.getBufferwriteDataInFiles().size() == 4) {
 //				if (queryStructure.getBufferwriteDataInFiles()
 //						.get(1).overflowChangeType == OverflowChangeType.CHANGED) {
@@ -621,11 +621,11 @@
 //			} else if (queryStructure.getBufferwriteDataInFiles().size() == 3) {
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(2);
 //				if (temp.overflowChangeType == OverflowChangeType.NO_CHANGE) {
-//					assertEquals(2, temp.getStartTime(deltaObjectId2));
-//					assertEquals(200, temp.getEndTime(deltaObjectId2));
+//					assertEquals(2, temp.getStartTime(deviceId2));
+//					assertEquals(200, temp.getEndTime(deviceId2));
 //				} else {
-//					assertEquals(2, temp.getStartTime(deltaObjectId2));
-//					assertEquals(200, temp.getEndTime(deltaObjectId2));
+//					assertEquals(2, temp.getStartTime(deviceId2));
+//					assertEquals(200, temp.getEndTime(deviceId2));
 //					DynamicOneColumnData insert = (DynamicOneColumnData) queryStructure.getAllOverflowData().get(0 + 2);
 //					assertEquals(true, insert != null);
 //					assertEquals(1, insert.valueLength);
@@ -640,21 +640,21 @@
 //				System.out.println("Wait to merge.....");
 //				Thread.sleep(1000);
 //			}
-//			queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
+//			queryStructure = fileNodeManager.query(deviceId2, measurementId, null, null, null);
 //			assertEquals(null, queryStructure.getAllOverflowData().get(0));
 //			if (queryStructure.getBufferwriteDataInFiles().size() == 4) {
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(2);
-//				assertEquals(2, temp.getStartTime(deltaObjectId2));
-//				assertEquals(5, temp.getEndTime(deltaObjectId2));
+//				assertEquals(2, temp.getStartTime(deviceId2));
+//				assertEquals(5, temp.getEndTime(deviceId2));
 //
 //				temp = queryStructure.getBufferwriteDataInFiles().get(3);
-//				assertEquals(200, temp.getStartTime(deltaObjectId2));
-//				assertEquals(200, temp.getEndTime(deltaObjectId2));
+//				assertEquals(200, temp.getStartTime(deviceId2));
+//				assertEquals(200, temp.getEndTime(deviceId2));
 //			} else if (queryStructure.getBufferwriteDataInFiles().size() == 3) {
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(2);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(2, temp.getStartTime(deltaObjectId2));
-//				assertEquals(200, temp.getEndTime(deltaObjectId2));
+//				assertEquals(2, temp.getStartTime(deviceId2));
+//				assertEquals(200, temp.getEndTime(deviceId2));
 //			} else {
 //				fail("Error");
 //			}
@@ -670,14 +670,14 @@
 //
 //	@Test
 //	public void testFileEmptyMergeAnaWrite() {
-//		createBufferwriteFile(10, 20, deltaObjectId0);
+//		createBufferwriteFile(10, 20, deviceId0);
 //		closeBufferwrite();
-//		createBufferwriteFile(10, 20, deltaObjectId1);
+//		createBufferwriteFile(10, 20, deviceId1);
 //		closeBufferwrite();
-//		createBufferwriteFile(100, 100, deltaObjectId2);
+//		createBufferwriteFile(100, 100, deviceId2);
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //		try {
-//			fileNodeManager.delete(deltaObjectId2, measurementId, 101, dataType);
+//			fileNodeManager.delete(deviceId2, measurementId, 101, dataType);
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
@@ -698,36 +698,36 @@
 //			fail(e1.getMessage());
 //		}
 //		try {
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			if (queryStructure.getBufferwriteDataInFiles().size() == 2) {
 //				assertEquals(2, queryStructure.getBufferwriteDataInFiles().size());
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
-//				assertEquals(10, temp.getStartTime(deltaObjectId0));
-//				assertEquals(20, temp.getEndTime(deltaObjectId0));
+//				assertEquals(10, temp.getStartTime(deviceId0));
+//				assertEquals(20, temp.getEndTime(deviceId0));
 //				temp = queryStructure.getBufferwriteDataInFiles().get(1);
-//				assertEquals(10, temp.getStartTime(deltaObjectId1));
-//				assertEquals(20, temp.getEndTime(deltaObjectId1));
+//				assertEquals(10, temp.getStartTime(deviceId1));
+//				assertEquals(20, temp.getEndTime(deviceId1));
 //			} else {
 //				assertEquals(3, queryStructure.getBufferwriteDataInFiles().size());
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(0);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(10, temp.getStartTime(deltaObjectId0));
-//				assertEquals(20, temp.getEndTime(deltaObjectId0));
+//				assertEquals(10, temp.getStartTime(deviceId0));
+//				assertEquals(20, temp.getEndTime(deviceId0));
 //				temp = queryStructure.getBufferwriteDataInFiles().get(1);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(10, temp.getStartTime(deltaObjectId1));
-//				assertEquals(20, temp.getEndTime(deltaObjectId1));
+//				assertEquals(10, temp.getStartTime(deviceId1));
+//				assertEquals(20, temp.getEndTime(deviceId1));
 //				temp = queryStructure.getBufferwriteDataInFiles().get(2);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(200, temp.getStartTime(deltaObjectId2));
-//				assertEquals(-1, temp.getEndTime(deltaObjectId2));
+//				assertEquals(200, temp.getStartTime(deviceId2));
+//				assertEquals(-1, temp.getEndTime(deviceId2));
 //			}
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
 //		}
 //		// add empty overflow data
-//		TSRecord record = new TSRecord(5, deltaObjectId2);
+//		TSRecord record = new TSRecord(5, deviceId2);
 //		DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(5));
 //		record.addTuple(dataPoint);
 //		try {
@@ -736,9 +736,9 @@
 //			e.printStackTrace();
 //			fail(e.getMessage());
 //		}
-//		record = new TSRecord(200, deltaObjectId2);
+//		record = new TSRecord(200, deviceId2);
 //		record.addTuple(dataPoint);
-//		TSRecord overflow = new TSRecord(2, deltaObjectId2);
+//		TSRecord overflow = new TSRecord(2, deviceId2);
 //		overflow.addTuple(dataPoint);
 //		// merge data
 //		try {
@@ -756,18 +756,18 @@
 //				System.out.println("wait to merge end, 1000ms...");
 //				Thread.sleep(1000);
 //			}
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId2, measurementId, null, null, null);
 //			if (queryStructure.getBufferwriteDataInFiles().size() == 3) {
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(2);
 //				if (temp.overflowChangeType == OverflowChangeType.NO_CHANGE) {
-//					assertEquals(200, temp.getStartTime(deltaObjectId2));
-//					assertEquals(200, temp.getEndTime(deltaObjectId2));
+//					assertEquals(200, temp.getStartTime(deviceId2));
+//					assertEquals(200, temp.getEndTime(deviceId2));
 //				} else {
 //					fail("Error");
 //				}
 //				temp = queryStructure.getBufferwriteDataInFiles().get(0);
-//				assertEquals(2, temp.getStartTime(deltaObjectId2));
-//				assertEquals(5, temp.getEndTime(deltaObjectId2));
+//				assertEquals(2, temp.getStartTime(deviceId2));
+//				assertEquals(5, temp.getEndTime(deviceId2));
 //			} else {
 //				System.out.println(queryStructure);
 //				fail("Error");
@@ -777,21 +777,21 @@
 //				System.out.println("Wait to merge.....");
 //				Thread.sleep(1000);
 //			}
-//			queryStructure = fileNodeManager.query(deltaObjectId2, measurementId, null, null, null);
+//			queryStructure = fileNodeManager.query(deviceId2, measurementId, null, null, null);
 //			assertEquals(null, queryStructure.getAllOverflowData().get(0));
 //			if (queryStructure.getBufferwriteDataInFiles().size() == 4) {
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(2);
-//				assertEquals(2, temp.getStartTime(deltaObjectId2));
-//				assertEquals(5, temp.getEndTime(deltaObjectId2));
+//				assertEquals(2, temp.getStartTime(deviceId2));
+//				assertEquals(5, temp.getEndTime(deviceId2));
 //
 //				temp = queryStructure.getBufferwriteDataInFiles().get(3);
-//				assertEquals(200, temp.getStartTime(deltaObjectId2));
-//				assertEquals(200, temp.getEndTime(deltaObjectId2));
+//				assertEquals(200, temp.getStartTime(deviceId2));
+//				assertEquals(200, temp.getEndTime(deviceId2));
 //			} else if (queryStructure.getBufferwriteDataInFiles().size() == 3) {
 //				IntervalFileNode temp = queryStructure.getBufferwriteDataInFiles().get(2);
 //				assertEquals(1, temp.getStartTimeMap().size());
-//				assertEquals(200, temp.getStartTime(deltaObjectId2));
-//				assertEquals(200, temp.getEndTime(deltaObjectId2));
+//				assertEquals(200, temp.getStartTime(deviceId2));
+//				assertEquals(200, temp.getEndTime(deviceId2));
 //			} else {
 //				fail("Error");
 //			}
@@ -812,7 +812,7 @@
 //		testBufferAndQuery();
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //		try {
-//			fileNodeManager.delete(deltaObjectId2, measurementId, 25, dataType);
+//			fileNodeManager.delete(deviceId2, measurementId, 25, dataType);
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
@@ -825,8 +825,8 @@
 //					FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //					int token = 0;
 //					try {
-//						token = fileNodeManager.beginQuery(deltaObjectId0);
-//						QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null,
+//						token = fileNodeManager.beginQuery(deviceId0);
+//						QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null,
 //								null);
 //						assertEquals(null, queryStructure.getPageList());
 //						assertEquals(null, queryStructure.getCurrentPage());
@@ -840,7 +840,7 @@
 //						fail(e.getMessage());
 //					} finally {
 //						try {
-//							fileNodeManager.endQuery(deltaObjectId0, token);
+//							fileNodeManager.endQuery(deviceId0, token);
 //						} catch (FileNodeManagerException e) {
 //							e.printStackTrace();
 //							fail(e.getMessage());
@@ -856,7 +856,7 @@
 //				System.out.println("Wait to merge over");
 //				Thread.sleep(1000);
 //			}
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			assertEquals(5, queryStructure.getBufferwriteDataInFiles().size());
 //			assertEquals(OverflowChangeType.NO_CHANGE,
 //					queryStructure.getBufferwriteDataInFiles().get(3).overflowChangeType);
@@ -876,7 +876,7 @@
 //		testBufferAndQuery();
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //		try {
-//			fileNodeManager.delete(deltaObjectId2, measurementId, 25, dataType);
+//			fileNodeManager.delete(deviceId2, measurementId, 25, dataType);
 //		} catch (FileNodeManagerException e) {
 //			e.printStackTrace();
 //			fail(e.getMessage());
@@ -889,8 +889,8 @@
 //					FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 //					int token = 0;
 //					try {
-//						token = fileNodeManager.beginQuery(deltaObjectId0);
-//						QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null,
+//						token = fileNodeManager.beginQuery(deviceId0);
+//						QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null,
 //								null);
 //						assertEquals(null, queryStructure.getPageList());
 //						assertEquals(null, queryStructure.getCurrentPage());
@@ -899,11 +899,11 @@
 //						assertEquals(OverflowChangeType.CHANGED,
 //								queryStructure.getBufferwriteDataInFiles().get(2).overflowChangeType);
 //						// insert when merge
-//						TSRecord record = new TSRecord(15, deltaObjectId0);
+//						TSRecord record = new TSRecord(15, deviceId0);
 //						DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(15));
 //						record.addTuple(dataPoint);
 //						fileNodeManager.insert(record, false);
-//						queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//						queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //						assertEquals(6, queryStructure.getBufferwriteDataInFiles().size());
 //						assertEquals(OverflowChangeType.MERGING_CHANGE,
 //								queryStructure.getBufferwriteDataInFiles().get(2));
@@ -912,7 +912,7 @@
 //						fail(e.getMessage());
 //					} finally {
 //						try {
-//							fileNodeManager.endQuery(deltaObjectId0, token);
+//							fileNodeManager.endQuery(deviceId0, token);
 //						} catch (FileNodeManagerException e) {
 //							e.printStackTrace();
 //							fail(e.getMessage());
@@ -928,7 +928,7 @@
 //				System.out.println("Wait to merge over");
 //				Thread.sleep(1000);
 //			}
-//			QueryStructure queryStructure = fileNodeManager.query(deltaObjectId0, measurementId, null, null, null);
+//			QueryStructure queryStructure = fileNodeManager.query(deviceId0, measurementId, null, null, null);
 //			assertEquals(5, queryStructure.getBufferwriteDataInFiles().size());
 //			assertEquals(OverflowChangeType.NO_CHANGE,
 //					queryStructure.getBufferwriteDataInFiles().get(3).overflowChangeType);
@@ -944,9 +944,9 @@
 //
 //	private void createBufferwriteFile(long begin, long end, String... deltaObjects) {
 //		FileNodeManager fileNodeManager = FileNodeManager.getInstance();
-//		for (String deltaObjectId : deltaObjects) {
+//		for (String deviceId : deltaObjects) {
 //			for (long i = begin; i <= end; i++) {
-//				TSRecord record = new TSRecord(i, deltaObjectId);
+//				TSRecord record = new TSRecord(i, deviceId);
 //				DataPoint dataPoint = DataPoint.getDataPoint(dataType, measurementId, String.valueOf(i));
 //				record.addTuple(dataPoint);
 //				try {
