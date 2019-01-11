@@ -23,8 +23,8 @@ import static org.mockito.Mockito.when;
  * This class is designed to test the function of databaseMetaData which is used to fetch metadata from IoTDB.
  * (1) get all columns' name under a given path,
  * e.g., databaseMetaData.getColumns(“col”, “root”, null, null);
- * (2) get all delta objects under a given column
- * e.g., databaseMetaData.getColumns(“delta”, “vehicle”, null, null);
+ * (2) get all devices under a given column
+ * e.g., databaseMetaData.getColumns(“device”, “vehicle”, null, null);
  * (3) show timeseries path
  * e.g., databaseMetaData.getColumns(“ts”, “root.vehicle.d0.s0”, null, null);
  * (4) show storage group
@@ -104,11 +104,11 @@ public class TsfileDatabaseMetadataTest {
     }
 
     /**
-     * get all delta objects under a given column
+     * get all devices under a given column
      */
     @SuppressWarnings("resource")
     @Test
-    public void DeltaObject() throws Exception {
+    public void device() throws Exception {
         List<String> columnList = new ArrayList<>();
         columnList.add("root.vehicle.d0");
 
@@ -117,7 +117,7 @@ public class TsfileDatabaseMetadataTest {
         String standard = "Column,\n" +
                 "root.vehicle.d0,\n";
         try {
-            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDeltaObject, "vehicle", null, null);
+            ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDevice, "vehicle", null, null);
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             int colCount = resultSetMetaData.getColumnCount();
             StringBuilder resultStr = new StringBuilder();

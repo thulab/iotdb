@@ -17,10 +17,11 @@ public enum BasicOperatorType {
     EQ {
         @Override
         public <T extends Comparable<T>> IUnaryExpression getUnaryExpression(Path path, T value) {
-            if(path.equals("time"))
+            if(path.equals("time")) {
                 return new GlobalTimeExpression(TimeFilter.eq((Long) value));
-            else
+            } else {
                 return new SingleSeriesExpression(path, ValueFilter.eq(value));
+            }
         }
 
         @Override
@@ -36,10 +37,11 @@ public enum BasicOperatorType {
     LTEQ {
         @Override
         public <T extends Comparable<T>> IUnaryExpression getUnaryExpression(Path path, T value) {
-            if(path.equals("time"))
+            if(path.equals("time")) {
                 return new GlobalTimeExpression(TimeFilter.ltEq((Long) value));
-            else
+            } else {
                 return new SingleSeriesExpression(path, ValueFilter.ltEq(value));
+            }
         }
 
         @Override
@@ -55,10 +57,11 @@ public enum BasicOperatorType {
     LT {
         @Override
         public <T extends Comparable<T>> IUnaryExpression getUnaryExpression(Path path, T value) {
-            if(path.equals("time"))
+            if(path.equals("time")) {
                 return new GlobalTimeExpression(TimeFilter.lt((Long) value));
-            else
+            } else {
                 return new SingleSeriesExpression(path, ValueFilter.lt(value));
+            }
         }
 
         @Override
@@ -74,10 +77,11 @@ public enum BasicOperatorType {
     GTEQ {
         @Override
         public <T extends Comparable<T>> IUnaryExpression getUnaryExpression(Path path, T value) {
-            if(path.equals("time"))
+            if(path.equals("time")) {
                 return new GlobalTimeExpression(TimeFilter.gtEq((Long) value));
-            else
+            } else {
                 return new SingleSeriesExpression(path, ValueFilter.gtEq(value));
+            }
         }
 
         @Override
@@ -93,10 +97,11 @@ public enum BasicOperatorType {
     GT {
         @Override
         public <T extends Comparable<T>> IUnaryExpression getUnaryExpression(Path path, T value) {
-            if(path.equals("time"))
+            if(path.equals("time")) {
                 return new GlobalTimeExpression(TimeFilter.gt((Long) value));
-            else
+            } else {
                 return new SingleSeriesExpression(path, ValueFilter.gt(value));
+            }
         }
 
         @Override
@@ -112,10 +117,11 @@ public enum BasicOperatorType {
     NOTEQUAL {
         @Override
         public <T extends Comparable<T>> IUnaryExpression getUnaryExpression(Path path, T value) {
-            if(path.equals("time"))
+            if(path.equals("time")) {
                 return new GlobalTimeExpression(TimeFilter.notEq((Long) value));
-            else
+            } else {
                 return new SingleSeriesExpression(path, ValueFilter.notEq(value));
+            }
         }
 
         @Override

@@ -23,32 +23,32 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 	}
 
 	@Override
-	public ResultSet getColumns(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern)
+	public ResultSet getColumns(String catalog, String schemaPattern, String columnPattern, String devicePattern)
 			throws SQLException {
 		try {
-			return getColumnsFunc(catalog, schemaPattern, columnPattern, deltaObjectPattern);
+			return getColumnsFunc(catalog, schemaPattern, columnPattern, devicePattern);
 		} catch (TException e) {
 			boolean flag = connection.reconnect();
 			this.client = connection.client;
 			if (flag) {
 				try {
-					return getColumnsFunc(catalog, schemaPattern, columnPattern, deltaObjectPattern);
+					return getColumnsFunc(catalog, schemaPattern, columnPattern, devicePattern);
 				} catch (TException e2) {
 					throw new SQLException(String.format(
 							"Fail to get colums catalog=%s, schemaPattern=%s,"
-									+ " columnPattern=%s, deltaObjectPattern=%s after reconnecting. please check server status",
-							catalog, schemaPattern, columnPattern, deltaObjectPattern));
+									+ " columnPattern=%s, devicePattern=%s after reconnecting. please check server status",
+							catalog, schemaPattern, columnPattern, devicePattern));
 				}
 			} else {
 				throw new SQLException(String.format(
 						"Fail to reconnect to server when getting colums catalog=%s, schemaPattern=%s,"
-								+ " columnPattern=%s, deltaObjectPattern=%s after reconnecting. please check server status",
-						catalog, schemaPattern, columnPattern, deltaObjectPattern));
+								+ " columnPattern=%s, devicePattern=%s after reconnecting. please check server status",
+						catalog, schemaPattern, columnPattern, devicePattern));
 			}
 		}
 	}
 
-	private ResultSet getColumnsFunc(String catalog, String schemaPattern, String columnPattern, String deltaObjectPattern) throws TException, SQLException{
+	private ResultSet getColumnsFunc(String catalog, String schemaPattern, String columnPattern, String devicePattern) throws TException, SQLException{
 		TSFetchMetadataReq req;
         	switch (catalog) {
 				case TsFileDBConstant.CatalogColumn:
@@ -61,7 +61,7 @@ public class TsfileDatabaseMetadata implements DatabaseMetaData {
 				} catch (TException e) {
 					throw new TException("Conncetion error when fetching column metadata", e);
 				}
-			case TsFileDBConstant.CatalogDeltaObject:
+			case TsFileDBConstant.CatalogDevice:
 				req = new TSFetchMetadataReq(TsFileDBConstant.GLOBAL_DELTA_OBJECT_REQ);
 				req.setColumnPath(schemaPattern);
 				try {

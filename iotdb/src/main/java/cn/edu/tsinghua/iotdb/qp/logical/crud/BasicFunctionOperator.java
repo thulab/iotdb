@@ -56,6 +56,7 @@ public class BasicFunctionOperator extends FunctionOperator {
         return singlePath;
     }
 
+    @Override
     public void setSinglePath(Path singlePath) {
         this.path = this.singlePath = singlePath;
     }

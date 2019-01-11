@@ -31,8 +31,9 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
      *         node, and return the same seriesPath, otherwise, throw exception;
      */
     private Path mergeSamePathFilter(FilterOperator filter) throws LogicalOptimizeException {
-        if (filter.isLeaf())
+        if (filter.isLeaf()) {
             return filter.getSinglePath();
+        }
         List<FilterOperator> children = filter.getChildren();
         if (children.isEmpty()) {
             throw new LogicalOptimizeException("this inner filter has no children!");
@@ -46,8 +47,9 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
             tempPath = mergeSamePathFilter(children.get(i));
             // if one of children differs from others or is not single node(seriesPath = null), filter's seriesPath
             // is null
-            if (tempPath == null || !tempPath.equals(childPath))
+            if (tempPath == null || !tempPath.equals(childPath)) {
                 childPath = null;
+            }
         }
         if (childPath != null) {
             filter.setIsSingle(true);
@@ -56,8 +58,9 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
         }
 
         // sort paths of BasicFunction by their single seriesPath. We don't sort children on non-leaf layer.
-        if(!children.isEmpty() && allIsBasic(children))
+        if(!children.isEmpty() && allIsBasic(children)) {
             children.sort(Comparator.comparing(o -> o.getSinglePath().getFullPath()));
+        }
         List<FilterOperator> ret = new ArrayList<>();
 
         List<FilterOperator> tempExtrNode = null;
@@ -127,8 +130,9 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
 
     private boolean allIsBasic(List<FilterOperator> children) {
         for(FilterOperator child: children) {
-            if(!(child instanceof BasicFunctionOperator))
+            if(!(child instanceof BasicFunctionOperator)) {
                 return false;
+            }
         }
         return true;
     }

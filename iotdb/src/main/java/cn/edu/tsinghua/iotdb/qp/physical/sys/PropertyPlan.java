@@ -46,10 +46,12 @@ public class PropertyPlan extends PhysicalPlan {
     @Override
     public List<Path> getPaths() {
         List<Path> ret = new ArrayList<>();
-        if (metadataPath != null)
+        if (metadataPath != null) {
             ret.add(metadataPath);
-        if (propertyPath != null)
+        }
+        if (propertyPath != null) {
             ret.add(propertyPath);
+        }
         return ret;
     }
 }

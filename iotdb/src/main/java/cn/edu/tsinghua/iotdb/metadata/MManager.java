@@ -683,7 +683,7 @@ public class MManager {
         }
     }
 
-    public MNode getNodeByDeltaObjectIDFromCache(String deltaObjectID) throws PathErrorException {
+    public MNode getNodeByDeviceIdFromCache(String deltaObjectID) throws PathErrorException {
         lock.readLock().lock();
         try {
             return mNodeCache.get(deltaObjectID);

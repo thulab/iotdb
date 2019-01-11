@@ -117,8 +117,9 @@ public class AuthorPlan extends PhysicalPlan {
 
 	private Set<Integer> strToPermissions(String[] authorizationList) throws AuthException {
 		Set<Integer> result = new HashSet<>();
-		if (authorizationList == null)
-			return result;
+		if (authorizationList == null) {
+            return result;
+        }
 		for (String s : authorizationList) {
 			PrivilegeType[] types = PrivilegeType.values();
 			boolean legal = false;
@@ -150,8 +151,9 @@ public class AuthorPlan extends PhysicalPlan {
 	@Override
 	public List<Path> getPaths() {
 		List<Path> ret = new ArrayList<>();
-		if (nodeName != null)
-			ret.add(nodeName);
+		if (nodeName != null) {
+            ret.add(nodeName);
+        }
 		return ret;
 	}
 }

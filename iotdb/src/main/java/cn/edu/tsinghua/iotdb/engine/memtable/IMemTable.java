@@ -14,7 +14,7 @@ public interface IMemTable {
 
     Map<String, Map<String, IWritableMemChunk>> getMemTableMap();
 
-    void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue);
+    void write(String deviceId, String measurement, TSDataType dataType, long insertTime, String insertValue);
 
     int size();
 

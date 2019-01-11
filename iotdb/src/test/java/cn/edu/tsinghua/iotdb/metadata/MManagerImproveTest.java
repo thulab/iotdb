@@ -188,7 +188,7 @@ public class MManagerImproveTest {
 
     public void doCacheTest(String deltaObject, List<String> measurementList)
             throws PathErrorException, ProcessorException {
-        MNode node = mManager.getNodeByDeltaObjectIDFromCache(deltaObject);
+        MNode node = mManager.getNodeByDeviceIdFromCache(deltaObject);
         for (int i = 0; i < measurementList.size(); i++) {
             assertEquals(true, node.hasChild(measurementList.get(i)));
             MNode measurementNode = node.getChild(measurementList.get(i));

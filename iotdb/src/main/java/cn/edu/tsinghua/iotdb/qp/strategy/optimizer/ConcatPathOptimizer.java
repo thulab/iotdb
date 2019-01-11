@@ -63,8 +63,9 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
 
         // concat filter
         FilterOperator filter = sfwOperator.getFilterOperator();
-        if (filter == null)
+        if (filter == null) {
             return operator;
+        }
         sfwOperator.setFilterOperator(concatFilter(prefixPaths, filter));
         return sfwOperator;
     }
@@ -83,8 +84,9 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         if (selectOperator == null || (suffixPaths = selectOperator.getSuffixPaths()).isEmpty()) {
             throw new LogicalOptimizeException("given SFWOperator doesn't have suffix paths, cannot concat seriesPath");
         }
-        if(selectOperator.getAggregations().size() != 0 && selectOperator.getSuffixPaths().size() != selectOperator.getAggregations().size())
+        if(selectOperator.getAggregations().size() != 0 && selectOperator.getSuffixPaths().size() != selectOperator.getAggregations().size()) {
             throw new LogicalOptimizeException("Common queries and aggregated queries are not allowed to appear at the same time");
+        }
 
         List<Path> allPaths = new ArrayList<>();
         List<String> originAggregations = selectOperator.getAggregations();
@@ -94,15 +96,18 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
             Path selectPath = suffixPaths.get(i);
             if (selectPath.startWith(SQLConstant.ROOT)) {
                 allPaths.add(selectPath);
-                if (originAggregations != null && !originAggregations.isEmpty())
+                if (originAggregations != null && !originAggregations.isEmpty()) {
                     afterConcatAggregations.add(originAggregations.get(i));
+                }
             } else {
                 for (Path fromPath : fromPaths) {
-                    if (!fromPath.startWith(SQLConstant.ROOT))
+                    if (!fromPath.startWith(SQLConstant.ROOT)) {
                         throw new LogicalOptimizeException("illegal from clause : " + fromPath.getFullPath());
+                    }
                     allPaths.add(Path.addPrefixPath(selectPath, fromPath));
-                    if (originAggregations != null && !originAggregations.isEmpty())
+                    if (originAggregations != null && !originAggregations.isEmpty()) {
                         afterConcatAggregations.add(originAggregations.get(i));
+                    }
                 }
             }
         }
@@ -205,8 +210,9 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         BasicFunctionOperator basicOperator = (BasicFunctionOperator) operator;
         Path filterPath = basicOperator.getSinglePath();
         // do nothing in the cases of "where time > 5" or "where root.d1.s1 > 5"
-        if (SQLConstant.isReservedPath(filterPath) || filterPath.startWith(SQLConstant.ROOT))
+        if (SQLConstant.isReservedPath(filterPath) || filterPath.startWith(SQLConstant.ROOT)) {
             return operator;
+        }
         List<Path> concatPaths = new ArrayList<>();
         fromPaths.forEach(fromPath -> concatPaths.add(Path.addPrefixPath(filterPath, fromPath)));
         List<Path> noStarPaths = removeStarsInPathWithUnique(concatPaths);
@@ -282,15 +288,17 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
                 List<String> actualPaths = executor.getAllPaths(paths.get(i).getFullPath());
                 for (String actualPath : actualPaths) {
                     retPaths.add(new Path(actualPath));
-                    if (afterConcatAggregations != null && !afterConcatAggregations.isEmpty())
+                    if (afterConcatAggregations != null && !afterConcatAggregations.isEmpty()) {
                         newAggregations.add(afterConcatAggregations.get(i));
+                    }
                 }
             } catch (PathErrorException e) {
                 throw new LogicalOptimizeException("error when remove star: " + e.getMessage());
             }
         }
-        if (retPaths.isEmpty())
+        if (retPaths.isEmpty()) {
             throw new LogicalOptimizeException("do not select any existing seriesPath");
+        }
         selectOperator.setSuffixPathList(retPaths);
         selectOperator.setAggregations(newAggregations);
     }

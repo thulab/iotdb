@@ -20,5 +20,5 @@ public class TsFileDBConstant {
 	public static final String CatalogColumn = "col";
 	public static final String CatalogTimeseries = "ts";
 	public static final String CatalogStorageGroup = "sg";
-	public static final String CatalogDeltaObject = "delta";
+	public static final String CatalogDevice = "delta";
 }

@@ -89,11 +89,11 @@ public class MManagerAdvancedTest {
         Assert.assertEquals(false, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s100").isSuccessfully());
         Assert.assertEquals(null, mmanager.checkPathStorageLevelAndGetDataType("root.vehicle.d0.s100").getDataType());
 
-        MNode node = mmanager.getNodeByDeltaObjectIDFromCache("root.vehicle.d0");
+        MNode node = mmanager.getNodeByDeviceIdFromCache("root.vehicle.d0");
         Assert.assertEquals(TSDataType.INT32, node.getChild("s0").getSchema().dataType);
 
         try {
-            MNode node1 = mmanager.getNodeByDeltaObjectIDFromCache("root.vehicle.d100");
+            MNode node1 = mmanager.getNodeByDeviceIdFromCache("root.vehicle.d100");
             fail();
         } catch (PathErrorException e) {
 

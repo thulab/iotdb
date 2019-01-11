@@ -13,8 +13,8 @@ import cn.edu.tsinghua.tsfile.file.metadata.enums.TSDataType;
 public class OverflowSupportTest {
 
 	private OverflowSupport support = new OverflowSupport();
-	private String deltaObjectId1 = "d1";
-	private String deltaObjectId2 = "d2";
+	private String deviceId1 = "d1";
+	private String deviceId2 = "d2";
 	private String measurementId1 = "s1";
 	private String measurementId2 = "s2";
 	private TSDataType dataType1 = TSDataType.INT32;
@@ -27,20 +27,20 @@ public class OverflowSupportTest {
 		assertEquals(true, support.isEmptyOfOverflowSeriesMap());
 		assertEquals(true, support.isEmptyOfMemTable());
 		// d1 s1
-		support.update(deltaObjectId1, measurementId1, 2, 10, dataType1, BytesUtils.intToBytes(10));
-		support.update(deltaObjectId1, measurementId1, 20, 30, dataType1, BytesUtils.intToBytes(20));
+		support.update(deviceId1, measurementId1, 2, 10, dataType1, BytesUtils.intToBytes(10));
+		support.update(deviceId1, measurementId1, 20, 30, dataType1, BytesUtils.intToBytes(20));
 		// time :[2,10] [20,30] value: int [10,10] int[20,20]
 		// d1 s2
-		support.delete(deltaObjectId1, measurementId2, 10, dataType1);
-		support.update(deltaObjectId1, measurementId2, 20, 30, dataType1, BytesUtils.intToBytes(20));
+		support.delete(deviceId1, measurementId2, 10, dataType1);
+		support.update(deviceId1, measurementId2, 20, 30, dataType1, BytesUtils.intToBytes(20));
 		// time: [0,-10] [20,30] value[20,20]
 		// d2 s1
-		support.update(deltaObjectId2, measurementId1, 10, 20, dataType2, BytesUtils.floatToBytes(10.5f));
-		support.update(deltaObjectId2, measurementId1, 15, 40, dataType2, BytesUtils.floatToBytes(20.5f));
+		support.update(deviceId2, measurementId1, 10, 20, dataType2, BytesUtils.floatToBytes(10.5f));
+		support.update(deviceId2, measurementId1, 15, 40, dataType2, BytesUtils.floatToBytes(20.5f));
 		// time: [5,9] [10,40] value [10.5,10.5] [20.5,20.5]
 		// d2 s2
-		support.update(deltaObjectId2, measurementId2, 2, 10, dataType2, BytesUtils.floatToBytes(5.5f));
-		support.delete(deltaObjectId2, measurementId2, 20, dataType2);
+		support.update(deviceId2, measurementId2, 2, 10, dataType2, BytesUtils.floatToBytes(5.5f));
+		support.delete(deviceId2, measurementId2, 20, dataType2);
 		// time : [0,-20]
 
 	}
@@ -58,14 +58,14 @@ public class OverflowSupportTest {
 		assertEquals(false, support.isEmptyOfMemTable());
 
 		int num = 1;
-		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId1,
+		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deviceId1,
 				measurementId1, dataType1).getSortedTimeValuePairList()) {
 			assertEquals(num, pair.getTimestamp());
 			assertEquals(num, pair.getValue().getInt());
 			num++;
 		}
 		num = 1;
-		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deltaObjectId2,
+		for (TimeValuePair pair : support.queryOverflowInsertInMemory(deviceId2,
 				measurementId2, dataType2).getSortedTimeValuePairList()) {
 			assertEquals(num, pair.getTimestamp());
 			if (num == 2) {

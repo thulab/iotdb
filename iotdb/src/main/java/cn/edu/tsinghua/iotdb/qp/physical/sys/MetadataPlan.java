@@ -102,8 +102,9 @@ public class MetadataPlan extends PhysicalPlan {
 		}
 		
 		List<Path> ret = new ArrayList<>();
-		if (path != null)
-			ret.add(path);
+		if (path != null) {
+            ret.add(path);
+        }
 		return ret;
 	}
 }

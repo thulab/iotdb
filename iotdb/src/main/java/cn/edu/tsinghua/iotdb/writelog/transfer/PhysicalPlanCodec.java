@@ -154,7 +154,7 @@ public enum PhysicalPlanCodec {
                 buffer.put((byte) plan.getInsertType());
                 buffer.putLong(plan.getTime());
 
-                byte[] deltaObjectBytes = BytesUtils.StringToBytes(plan.getDeltaObject());
+                byte[] deltaObjectBytes = BytesUtils.StringToBytes(plan.getDeviceId());
                 buffer.putInt(deltaObjectBytes.length);
                 buffer.put(deltaObjectBytes);
 

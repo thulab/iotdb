@@ -1,6 +1,5 @@
 package cn.edu.tsinghua.iotdb.qp.utils;
 
-import cn.edu.tsinghua.iotdb.exception.PathErrorException;
 import cn.edu.tsinghua.iotdb.exception.ProcessorException;
 import cn.edu.tsinghua.iotdb.qp.constant.SQLConstant;
 import cn.edu.tsinghua.iotdb.qp.executor.QueryProcessExecutor;
@@ -16,7 +15,6 @@ import cn.edu.tsinghua.tsfile.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -69,7 +67,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
                 return flag;
             case INSERT:
                 InsertPlan insert = (InsertPlan) plan;
-                int result = multiInsert(insert.getDeltaObject(), insert.getTime(), insert.getMeasurements(), insert
+                int result = multiInsert(insert.getDeviceId(), insert.getTime(), insert.getMeasurements(), insert
                         .getValues());
                 return result == 0;
             default:
@@ -152,7 +150,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
     }
 
     @Override
-    public int multiInsert(String deltaObject, long insertTime, List<String> measurementList, List<String>
+    public int multiInsert(String deviceId, long insertTime, List<String> measurementList, List<String>
             insertValues) {
         return 0;
     }

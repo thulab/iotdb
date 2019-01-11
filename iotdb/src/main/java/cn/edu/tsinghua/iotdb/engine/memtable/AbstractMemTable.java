@@ -44,8 +44,8 @@ public abstract class AbstractMemTable implements IMemTable{
     protected abstract IWritableMemChunk genMemSeries(TSDataType dataType);
 
     @Override
-    public void write(String deltaObject, String measurement, TSDataType dataType, long insertTime, String insertValue) {
-        IWritableMemChunk memSeries = createIfNotExistAndGet(deltaObject, measurement, dataType);
+    public void write(String deviceId, String measurement, TSDataType dataType, long insertTime, String insertValue) {
+        IWritableMemChunk memSeries = createIfNotExistAndGet(deviceId, measurement, dataType);
         memSeries.write(insertTime,insertValue);
     }
 

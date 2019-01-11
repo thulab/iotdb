@@ -245,7 +245,7 @@ public class IoTDBMetadataFetchTest {
         String standard = "Column,\n" +
                 "root.ln.wf01.wt01,\n";
 
-        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDeltaObject, "ln", null, null);
+        ResultSet resultSet = databaseMetaData.getColumns(TsFileDBConstant.CatalogDevice, "ln", null, null);
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
         int colCount = resultSetMetaData.getColumnCount();
         StringBuilder resultStr = new StringBuilder();
