@@ -142,13 +142,15 @@ public class IoTDBDaemonTest {
                 selectOneColumnWithFilterTest();
 
                 /**
-                 * FIXME current query design does not support: query can get the result satisfy condition after update but original value not
+                 * FIXME current design has the following problem: original data value does not satisfy a certain query condition,
+                 * and the updated version satisfy the query condition, however the updated data still can't be obtained by the query condition.
+                 *
                  * for example  "insert into root.vehicle.d0(timestamp,s1) values(1000,55555)"
                  *      "UPDATE root.vehicle SET d0.s1 = 0 WHERE time > 90"
                  *      select s1 from root.vehicle.d0 where s1 < 100;
                  *      currently we can't get the record of which timestamp = 1000
                  *      (ps single point update can be implemented through ingestion,
-                 *      the latter ingested value will override previous the value)
+                 *      the latter ingested value will override previous value)
                  * */
                 //textDataTypeTest();
 

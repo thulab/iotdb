@@ -45,7 +45,7 @@ public class RawSeriesChunkReaderByTimestamp implements SeriesReaderByTimeStamp 
 
     }
 
-    //TODO consider change timeValuePairIterator to list, and use binary search instead of sequential search
+    //TODO consider change timeValuePairIterator to List structure, and use binary search instead of sequential search
     @Override
     public TsPrimitiveType getValueInTimestamp(long timestamp) throws IOException {
         while(hasNext()){
