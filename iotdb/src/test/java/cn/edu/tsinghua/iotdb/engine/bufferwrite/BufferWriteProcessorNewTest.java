@@ -2,7 +2,6 @@ package cn.edu.tsinghua.iotdb.engine.bufferwrite;
 
 import cn.edu.tsinghua.iotdb.conf.directories.Directories;
 import cn.edu.tsinghua.iotdb.engine.MetadataManagerHelper;
-import cn.edu.tsinghua.iotdb.engine.memtable.TimeValuePairSorter;
 import cn.edu.tsinghua.iotdb.engine.querycontext.ReadOnlyMemChunk;
 import cn.edu.tsinghua.iotdb.exception.BufferWriteProcessorException;
 import cn.edu.tsinghua.iotdb.utils.EnvironmentUtils;
@@ -84,7 +83,7 @@ public class BufferWriteProcessorNewTest {
 		assertEquals(false, bufferwrite.isNewProcessor());
 		Pair<ReadOnlyMemChunk, List<ChunkMetaData>> pair = bufferwrite.queryBufferWriteData(processorName,
 				measurementId, dataType);
-		TimeValuePairSorter left = pair.left;
+		ReadOnlyMemChunk left = pair.left;
 		List<ChunkMetaData> right = pair.right;
 		assertEquals(true, left.isEmpty());
 		assertEquals(0, right.size());
