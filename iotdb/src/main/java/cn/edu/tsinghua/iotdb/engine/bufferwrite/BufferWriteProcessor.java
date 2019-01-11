@@ -314,7 +314,7 @@ public class BufferWriteProcessor extends Processor {
                 FlushManager.getInstance().submit( ()-> flushOperation("asynchronously"));
             }
         }
-        return null;
+        return null;//TODO return a meaningful Future
     }
 
     public boolean isFlush() {
