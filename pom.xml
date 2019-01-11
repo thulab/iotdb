@@ -379,13 +379,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- temporary, we do not enable the following plugin -->
-			<!--<plugin> <groupId>net.revelc.code.formatter</groupId> <artifactId>formatter-maven-plugin</artifactId> 
-				<version>2.7.5</version> <executions> <execution> <goals> <goal>format</goal> 
-				</goals> <configuration> <encoding>UTF-8</encoding> <configFile>${project.basedir}/checkstyle.xml</configFile> 
-				</configuration> </execution> </executions> </plugin> -->
-
 		</plugins>
 	</build>
 
