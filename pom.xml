@@ -240,11 +240,41 @@
 					</execution>
 				</executions>
 			</plugin-->
-
+			<plugin>
+			    <groupId>com.mycila</groupId>
+			    <artifactId>license-maven-plugin</artifactId>
+			    <version>3.0</version>
+			    <configuration>
+			        <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+			        <properties>
+			            <owner>Apache IoTDB(incubating)</owner>
+			            <email>dev@iotdb.apache.org</email>
+			            <project.inceptionYear>2019</project.inceptionYear>
+			        </properties>
+			        <mapping>
+					    <g>DOUBLESLASH_STYLE</g>
+					    <thrift>SLASHSTAR_STYLE</thrift>
+					</mapping>
+			        <excludes>
+			            <exclude>**/README.md</exclude>
+			            <exclude>**/src/test/resources/**</exclude>
+			            <exclude>**/src/main/resources/**</exclude>
+			            <exclude>**/*.log</exclude>
+			        </excludes>
+			    </configuration>
+			    <executions>
+			        <execution>
+			            <goals>
+			                <goal>check</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+			</plugin>
 			<!--
 				Check if all files contain Apache headers in them.
+				Ignore this plugin, we use license-maven-plugin to check apache header.
 			-->
-			<plugin>
+<!-- 			<plugin>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
 				<executions>
@@ -257,27 +287,29 @@
 					</execution>
 				</executions>
 				<configuration>
-					<!-- Should be enabled as soon as the headers are in position -->
+					Should be enabled as soon as the headers are in position
 					<skip>true</skip>
 					<excludes>
-						<!-- Git related files -->
+						Git related files
 						<exclude>**/.git/**</exclude>
 						<exclude>**/.gitignore</exclude>
 
-						<!-- Maven related files -->
+						Maven related files
 						<exclude>**/target/**</exclude>
 
-						<!-- Eclipse related files -->
+						Eclipse related files
 						<exclude>**/.project</exclude>
 						<exclude>**/.settings/**</exclude>
 						<exclude>**/.classpath</exclude>
 
-						<!-- IntelliJ related files -->
+						IntelliJ related files
 						<exclude>**/.idea/**</exclude>
 						<exclude>**/*.iml</exclude>
+						Runtime log
+						<exclude>**/*.log</exclude>
 					</excludes>
 				</configuration>
-			</plugin>
+			</plugin> -->
 
 			<!--use `mvn cobertura:cobertura` -->
 			<plugin>
