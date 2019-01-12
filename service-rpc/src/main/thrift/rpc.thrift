@@ -1,4 +1,4 @@
-namespace java cn.edu.tsinghua.service.rpc.thrift
+namespace java org.apache.iotdb.service.rpc.thrift
 
 
 // The return status code contained in each response.
@@ -174,10 +174,8 @@ struct TSDataValue{
 
 struct TSRowRecord{
   1: required i64 timestamp
-  // column names
-  2: required list<string> keys
   // column values
-  3: required list<TSDataValue> values
+  2: required list<TSDataValue> values
 }
 
 struct TSQueryDataSet{

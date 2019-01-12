@@ -18,7 +18,7 @@ After downloading this plugin, you can use the grafana-cli tool to install Simpl
 
 Alternatively, you can manually download the .zip file and unpack it into your grafana plugins directory.
 
-* `{grafana-install-directory}/data/plugin/`（Windows）
+* `{grafana-install-directory}/data/plugin/` (Windows)
 * `/var/lib/grafana/plugins` (Linux)
 
 ### Start Grafana
@@ -41,10 +41,10 @@ Copy `application.properties` from `conf/` directory to `target` directory.(Or j
 Edit `application.properties`
 ```
 # ip and port of IoTDB 
-spring.datasource.url = jdbc:tsfile://127.0.0.1:6667/
+spring.datasource.url = jdbc:iotdb://127.0.0.1:6667/
 spring.datasource.username = root
 spring.datasource.password = root
-spring.datasource.driver-class-name=cn.edu.tsinghua.iotdb.jdbc.TsfileDriver
+spring.datasource.driver-class-name=org.apache.iotdb.jdbc.TsfileDriver
 server.port = 8888
 ```
 

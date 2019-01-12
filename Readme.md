@@ -40,7 +40,7 @@ If you want to use Hadoop or Spark to analyze IoTDB data file (called as TsFile)
 
 # Quick Start
 
-This short guide will walk you through the basic process of using IoTDB. For a more-complete guide, please visit our website’s [Document Part](http://tsfile.org/document).
+This short guide will walk you through the basic process of using IoTDB. For a more-complete guide, please visit our website's [Document Part](http://tsfile.org/document).
 
 ## Build
 
@@ -55,6 +55,9 @@ Then you can build IoTDB using Maven in current folder:
 ```
 mvn clean package -Dmaven.test.skip=true
 ```
+
+(__NOTICE:__ Remember that you have to use -Dmaven.test.skip=true before you run tests, it is because some IT (integration test) requires jars in iotdb-cli/cli/lib/, and the folder is empty before you run `mvn package`. After that, you can run `mvn test` as long as you do not run `mvn clean`. For more details, see: [How to test IoTDB
+](https://github.com/thulab/iotdb/wiki/How-to-test-IoTDB) )
 
 If successful, you will see the the following text in the terminal:
 
@@ -145,7 +148,7 @@ IoTDB> login successfully
 IoTDB>
 ```
 ### Have a try
-Now, you can use IoTDB SQL to operate IoTDB, and when you’ve had enough fun, you can input 'quit' or 'exit' command to leave the client. 
+Now, you can use IoTDB SQL to operate IoTDB, and when you've had enough fun, you can input 'quit' or 'exit' command to leave the client. 
 
 But lets try something slightly more interesting:
 
@@ -193,7 +196,7 @@ record number = 1
 execute successfully.
 ```
 
-If your session looks similar to what’s above, congrats, your IoTDB is operational!
+If your session looks similar to what's above, congrats, your IoTDB is operational!
 
 For more on what commands are supported by IoTDB SQL, see our website [document page](http://tsfile.org/document). The eighth chapter in User Guide Document will give you help.
 
