@@ -1,11 +1,12 @@
 package org.apache.iotdb.db.concurrent;
 
-import static org.junit.Assert.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 public class IoTDBDefaultThreadExceptionHandlerTest {
 	private Thread.UncaughtExceptionHandler handler;
@@ -31,8 +32,8 @@ public class IoTDBDefaultThreadExceptionHandlerTest {
 			TestThread thread = new TestThread();
 			thread.start();
 		}
-		Thread.sleep(100);
-		assertEquals(count.get(), num);
+		Thread.sleep(500);
+		assertEquals(num, count.get());
 	}
 
 	class TestThread extends Thread{
