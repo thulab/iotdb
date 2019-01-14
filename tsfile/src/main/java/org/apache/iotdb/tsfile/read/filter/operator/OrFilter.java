@@ -21,9 +21,7 @@ import org.apache.iotdb.tsfile.read.filter.basic.Filter;
 
 import java.io.Serializable;
 
-/**
- * Either of the left and right operators of AndExpression must satisfy the condition.
- */
+/** Either of the left and right operators of AndExpression must satisfy the condition. */
 public class OrFilter extends BinaryFilter implements Serializable {
 
     private static final long serialVersionUID = -968055896528472694L;
@@ -51,5 +49,4 @@ public class OrFilter extends BinaryFilter implements Serializable {
     public boolean satisfyStartEndTime(long startTime, long endTime) {
         return left.satisfyStartEndTime(startTime, endTime) || right.satisfyStartEndTime(startTime, endTime);
     }
-
 }

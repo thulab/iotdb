@@ -34,35 +34,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Decoder switch or enums value using bitmap, bitmap-encoding: {@code <length> <num> <encoded-data>}
+ * Decoder switch or enums value using bitmap, bitmap-encoding: {@code <length> <num>
+ * <encoded-data>}
  */
 @Deprecated
 public class BitmapDecoder extends Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(BitmapDecoder.class);
 
-    /**
-     * how many bytes for all encoded data in inputstream
-     */
+    /** how many bytes for all encoded data in inputstream */
     private int length;
 
-    /**
-     * number of encoded data
-     */
+    /** number of encoded data */
     private int number;
 
-    /**
-     * number of data left for reading in current buffer
-     */
+    /** number of data left for reading in current buffer */
     private int currentCount;
 
-    /**
-     * each time decoder receives a inputstream, decoder creates a buffer to save all encoded data
-     */
+    /** each time decoder receives a inputstream, decoder creates a buffer to save all encoded data */
     private ByteBuffer byteCache;
 
-    /**
-     * decoder reads all bitmap index from byteCache and save in Map<value, bitmap index>
-     */
+    /** decoder reads all bitmap index from byteCache and save in Map<value, bitmap index> */
     private Map<Integer, byte[]> buffer;
 
     /**
@@ -110,9 +101,7 @@ public class BitmapDecoder extends Decoder {
         this.byteCache = ByteBuffer.wrap(tmp);
     }
 
-    /**
-     * Decode all data from buffer and save them
-     */
+    /** Decode all data from buffer and save them */
     private void readNext() throws IOException {
         int len = (this.number + 7) / 8;
         while (byteCache.remaining() > 0) {

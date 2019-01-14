@@ -118,7 +118,6 @@ public class TimePlainEncodeReadTest {
         while (dataSet.hasNext()) {
             dataSet.next();
         }
-
     }
 
     @Test
@@ -293,7 +292,6 @@ public class TimePlainEncodeReadTest {
             cnt++;
         }
         Assert.assertEquals(cnt, 0);
-
     }
 
     @Test

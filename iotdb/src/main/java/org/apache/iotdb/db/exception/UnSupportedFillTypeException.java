@@ -28,5 +28,4 @@ public class UnSupportedFillTypeException extends DeltaEngineRunningException {
     public UnSupportedFillTypeException(Throwable cause) {
         super(cause);
     }
-
 }

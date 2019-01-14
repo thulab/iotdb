@@ -39,14 +39,10 @@ public class FloatDecoder extends Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(FloatDecoder.class);
     private Decoder decoder;
 
-    /**
-     * maxPointValue = 10^(maxPointNumer) maxPointNumber can be read from stream
-     */
+    /** maxPointValue = 10^(maxPointNumer) maxPointNumber can be read from stream */
     private double maxPointValue;
 
-    /**
-     * flag to indicate whether we have read maxPointNumber and calculate maxPointValue
-     */
+    /** flag to indicate whether we have read maxPointNumber and calculate maxPointValue */
     private boolean isMaxPointNumberRead;
 
     public FloatDecoder(TSEncoding encodingType, TSDataType dataType) {

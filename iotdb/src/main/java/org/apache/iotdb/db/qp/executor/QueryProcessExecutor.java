@@ -175,5 +175,4 @@ public abstract class QueryProcessExecutor {
             List<String> insertValues) throws ProcessorException;
 
     public abstract List<String> getAllPaths(String originPath) throws PathErrorException;
-
 }

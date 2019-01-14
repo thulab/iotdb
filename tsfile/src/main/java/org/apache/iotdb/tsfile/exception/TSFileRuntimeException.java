@@ -21,7 +21,7 @@ package org.apache.iotdb.tsfile.exception;
  *
  * @author kangrong
  */
-abstract public class TSFileRuntimeException extends RuntimeException {
+public abstract class TSFileRuntimeException extends RuntimeException {
     private static final long serialVersionUID = 6455048223316780984L;
 
     public TSFileRuntimeException() {

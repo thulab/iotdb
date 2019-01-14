@@ -26,9 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-/**
- * MetaData of one chunk
- */
+/** MetaData of one chunk */
 public class ChunkMetaData {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkMetaData.class);
 
@@ -60,7 +58,6 @@ public class ChunkMetaData {
                 4 * Long.BYTES + // 4 long: offsetOfChunkHeader, numOfPoints, startTime, endTime
                 TSDataType.getSerializedSize() + // TSDataType
                 (valuesStatistics == null ? TsDigest.getNullDigestSize() : valuesStatistics.getSerializedSize());
-
     }
 
     private ChunkMetaData() {
@@ -87,9 +84,7 @@ public class ChunkMetaData {
         this.numOfPoints = numRows;
     }
 
-    /**
-     * @return Byte offset of header of this chunk (includes the marker)
-     */
+    /** @return Byte offset of header of this chunk (includes the marker) */
     public long getOffsetOfChunkHeader() {
         return offsetOfChunkHeader;
     }
@@ -104,7 +99,6 @@ public class ChunkMetaData {
 
     public void setDigest(TsDigest digest) {
         this.valuesStatistics = digest;
-
     }
 
     public long getStartTime() {
@@ -209,5 +203,4 @@ public class ChunkMetaData {
     public void setMaxTombstoneTime(long maxTombstoneTime) {
         this.maxTombstoneTime = maxTombstoneTime;
     }
-
 }

@@ -38,7 +38,6 @@ public class RAFLogReader implements ILogReader {
     private PhysicalPlan planBuffer = null;
 
     public RAFLogReader() {
-
     }
 
     public RAFLogReader(File logFile) throws FileNotFoundException {

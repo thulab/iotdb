@@ -24,14 +24,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- * Encoder for long value using rle or bit-packing
- */
+/** Encoder for long value using rle or bit-packing */
 public class LongRleEncoder extends RleEncoder<Long> {
 
-    /**
-     * Packer for packing long value
-     */
+    /** Packer for packing long value */
     private LongPacker packer;
 
     public LongRleEncoder(EndianType endianType) {
@@ -73,7 +69,7 @@ public class LongRleEncoder extends RleEncoder<Long> {
 
     /**
      * write bytes to OutputStream using rle rle format: [header][value]
-     * 
+     *
      * @throws IOException
      *             cannot write rle run
      */

@@ -89,7 +89,6 @@ public abstract class GorillaDecoder extends Decoder {
             this.buffer = EOF;
             numberLeftInBuffer = -1;
         }
-
     }
 
     /**

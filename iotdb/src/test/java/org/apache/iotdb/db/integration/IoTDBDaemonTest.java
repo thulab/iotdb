@@ -49,18 +49,14 @@ public class IoTDBDaemonTest {
 
     private static Connection connection;
 
-    private static String[] sqls = new String[] {
-
-            "SET STORAGE GROUP TO root.vehicle.d0", "SET STORAGE GROUP TO root.vehicle.d1",
-
+    private static String[] sqls = new String[] { "SET STORAGE GROUP TO root.vehicle.d0",
+            "SET STORAGE GROUP TO root.vehicle.d1",
             "CREATE TIMESERIES root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE",
             "CREATE TIMESERIES root.vehicle.d0.s3 WITH DATATYPE=TEXT, ENCODING=PLAIN",
             "CREATE TIMESERIES root.vehicle.d0.s4 WITH DATATYPE=BOOLEAN, ENCODING=PLAIN",
-
             "CREATE TIMESERIES root.vehicle.d1.s0 WITH DATATYPE=INT32, ENCODING=RLE",
-
             "insert into root.vehicle.d0(timestamp,s0) values(1,101)",
             "insert into root.vehicle.d0(timestamp,s0) values(2,198)",
             "insert into root.vehicle.d0(timestamp,s0) values(100,99)",
@@ -73,7 +69,6 @@ public class IoTDBDaemonTest {
             "insert into root.vehicle.d0(timestamp,s0) values(2,10000)",
             "insert into root.vehicle.d0(timestamp,s0) values(50,10000)",
             "insert into root.vehicle.d0(timestamp,s0) values(1000,22222)",
-
             "insert into root.vehicle.d0(timestamp,s1) values(1,1101)",
             "insert into root.vehicle.d0(timestamp,s1) values(2,198)",
             "insert into root.vehicle.d0(timestamp,s1) values(100,199)",
@@ -85,7 +80,6 @@ public class IoTDBDaemonTest {
             "insert into root.vehicle.d0(timestamp,s1) values(2,40000)",
             "insert into root.vehicle.d0(timestamp,s1) values(50,50000)",
             "insert into root.vehicle.d0(timestamp,s1) values(1000,55555)",
-
             "insert into root.vehicle.d0(timestamp,s2) values(1000,55555)",
             "insert into root.vehicle.d0(timestamp,s2) values(2,2.22)",
             "insert into root.vehicle.d0(timestamp,s2) values(3,3.33)",
@@ -93,19 +87,15 @@ public class IoTDBDaemonTest {
             "insert into root.vehicle.d0(timestamp,s2) values(102,10.00)",
             "insert into root.vehicle.d0(timestamp,s2) values(105,11.11)",
             "insert into root.vehicle.d0(timestamp,s2) values(1000,1000.11)",
-
             "insert into root.vehicle.d0(timestamp,s3) values(60,'aaaaa')",
             "insert into root.vehicle.d0(timestamp,s3) values(70,'bbbbb')",
             "insert into root.vehicle.d0(timestamp,s3) values(80,'ccccc')",
             "insert into root.vehicle.d0(timestamp,s3) values(101,'ddddd')",
             "insert into root.vehicle.d0(timestamp,s3) values(102,'fffff')",
-
             "insert into root.vehicle.d1(timestamp,s0) values(1,999)",
             "insert into root.vehicle.d1(timestamp,s0) values(1000,888)",
-
             "insert into root.vehicle.d0(timestamp,s1) values(2000-01-01T08:00:00+08:00, 100)",
             "insert into root.vehicle.d0(timestamp,s3) values(2000-01-01T08:00:00+08:00, 'good')",
-
             "insert into root.vehicle.d0(timestamp,s4) values(100, false)",
             "insert into root.vehicle.d0(timestamp,s4) values(100, true)", };
 

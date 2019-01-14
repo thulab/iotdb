@@ -41,9 +41,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/**
- * This WriteLogNode is used to manage write ahead logs of a single FileNode.
- */
+/** This WriteLogNode is used to manage write ahead logs of a single FileNode. */
 public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<ExclusiveWriteLogNode> {
 
     private static final Logger logger = LoggerFactory.getLogger(ExclusiveWriteLogNode.class);
@@ -52,9 +50,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
 
     public static final String OLD_SUFFIX = "-old";
 
-    /**
-     * This should be the same as the corresponding FileNode's name.
-     */
+    /** This should be the same as the corresponding FileNode's name. */
     private String identifier;
 
     private String logDirectory;

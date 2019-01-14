@@ -29,5 +29,4 @@ public class ChunkReaderWithoutFilter extends ChunkReader {
     public boolean pageSatisfied(PageHeader pageHeader) {
         return pageHeader.getMax_timestamp() > getMaxTombstoneTime();
     }
-
 }

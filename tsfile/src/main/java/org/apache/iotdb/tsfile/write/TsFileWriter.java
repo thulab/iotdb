@@ -53,8 +53,8 @@ import java.util.Map;
 /**
  * TsFileWriter is the entrance for writing processing. It receives a record and send it to responding chunk group
  * write. It checks memory size for all writing processing along its strategy and flush data stored in memory to
- * OutputStream. At the end of writing, user should call {@code close()} method to flush the last data outside and close
- * the normal outputStream and error outputStream.
+ * OutputStream. At the end of writing, user should call {@code
+ * close()} method to flush the last data outside and close the normal outputStream and error outputStream.
  *
  * @author kangrong
  */
@@ -62,27 +62,21 @@ public class TsFileWriter {
 
     private static final Logger LOG = LoggerFactory.getLogger(TsFileWriter.class);
 
-    /**
-     * IO writer of this TsFile
-     **/
+    /** IO writer of this TsFile */
     private final TsFileIOWriter fileWriter;
 
-    /**
-     * schema of this TsFile
-     **/
+    /** schema of this TsFile */
     protected final FileSchema schema;
+
     private final int pageSize;
     private long recordCount = 0;
 
-    /**
-     * all IChunkGroupWriters
-     **/
+    /** all IChunkGroupWriters */
     private Map<String, IChunkGroupWriter> groupWriters = new HashMap<String, IChunkGroupWriter>();
 
-    /**
-     * min value of threshold of data points num check
-     **/
+    /** min value of threshold of data points num check */
     private long recordCountForNextMemCheck = 100;
+
     private long chunkGroupSizeThreshold;
 
     /**
@@ -154,9 +148,7 @@ public class TsFileWriter {
         this.chunkGroupSizeThreshold = conf.groupSizeInByte;
     }
 
-    /**
-     * add a measurementSchema to this TsFile
-     */
+    /** add a measurementSchema to this TsFile */
     public void addMeasurement(MeasurementSchema measurementSchema) throws WriteProcessException {
         if (schema.hasMeasurement(measurementSchema.getMeasurementId()))
             throw new WriteProcessException("given measurement has exists! " + measurementSchema.getMeasurementId());

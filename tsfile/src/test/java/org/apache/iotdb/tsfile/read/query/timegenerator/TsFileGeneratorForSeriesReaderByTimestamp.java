@@ -88,7 +88,7 @@ public class TsFileGeneratorForSeriesReaderByTimestamp {
             file.delete();
     }
 
-    static private void generateSampleInputDataFile() throws IOException {
+    private static void generateSampleInputDataFile() throws IOException {
         File file = new File(inputDataFile);
         if (file.exists())
             file.delete();
@@ -131,7 +131,7 @@ public class TsFileGeneratorForSeriesReaderByTimestamp {
         fw.close();
     }
 
-    static public void write() throws IOException, InterruptedException, WriteProcessException {
+    public static void write() throws IOException, InterruptedException, WriteProcessException {
         File file = new File(outputDataFile);
         File errorFile = new File(errorOutputDataFile);
         if (file.exists())
@@ -206,7 +206,7 @@ public class TsFileGeneratorForSeriesReaderByTimestamp {
         return jsonSchema;
     }
 
-    static public void writeToFile(FileSchema schema) throws InterruptedException, IOException, WriteProcessException {
+    public static void writeToFile(FileSchema schema) throws InterruptedException, IOException, WriteProcessException {
         Scanner in = getDataFile(inputDataFile);
         long lineCount = 0;
         long startTime = System.currentTimeMillis();
@@ -234,7 +234,7 @@ public class TsFileGeneratorForSeriesReaderByTimestamp {
         LOG.info("src file size:{}MB", FileUtils.getLocalFileByte(outputDataFile, Unit.MB));
     }
 
-    static private Scanner getDataFile(String path) {
+    private static Scanner getDataFile(String path) {
         File file = new File(path);
         try {
             Scanner in = new Scanner(file);

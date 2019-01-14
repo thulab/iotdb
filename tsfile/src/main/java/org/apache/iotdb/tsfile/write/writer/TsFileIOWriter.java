@@ -76,11 +76,8 @@ public class TsFileIOWriter {
     private ChunkGroupMetaData currentChunkGroupMetaData;
     private ChunkMetaData currentChunkMetaData;
 
-    /**
-     *
-     */
+    /** */
     protected TsFileIOWriter() {
-
     }
 
     /**
@@ -237,7 +234,7 @@ public class TsFileIOWriter {
         LOG.debug("finish flushing the footer {}, file pos:{}", tsFileMetaData, out.getPosition());
 
         // write TsFileMetaData size
-        ReadWriteIOUtils.write(size, out.wrapAsStream());// write the size of the file metadata.
+        ReadWriteIOUtils.write(size, out.wrapAsStream()); // write the size of the file metadata.
 
         // write magic string
         out.write(magicStringBytes);
@@ -316,11 +313,10 @@ public class TsFileIOWriter {
 
     /**
      * get chunkGroupMetaDataList
-     * 
+     *
      * @return - List of chunkGroupMetaData
      */
     public List<ChunkGroupMetaData> getChunkGroupMetaDatas() {
         return chunkGroupMetaDataList;
     }
-
 }

@@ -23,5 +23,4 @@ public class DateTimeFormatException extends QueryProcessorException {
     public DateTimeFormatException(String msg) {
         super(msg);
     }
-
 }

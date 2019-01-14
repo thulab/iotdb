@@ -97,7 +97,6 @@ public class DoubleStatistics extends Statistics<Double> {
             updateStats(doubleStats.getMin(), doubleStats.getMax(), doubleStats.getFirst(), doubleStats.getSum(),
                     doubleStats.getLast());
         }
-
     }
 
     public void initializeStats(double min, double max, double first, double sum, double last) {

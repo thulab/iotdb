@@ -38,7 +38,6 @@ public class ExpressionOptimizer {
     }
 
     private ExpressionOptimizer() {
-
     }
 
     /**
@@ -110,14 +109,19 @@ public class ExpressionOptimizer {
     /**
      * Combine GlobalTimeExpression with all selected series
      *
+     * <p>
      * example:
      *
+     * <p>
      * input:
      *
+     * <p>
      * GlobalTimeExpression(timeFilter) Selected Series: path1, path2, path3
      *
+     * <p>
      * output:
      *
+     * <p>
      * QueryFilterOR( QueryFilterOR( SingleSeriesExpression(path1, timeFilter), SingleSeriesExpression(path2,
      * timeFilter) ), SingleSeriesExpression(path3, timeFilter) )
      *
@@ -136,9 +140,7 @@ public class ExpressionOptimizer {
         return IExpression;
     }
 
-    /**
-     * Combine TimeFilter with all SeriesFilters in the expression
-     */
+    /** Combine TimeFilter with all SeriesFilters in the expression */
     private void addTimeFilterToQueryFilter(Filter timeFilter, IExpression expression) {
         if (expression instanceof SingleSeriesExpression) {
             addTimeFilterToSeriesFilter(timeFilter, (SingleSeriesExpression) expression);
@@ -155,16 +157,20 @@ public class ExpressionOptimizer {
     /**
      * Merge the timeFilter with the filter in SingleSeriesExpression with AndExpression
      *
+     * <p>
      * example:
      *
+     * <p>
      * input:
      *
+     * <p>
      * timeFilter SingleSeriesExpression(path, filter)
      *
+     * <p>
      * output:
      *
+     * <p>
      * SingleSeriesExpression( path, AndExpression(filter, timeFilter) )
-     *
      */
     private void addTimeFilterToSeriesFilter(Filter timeFilter, SingleSeriesExpression singleSeriesExp) {
         singleSeriesExp.setFilter(FilterFactory.and(singleSeriesExp.getFilter(), timeFilter));
@@ -173,14 +179,17 @@ public class ExpressionOptimizer {
     /**
      * combine two GlobalTimeExpression by merge the TimeFilter in each GlobalTimeExpression
      *
+     * <p>
      * example:
      *
+     * <p>
      * input: QueryFilterAnd/OR( GlobalTimeExpression(timeFilter1), GlobalTimeExpression(timeFilter2) )
      *
+     * <p>
      * output:
      *
+     * <p>
      * GlobalTimeExpression( AndExpression/OR(timeFilter1, timeFilter2) )
-     *
      */
     private GlobalTimeExpression combineTwoGlobalTimeFilter(GlobalTimeExpression left, GlobalTimeExpression right,
             ExpressionType type) {

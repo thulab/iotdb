@@ -81,7 +81,7 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
         nodeMap = new ConcurrentHashMap<>();
     }
 
-    static public MultiFileLogNodeManager getInstance() {
+    public static MultiFileLogNodeManager getInstance() {
         return InstanceHolder.instance;
     }
 
@@ -204,5 +204,4 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
     public ServiceType getID() {
         return ServiceType.WAL_SERVICE;
     }
-
 }

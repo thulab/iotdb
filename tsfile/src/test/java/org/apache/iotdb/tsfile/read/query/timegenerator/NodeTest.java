@@ -118,7 +118,6 @@ public class NodeTest {
 
         @Override
         protected void initChunkReader(ChunkMetaData chunkMetaData) throws IOException {
-
         }
 
         @Override
@@ -128,7 +127,6 @@ public class NodeTest {
 
         @Override
         public void close() {
-
         }
     }
 }

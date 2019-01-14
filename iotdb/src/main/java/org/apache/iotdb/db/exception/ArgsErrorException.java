@@ -22,5 +22,4 @@ public class ArgsErrorException extends Exception {
     public ArgsErrorException(String msg) {
         super(msg);
     }
-
 }

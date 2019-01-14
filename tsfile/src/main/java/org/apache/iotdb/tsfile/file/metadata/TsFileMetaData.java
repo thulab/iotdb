@@ -27,21 +27,15 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * TSFileMetaData collects all metadata info and saves in its data structure
- */
+/** TSFileMetaData collects all metadata info and saves in its data structure */
 public class TsFileMetaData {
 
     private Map<String, TsDeviceMetadataIndex> deviceIndexMap = new HashMap<>();
 
-    /**
-     * TSFile schema for this file. This schema contains metadata for all the time series.
-     */
+    /** TSFile schema for this file. This schema contains metadata for all the time series. */
     private Map<String, MeasurementSchema> measurementSchema = new HashMap<>();
 
-    /**
-     * Version of this file
-     */
+    /** Version of this file */
     private int currentVersion;
 
     /**
@@ -248,5 +242,4 @@ public class TsFileMetaData {
 
         return fileMetaData;
     }
-
 }

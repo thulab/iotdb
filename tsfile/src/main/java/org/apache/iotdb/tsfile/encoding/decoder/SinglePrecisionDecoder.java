@@ -25,9 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 
-/**
- * Decoder for value value using gorilla
- */
+/** Decoder for value value using gorilla */
 public class SinglePrecisionDecoder extends GorillaDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(SinglePrecisionDecoder.class);
     private int preValue;
@@ -68,7 +66,7 @@ public class SinglePrecisionDecoder extends GorillaDecoder {
 
     /**
      * check whether there is any value to encode left
-     * 
+     *
      * @param buffer
      *            stream to read
      * @throws IOException

@@ -17,10 +17,7 @@ package org.apache.iotdb.tsfile.read.filter.basic;
 
 import org.apache.iotdb.tsfile.read.filter.DigestForFilter;
 
-/**
- * Filter is a top level filter abstraction.
- *
- */
+/** Filter is a top level filter abstraction. */
 public interface Filter {
 
     /**

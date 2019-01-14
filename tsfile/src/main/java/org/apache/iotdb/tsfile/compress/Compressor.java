@@ -26,9 +26,7 @@ import org.xerial.snappy.Snappy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * compress data according to type in schema
- */
+/** compress data according to type in schema */
 public abstract class Compressor {
 
     public static Compressor getCompressor(String name) {
@@ -37,7 +35,7 @@ public abstract class Compressor {
 
     /**
      * get Compressor according to CompressionType
-     * 
+     *
      * @param name
      *            CompressionType
      * @return the Compressor of specified CompressionType
@@ -59,7 +57,6 @@ public abstract class Compressor {
     public abstract byte[] compress(byte[] data) throws IOException;
 
     /**
-     *
      * @param data
      * @param offset
      * @param length
@@ -71,7 +68,7 @@ public abstract class Compressor {
 
     /**
      * If the data is large, this function is better than byte[].
-     * 
+     *
      * @param data
      *            MUST be DirectByteBuffer for Snappy.
      * @param compressed
@@ -85,10 +82,8 @@ public abstract class Compressor {
 
     public abstract CompressionType getType();
 
-    /**
-     * NoCompressor will do nothing for data and return the input data directly.
-     */
-    static public class NoCompressor extends Compressor {
+    /** NoCompressor will do nothing for data and return the input data directly. */
+    public static class NoCompressor extends Compressor {
 
         @Override
         public byte[] compress(byte[] data) {
@@ -116,7 +111,7 @@ public abstract class Compressor {
         }
     }
 
-    static public class SnappyCompressor extends Compressor {
+    public static class SnappyCompressor extends Compressor {
         private static final Logger LOGGER = LoggerFactory.getLogger(SnappyCompressor.class);
 
         @Override

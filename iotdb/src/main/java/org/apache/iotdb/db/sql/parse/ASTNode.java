@@ -92,6 +92,7 @@ public class ASTNode extends CommonTree implements Node, Serializable {
      * For every node in this subtree, make sure it's start/stop token's are set. Walk depth first, visit bottom up.
      * Only updates nodes with at least one token index < 0.
      *
+     * <p>
      * In contrast to the method in the parent class, this method is iterative.
      */
     @Override
@@ -137,9 +138,7 @@ public class ASTNode extends CommonTree implements Node, Serializable {
         return origin;
     }
 
-    /**
-     * Tag this ASTNode with information about the object from which this node originated.
-     */
+    /** Tag this ASTNode with information about the object from which this node originated. */
     public void setOrigin(ASTNodeOrigin origin) {
         this.origin = origin;
     }
@@ -331,7 +330,6 @@ public class ASTNode extends CommonTree implements Node, Serializable {
                 next.visited = false;
                 stack.pop();
             }
-
         }
 
         return rootNode.getMemoizedSubString(startIndx, endIndx);
@@ -344,5 +342,4 @@ public class ASTNode extends CommonTree implements Node, Serializable {
         }
         return (ASTNode) children.get(i);
     }
-
 }

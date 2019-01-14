@@ -55,12 +55,9 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * <p>
  * This class is used for cleaning test environment in unit test and integration test
- * </p>
- * 
- * @author liukun
  *
+ * @author liukun
  */
 public class EnvironmentUtils {
 

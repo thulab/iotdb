@@ -48,9 +48,7 @@ public class IoTDBMetadataResultSet extends IoTDBQueryResultSet {
     private int colCount; // the number of columns for show
     private String[] showLabels; // headers for show
 
-    /**
-     * Constructor used for the result of DatabaseMetadata.getColumns()
-     */
+    /** Constructor used for the result of DatabaseMetadata.getColumns() */
     public IoTDBMetadataResultSet(List<String> columns, Set<String> storageGroupSet,
             List<List<String>> showTimeseriesList) throws SQLException {
         if (columns != null) {

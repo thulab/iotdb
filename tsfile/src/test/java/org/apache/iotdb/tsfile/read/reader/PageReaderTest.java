@@ -198,12 +198,10 @@ public class PageReaderTest {
                 case TEXT:
                     pageWriter.write(Long.valueOf(i), (Binary) generateValueByIndex(i));
                     break;
-
                 }
             }
         }
 
         public abstract Object generateValueByIndex(int i);
     }
-
 }

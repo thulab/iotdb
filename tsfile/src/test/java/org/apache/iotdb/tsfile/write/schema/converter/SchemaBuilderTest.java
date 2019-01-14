@@ -30,9 +30,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author qiaojialin
- */
+/** @author qiaojialin */
 public class SchemaBuilderTest {
     @Test
     public void testJsonConverter() {

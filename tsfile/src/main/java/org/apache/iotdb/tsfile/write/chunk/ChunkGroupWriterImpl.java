@@ -36,18 +36,14 @@ import org.apache.iotdb.tsfile.exception.write.WriteProcessException;
 import org.apache.iotdb.tsfile.write.writer.TsFileIOWriter;
 import org.apache.iotdb.tsfile.write.record.datapoint.DataPoint;
 
-/**
- * a implementation of IChunkGroupWriter
- */
+/** a implementation of IChunkGroupWriter */
 public class ChunkGroupWriterImpl implements IChunkGroupWriter {
 
     private static Logger LOG = LoggerFactory.getLogger(ChunkGroupWriterImpl.class);
 
     private final String deviceId;
 
-    /**
-     * <measurementID, ChunkWriterImpl>
-     */
+    /** <measurementID, ChunkWriterImpl> */
     private Map<String, IChunkWriter> chunkWriters = new HashMap<>();
 
     public ChunkGroupWriterImpl(String deviceId) {
@@ -70,7 +66,6 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
             if (!chunkWriters.containsKey(measurementId))
                 throw new NoMeasurementException("time " + time + ", measurement id " + measurementId + " not found!");
             point.writeTo(time, chunkWriters.get(measurementId));
-
         }
     }
 
@@ -104,9 +99,7 @@ public class ChunkGroupWriterImpl implements IChunkGroupWriter {
         return size;
     }
 
-    /**
-     * seal all the chunks which may has un-sealed pages in force.
-     */
+    /** seal all the chunks which may has un-sealed pages in force. */
     private void sealAllChunks() {
         for (IChunkWriter writer : chunkWriters.values()) {
             writer.sealCurrentPage();

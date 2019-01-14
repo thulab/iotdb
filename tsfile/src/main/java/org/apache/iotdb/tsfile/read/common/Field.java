@@ -22,7 +22,6 @@ import org.apache.iotdb.tsfile.exception.write.UnSupportedDataTypeException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
 /**
- * <p>
  * Field is component of one {@code RowRecord} which stores a value in specific data type. The value type of Field is
  * primitive(int long, float, double, binary, boolean).
  */

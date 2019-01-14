@@ -127,5 +127,4 @@ public abstract class ChunkReader {
     public long getMaxTombstoneTime() {
         return this.maxTombstoneTime;
     }
-
 }

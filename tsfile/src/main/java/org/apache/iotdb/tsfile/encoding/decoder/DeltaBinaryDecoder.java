@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * This class is a decoder for decoding the byte array that encoded by {@code DeltaBinaryEncoder}.DeltaBinaryDecoder
- * just supports integer and long values.<br>
+ * This class is a decoder for decoding the byte array that encoded by {@code
+ * DeltaBinaryEncoder}.DeltaBinaryDecoder just supports integer and long values.<br>
  *
  * @author kangrong
  * @see DeltaBinaryEncoder
@@ -39,23 +39,16 @@ public abstract class DeltaBinaryDecoder extends Decoder {
     protected long count = 0;
     protected byte[] deltaBuf;
 
-    /**
-     * the first value in one pack.
-     */
+    /** the first value in one pack. */
     protected int readIntTotalCount = 0;
+
     protected int nextReadIndex = 0;
-    /**
-     * max bit length of all value in a pack
-     */
+    /** max bit length of all value in a pack */
     protected int packWidth;
-    /**
-     * data number in this pack
-     */
+    /** data number in this pack */
     protected int packNum;
 
-    /**
-     * how many bytes data takes after encoding
-     */
+    /** how many bytes data takes after encoding */
     protected int encodingLength;
 
     public DeltaBinaryDecoder() {
@@ -88,9 +81,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         private int firstValue;
         private int[] data;
         private int previous;
-        /**
-         * minimum value for all difference
-         */
+        /** minimum value for all difference */
         private int minDeltaBase;
 
         public IntDeltaDecoder() {
@@ -173,9 +164,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         private long firstValue;
         private long[] data;
         private long previous;
-        /**
-         * minimum value for all difference
-         */
+        /** minimum value for all difference */
         private long minDeltaBase;
 
         public LongDeltaDecoder() {
@@ -195,8 +184,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
             return data[nextReadIndex++];
         }
 
-        /***
-         * if remaining data has been run out, load next pack from InputStream
+        /**
+         * * if remaining data has been run out, load next pack from InputStream
          *
          * @param buffer
          *            ByteBuffer
@@ -252,6 +241,5 @@ public abstract class DeltaBinaryDecoder extends Decoder {
         @Override
         public void reset() {
         }
-
     }
 }

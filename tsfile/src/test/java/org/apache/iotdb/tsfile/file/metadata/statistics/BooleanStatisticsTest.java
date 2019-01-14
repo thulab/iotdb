@@ -19,9 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author CGF
- */
+/** @author CGF */
 public class BooleanStatisticsTest {
     private static final double maxError = 0.0001d;
 

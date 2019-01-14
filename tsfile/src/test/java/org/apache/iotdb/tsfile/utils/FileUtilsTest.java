@@ -23,9 +23,7 @@ import org.junit.Test;
 import org.apache.iotdb.tsfile.constant.TimeseriesTestConstant;
 import org.apache.iotdb.tsfile.utils.FileUtils.Unit;
 
-/**
- * @author kangrong
- */
+/** @author kangrong */
 public class FileUtilsTest {
 
     @Test
@@ -48,5 +46,4 @@ public class FileUtilsTest {
         assertEquals(3l * 1024 * 1024, (long) FileUtils.transformUnitToByte(3, FileUtils.Unit.MB));
         assertEquals(3l * 1024 * 1024 * 1024, (long) FileUtils.transformUnitToByte(3, FileUtils.Unit.GB));
     }
-
 }

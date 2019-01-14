@@ -84,9 +84,7 @@ public class PageReader {
         return timeDecoder.hasNext(timeBuffer);
     }
 
-    /**
-     * may return an empty BatchData
-     */
+    /** may return an empty BatchData */
     public BatchData nextBatch() throws IOException {
         if (filter == null)
             data = getAllPageData();
@@ -195,5 +193,4 @@ public class PageReader {
         timeBuffer = null;
         valueBuffer = null;
     }
-
 }

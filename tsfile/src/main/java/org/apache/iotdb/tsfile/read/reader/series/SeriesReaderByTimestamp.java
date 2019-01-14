@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * <p>
  * Series reader is used to query one series of one tsfile, using this reader to query the value of a series with given
  * timestamps.
  */
@@ -112,5 +111,4 @@ public class SeriesReaderByTimestamp {
     private boolean chunkSatisfied(ChunkMetaData chunkMetaData) {
         return chunkMetaData.getEndTime() >= currentTimestamp;
     }
-
 }

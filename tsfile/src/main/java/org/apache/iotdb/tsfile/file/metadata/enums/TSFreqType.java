@@ -16,7 +16,6 @@
 package org.apache.iotdb.tsfile.file.metadata.enums;
 
 public enum TSFreqType {
-
     SINGLE_FREQ, MULTI_FREQ, IRREGULAR_FREQ;
 
     public static TSFreqType deserialize(short i) {

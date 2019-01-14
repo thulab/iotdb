@@ -18,10 +18,7 @@ package org.apache.iotdb.db.engine;
 import org.apache.iotdb.db.metadata.MManager;
 import org.apache.iotdb.db.metadata.MManager;
 
-/**
- * @author liukun
- *
- */
+/** @author liukun */
 public class MetadataManagerHelper {
 
     private static MManager mmanager = null;
@@ -93,5 +90,4 @@ public class MetadataManagerHelper {
             throw new RuntimeException("Initialize the metadata manager failed", e);
         }
     }
-
 }

@@ -90,7 +90,6 @@ public class RecordUtils {
                         ret.addTuple(new StringDataPoint(measurementId, Binary.valueOf(items[i + 1])));
                         break;
                     default:
-
                         LOG.warn("unsupported data type:{}", type);
                         break;
                     }

@@ -71,37 +71,37 @@ public abstract class Statistics<T> {
         }
     }
 
-    abstract public void setMinMaxFromBytes(byte[] minBytes, byte[] maxBytes);
+    public abstract void setMinMaxFromBytes(byte[] minBytes, byte[] maxBytes);
 
-    abstract public T getMin();
+    public abstract T getMin();
 
-    abstract public T getMax();
+    public abstract T getMax();
 
-    abstract public T getFirst();
+    public abstract T getFirst();
 
-    abstract public double getSum();
+    public abstract double getSum();
 
-    abstract public T getLast();
+    public abstract T getLast();
 
-    abstract public byte[] getMaxBytes();
+    public abstract byte[] getMaxBytes();
 
-    abstract public byte[] getMinBytes();
+    public abstract byte[] getMinBytes();
 
-    abstract public byte[] getFirstBytes();
+    public abstract byte[] getFirstBytes();
 
-    abstract public byte[] getSumBytes();
+    public abstract byte[] getSumBytes();
 
-    abstract public byte[] getLastBytes();
+    public abstract byte[] getLastBytes();
 
-    abstract public ByteBuffer getMaxBytebuffer();
+    public abstract ByteBuffer getMaxBytebuffer();
 
-    abstract public ByteBuffer getMinBytebuffer();
+    public abstract ByteBuffer getMinBytebuffer();
 
-    abstract public ByteBuffer getFirstBytebuffer();
+    public abstract ByteBuffer getFirstBytebuffer();
 
-    abstract public ByteBuffer getSumBytebuffer();
+    public abstract ByteBuffer getSumBytebuffer();
 
-    abstract public ByteBuffer getLastBytebuffer();
+    public abstract ByteBuffer getLastBytebuffer();
 
     /**
      * merge parameter to this statistic. Including
@@ -129,7 +129,7 @@ public abstract class Statistics<T> {
         }
     }
 
-    abstract protected void mergeStatisticsValue(Statistics<?> stats);
+    protected abstract void mergeStatisticsValue(Statistics<?> stats);
 
     public boolean isEmpty() {
         return isEmpty;
@@ -179,7 +179,6 @@ public abstract class Statistics<T> {
     }
 
     /**
-     *
      * @return the size of one field of this class.<br>
      *         int, float - 4<br>
      *         double, long, bigDecimal - 8 <br>
@@ -187,11 +186,11 @@ public abstract class Statistics<T> {
      *         No - 0 <br>
      *         binary - -1 which means uncertainty </>
      */
-    abstract public int sizeOfDatum();
+    public abstract int sizeOfDatum();
 
     /**
      * read data from the inputStream.
-     * 
+     *
      * @param inputStream
      * @throws IOException
      */
@@ -299,5 +298,4 @@ public abstract class Statistics<T> {
         statistics.fill(buffer);
         return statistics;
     }
-
 }

@@ -128,5 +128,4 @@ public class TsFileExecutor implements QueryExecutor {
 
         return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
     }
-
 }

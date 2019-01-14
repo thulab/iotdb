@@ -115,7 +115,6 @@ public class ReadTest {
             dataSet.next();
             cnt++;
         }
-
     }
 
     @Test
@@ -305,7 +304,6 @@ public class ReadTest {
             cnt++;
         }
         Assert.assertEquals(cnt, 0);
-
     }
 
     @Test

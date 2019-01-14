@@ -89,9 +89,7 @@ public class TimeGeneratorImpl implements TimeGenerator {
         return null;
     }
 
-    /**
-     * construct the tree that generate timestamp
-     */
+    /** construct the tree that generate timestamp */
     private Node construct(IExpression expression) throws IOException {
 
         if (expression.getType() == ExpressionType.SERIES) {

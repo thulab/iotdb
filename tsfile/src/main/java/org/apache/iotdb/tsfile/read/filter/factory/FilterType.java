@@ -28,5 +28,4 @@ public enum FilterType {
     public String toString() {
         return name;
     }
-
 }

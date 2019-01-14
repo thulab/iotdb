@@ -22,31 +22,19 @@ package org.apache.iotdb.tsfile.common.conf;
  */
 public class TSFileConfig {
     // Memory configuration
-    /**
-     * Memory size threshold for flushing to disk or HDFS, default value is 128MB
-     */
+    /** Memory size threshold for flushing to disk or HDFS, default value is 128MB */
     public int groupSizeInByte = 128 * 1024 * 1024;
-    /**
-     * The memory size for each series writer to pack page, default value is 64KB
-     */
+    /** The memory size for each series writer to pack page, default value is 64KB */
     public int pageSizeInByte = 64 * 1024;
-    /**
-     * The maximum number of data points in a page, default value is 1024 * 1024
-     */
+    /** The maximum number of data points in a page, default value is 1024 * 1024 */
     public int maxNumberOfPointsInPage = 1024 * 1024;
 
     // Data type configuration
-    /**
-     * Data type for input timestamp, TsFile supports INT32 or INT64
-     */
+    /** Data type for input timestamp, TsFile supports INT32 or INT64 */
     public String timeSeriesDataType = "INT64";
-    /**
-     * Max length limitation of input string
-     */
+    /** Max length limitation of input string */
     public int maxStringLength = 128;
-    /**
-     * Floating-point precision
-     */
+    /** Floating-point precision */
     public int floatPrecision = 2;
 
     // Encoder configuration
@@ -62,94 +50,69 @@ public class TSFileConfig {
     public String valueEncoder = "PLAIN";
 
     // RLE configuration
-    /**
-     * Default bit width of RLE encoding is 8
-     */
+    /** Default bit width of RLE encoding is 8 */
     public int rleBitWidth = 8;
+
     public final int RLE_MIN_REPEATED_NUM = 8;
     public final int RLE_MAX_REPEATED_NUM = 0x7FFF;
     public final int RLE_MAX_BIT_PACKED_NUM = 63;
 
     // Gorilla encoding configuration
-    public final static int FLOAT_LENGTH = 32;
-    public final static int FLAOT_LEADING_ZERO_LENGTH = 5;
-    public final static int FLOAT_VALUE_LENGTH = 6;
-    public final static int DOUBLE_LENGTH = 64;
-    public final static int DOUBLE_LEADING_ZERO_LENGTH = 6;
-    public final static int DOUBLE_VALUE_LENGTH = 7;
+    public static final int FLOAT_LENGTH = 32;
+    public static final int FLAOT_LEADING_ZERO_LENGTH = 5;
+    public static final int FLOAT_VALUE_LENGTH = 6;
+    public static final int DOUBLE_LENGTH = 64;
+    public static final int DOUBLE_LEADING_ZERO_LENGTH = 6;
+    public static final int DOUBLE_VALUE_LENGTH = 7;
 
     // TS_2DIFF configuration
-    /**
-     * Default block size of two-diff. delta encoding is 128
-     */
+    /** Default block size of two-diff. delta encoding is 128 */
     public int deltaBlockSize = 128;
 
     // Bitmap configuration
     public final int BITMAP_BITWIDTH = 1;
 
     // Freq encoder configuration
-    /**
-     * Default frequency type is SINGLE_FREQ
-     */
+    /** Default frequency type is SINGLE_FREQ */
     public String freqType = "SINGLE_FREQ";
-    /**
-     * Default PLA max error is 100
-     */
+    /** Default PLA max error is 100 */
     public double plaMaxError = 100;
-    /**
-     * Default SDT max error is 100
-     */
+    /** Default SDT max error is 100 */
     public double sdtMaxError = 100;
-    /**
-     * Default DFT satisfy rate is 0.1
-     */
+    /** Default DFT satisfy rate is 0.1 */
     public double dftSatisfyRate = 0.1;
 
     // Compression configuration
     /**
      * Data compression method, TsFile supports UNCOMPRESSED or SNAPPY. Default value is UNCOMPRESSED which means no
      * compression
-     *
      */
     public String compressor = "UNCOMPRESSED";
 
     // Don't change the following configuration
 
-    /**
-     * Line count threshold for checking page memory occupied size
-     */
+    /** Line count threshold for checking page memory occupied size */
     public int pageCheckSizeThreshold = 100;
 
-    /**
-     * Current version is 3
-     */
+    /** Current version is 3 */
     public static int currentVersion = 3;
 
-    /**
-     * Default endian value is LITTLE_ENDIAN
-     */
+    /** Default endian value is LITTLE_ENDIAN */
     public String endian = "LITTLE_ENDIAN";
 
-    /**
-     * String encoder with UTF-8 encodes a character to at most 4 bytes.
-     */
+    /** String encoder with UTF-8 encodes a character to at most 4 bytes. */
     public static final int BYTE_SIZE_PER_CHAR = 4;
 
     public static final String STRING_ENCODING = "UTF-8";
 
     public static final String CONFIG_FILE_NAME = "tsfile-format.properties";
 
-    /**
-     * The default grow size of class BatchData
-     */
+    /** The default grow size of class BatchData */
     public static int dynamicDataSize = 1000;
 
     public static final String MAGIC_STRING = "TsFilev0.8.0";
 
-    /**
-     * only can be used by TsFileDescriptor
-     */
+    /** only can be used by TsFileDescriptor */
     protected TSFileConfig() {
-
     }
 }

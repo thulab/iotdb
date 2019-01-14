@@ -26,25 +26,17 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * Decoder for int value using rle or bit-packing
- */
+/** Decoder for int value using rle or bit-packing */
 public class IntRleDecoder extends RleDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntRleDecoder.class);
 
-    /**
-     * current value for rle repeated value
-     */
+    /** current value for rle repeated value */
     private int currentValue;
 
-    /**
-     * buffer to save all values in group using bit-packing
-     */
+    /** buffer to save all values in group using bit-packing */
     private int[] currentBuffer;
 
-    /**
-     * packer for unpacking int value
-     */
+    /** packer for unpacking int value */
     private IntPacker packer;
 
     public IntRleDecoder(EndianType endianType) {

@@ -27,26 +27,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Metadata of ChunkGroup
- */
+/** Metadata of ChunkGroup */
 public class ChunkGroupMetaData {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChunkGroupMetaData.class);
 
-    /**
-     * Name of device, this field is not serialized.
-     */
+    /** Name of device, this field is not serialized. */
     private String deviceID;
 
-    /**
-     * Byte size of this metadata. this field is not serialized.
-     */
+    /** Byte size of this metadata. this field is not serialized. */
     private int serializedSize;
 
-    /**
-     * All time series chunks in this chunk group.
-     */
+    /** All time series chunks in this chunk group. */
     private List<ChunkMetaData> chunkMetaDataList;
 
     public int getSerializedSize() {
@@ -169,5 +161,4 @@ public class ChunkGroupMetaData {
 
         return chunkGroupMetaData;
     }
-
 }

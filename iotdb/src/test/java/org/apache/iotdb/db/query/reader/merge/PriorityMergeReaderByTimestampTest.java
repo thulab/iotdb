@@ -96,7 +96,6 @@ public class PriorityMergeReaderByTimestampTest {
             }
             cnt++;
         }
-
     }
 
     public static class FakedPrioritySeriesReaderByTimestamp implements EngineReaderByTimeStamp {

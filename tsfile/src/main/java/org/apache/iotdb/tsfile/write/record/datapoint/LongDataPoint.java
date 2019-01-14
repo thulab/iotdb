@@ -31,12 +31,10 @@ import java.io.IOException;
  */
 public class LongDataPoint extends DataPoint {
     private static final Logger LOG = LoggerFactory.getLogger(LongDataPoint.class);
-    /** actual value **/
+    /** actual value * */
     private long value;
 
-    /**
-     * constructor of LongDataPoint, the value type will be set automatically
-     */
+    /** constructor of LongDataPoint, the value type will be set automatically */
     public LongDataPoint(String measurementId, long v) {
         super(TSDataType.INT64, measurementId);
         this.value = v;
@@ -49,7 +47,6 @@ public class LongDataPoint extends DataPoint {
             return;
         }
         writer.write(time, value);
-
     }
 
     @Override

@@ -20,8 +20,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 /*
-    TsfileMetadataResultMetadata implements a similar api like TsfileQueryResultSet to display column metadata.
- */
+   TsfileMetadataResultMetadata implements a similar api like TsfileQueryResultSet to display column metadata.
+*/
 
 public class IoTDBMetadataResultMetadata implements ResultSetMetaData {
     private String[] showLabels;
@@ -183,5 +183,4 @@ public class IoTDBMetadataResultMetadata implements ResultSetMetaData {
         // TODO Auto-generated method stub
         return false;
     }
-
 }

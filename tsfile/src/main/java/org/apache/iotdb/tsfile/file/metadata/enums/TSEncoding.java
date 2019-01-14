@@ -16,7 +16,6 @@
 package org.apache.iotdb.tsfile.file.metadata.enums;
 
 public enum TSEncoding {
-
     PLAIN, PLAIN_DICTIONARY, RLE, DIFF, TS_2DIFF, BITMAP, GORILLA;
 
     public static TSEncoding deserialize(short i) {

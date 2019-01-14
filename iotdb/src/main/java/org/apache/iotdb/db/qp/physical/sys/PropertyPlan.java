@@ -25,9 +25,7 @@ import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.db.qp.logical.Operator;
 import org.apache.iotdb.db.qp.logical.sys.PropertyOperator;
 
-/**
- * Manipulate property plan
- */
+/** Manipulate property plan */
 public class PropertyPlan extends PhysicalPlan {
     private final PropertyOperator.PropertyType propertyType;
     private Path propertyPath;

@@ -15,11 +15,10 @@
  */
 package org.apache.iotdb.tsfile.common.constant;
 
-/***
- * this class define several constant string variables used in tsfile schema's keys.
+/**
+ * * this class define several constant string variables used in tsfile schema's keys.
  *
  * @author kangrong
- *
  */
 public class JsonFormatConstant {
     public static final String JSON_SCHEMA = "schema";

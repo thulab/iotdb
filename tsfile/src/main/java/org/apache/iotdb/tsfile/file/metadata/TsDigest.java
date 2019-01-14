@@ -25,9 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Digest/statistics per chunk group and per page.
- */
+/** Digest/statistics per chunk group and per page. */
 public class TsDigest {
 
     private Map<String, ByteBuffer> statistics;
@@ -82,12 +80,12 @@ public class TsDigest {
             reCalculateSerializedSize();
         int byteLen = 0;
         if (statistics == null || statistics.size() == 0) {
-            byteLen += ReadWriteIOUtils.write(0, outputStream);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(0, outputStream); // Integer.BYTES;
         } else {
-            byteLen += ReadWriteIOUtils.write(statistics.size(), outputStream);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(statistics.size(), outputStream); // Integer.BYTES;
             for (Map.Entry<String, ByteBuffer> entry : statistics.entrySet()) {
-                byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream);// Integer.BYTES+key.length()
-                byteLen += ReadWriteIOUtils.write(entry.getValue(), outputStream);// Integer.BYTES+value.remaining();
+                byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream); // Integer.BYTES+key.length()
+                byteLen += ReadWriteIOUtils.write(entry.getValue(), outputStream); // Integer.BYTES+value.remaining();
             }
         }
         assert byteLen == getSerializedSize();
@@ -100,12 +98,12 @@ public class TsDigest {
         int byteLen = 0;
 
         if (statistics == null || statistics.size() == 0) {
-            byteLen += ReadWriteIOUtils.write(0, buffer);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(0, buffer); // Integer.BYTES;
         } else {
-            byteLen += ReadWriteIOUtils.write(statistics.size(), buffer);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(statistics.size(), buffer); // Integer.BYTES;
             for (Map.Entry<String, ByteBuffer> entry : statistics.entrySet()) {
-                byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);// Integer.BYTES+key.length()
-                byteLen += ReadWriteIOUtils.write(entry.getValue(), buffer);// Integer.BYTES+value.remaining();
+                byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer); // Integer.BYTES+key.length()
+                byteLen += ReadWriteIOUtils.write(entry.getValue(), buffer); // Integer.BYTES+value.remaining();
             }
         }
         assert byteLen == getSerializedSize();
@@ -117,11 +115,11 @@ public class TsDigest {
     }
 
     public static int serializeNullTo(OutputStream outputStream) throws IOException {
-        return ReadWriteIOUtils.write(0, outputStream);// Integer.BYTES;
+        return ReadWriteIOUtils.write(0, outputStream); // Integer.BYTES;
     }
 
     public static int serializeNullTo(ByteBuffer buffer) {
-        return ReadWriteIOUtils.write(0, buffer);// Integer.BYTES;
+        return ReadWriteIOUtils.write(0, buffer); // Integer.BYTES;
     }
 
     public static TsDigest deserializeFrom(InputStream inputStream) throws IOException {

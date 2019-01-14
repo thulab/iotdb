@@ -89,8 +89,8 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
             TsDeviceMetadata tsDeviceMetadata = tsFileReader.readTsDeviceMetaData(index);
 
             // d1
-            for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {// TODO make this function
-                                                                                             // better
+            for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) { // TODO make this function
+                // better
 
                 if (enough)
                     break;
@@ -124,7 +124,6 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
 
         for (Map.Entry<Path, List<ChunkMetaData>> entry : tempChunkMetaDatas.entrySet())
             chunkMetaDataCache.put(entry.getKey(), entry.getValue());
-
     }
 
     private List<ChunkMetaData> loadChunkMetadata(Path path) throws IOException {
@@ -150,5 +149,4 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
         }
         return chunkMetaDataList;
     }
-
 }

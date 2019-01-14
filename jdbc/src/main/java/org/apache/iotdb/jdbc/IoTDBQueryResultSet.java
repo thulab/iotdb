@@ -57,7 +57,7 @@ public class IoTDBQueryResultSet implements ResultSet {
     /*
      * Combine maxRows and the LIMIT constraints. maxRowsOrRowsLimit = 0 means that neither maxRows nor LIMIT is
      * constrained. maxRowsOrRowsLimit > 0 means that maxRows and/or LIMIT are constrained.
-     * 
+     *
      * 1) When neither maxRows nor LIMIT is constrained, i.e., maxRows=0 and rowsLimit=0, maxRowsOrRowsLimit = 0; 2)
      * When both maxRows and LIMIT are constrained, i.e., maxRows>0 and rowsLimit>0, maxRowsOrRowsLimit = min(maxRows,
      * rowsLimit); 3) When maxRows is constrained and LIMIT is NOT constrained, i.e., maxRows>0 and rowsLimit=0,
@@ -67,7 +67,6 @@ public class IoTDBQueryResultSet implements ResultSet {
     private int maxRowsOrRowsLimit;
 
     public IoTDBQueryResultSet() {
-
     }
 
     public IoTDBQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
@@ -115,7 +114,8 @@ public class IoTDBQueryResultSet implements ResultSet {
                 // check if OFFSET is constrained after LIMIT has been constrained
                 int posOffset = arraySplited.indexOf(OFFSET_STR);
                 if (posOffset != -1) {
-                    // NOTE that OFFSET <OFFSETValue>: OFFSETValue is ensured to be a non-negative integer by the server
+                    // NOTE that OFFSET <OFFSETValue>: OFFSETValue is ensured to be a non-negative integer by
+                    // the server
                     // side
                     rowsOffset = Integer.parseInt(splited[posOffset + 1]);
                 }
@@ -663,7 +663,6 @@ public class IoTDBQueryResultSet implements ResultSet {
             } catch (TException e) {
                 throw new SQLException("Cannot fetch result from server, because of network connection");
             }
-
         }
         if (emptyResultSet) {
             return false;
@@ -678,7 +677,7 @@ public class IoTDBQueryResultSet implements ResultSet {
     public boolean next() throws SQLException {
         if (maxRowsOrRowsLimit > 0 && rowsFetched >= maxRowsOrRowsLimit) {
             if (rowsLimit == 0 || (maxRows > 0 && maxRows < rowsLimit)) { // The constraint of maxRows instead of
-                                                                          // rowsLimit is embodied
+                // rowsLimit is embodied
                 System.out.println("Reach max rows " + maxRows);
             }
             return false;
@@ -939,7 +938,6 @@ public class IoTDBQueryResultSet implements ResultSet {
     @Override
     public void updateClob(int arg0, Reader arg1, long arg2) throws SQLException {
         throw new SQLException("Method not supported");
-
     }
 
     @Override

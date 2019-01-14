@@ -29,14 +29,11 @@ public class StringContainer {
     private StringBuilder stringBuilder;
     private ArrayList<String> sequenceList;
     private ArrayList<String> reverseList;
-    /**
-     * the summation length of all string segments
-     */
+    /** the summation length of all string segments */
     private int totalLength = 0;
-    /**
-     * the count of string segments
-     */
+    /** the count of string segments */
     private int count = 0;
+
     private boolean isUpdated = true;
     private String cache;
 
@@ -260,9 +257,9 @@ public class StringContainer {
     }
 
     /**
-     * /** return a sub-container consist of several continuous strings in this
-     * {@code container.If start <= end, return a empty container} e.g. this container is ["aa","bbb","cc","d","ee"];
-     * this.getSubString(0,0) = ["aa"]<br>
+     * /** return a sub-container consist of several continuous strings in this {@code container.If
+     * start <= end, return a empty container} e.g. this container is ["aa","bbb","cc","d","ee"]; this.getSubString(0,0)
+     * = ["aa"]<br>
      * this.getSubString(1,3) = ["bbb","cc","d"]<br>
      * this.getSubString(1,-1) = ["bbb","cc","d", "ee"]<br>
      *

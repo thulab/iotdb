@@ -34,5 +34,4 @@ public class FilterFactory {
     public static NotFilter not(Filter filter) {
         return new NotFilter(filter);
     }
-
 }

@@ -65,7 +65,7 @@ public abstract class SFWOperator extends RootOperator {
 
     /**
      * get information from SelectOperator and FromOperator and generate all table paths.
-     * 
+     *
      * @return - a list of seriesPath
      */
     public List<Path> getSelectedPaths() {

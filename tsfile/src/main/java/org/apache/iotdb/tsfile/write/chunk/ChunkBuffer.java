@@ -50,15 +50,13 @@ public class ChunkBuffer {
 
     private int numOfPages;
 
-    /**
-     * all pages of this column
-     */
+    /** all pages of this column */
     private PublicBAOS pageBuffer;
 
     private long totalValueCount;
     private long maxTimestamp;
     private long minTimestamp = -1;
-    private ByteBuffer compressedData;// DirectByteBuffer
+    private ByteBuffer compressedData; // DirectByteBuffer
 
     public ChunkBuffer(MeasurementSchema schema) {
         this.schema = schema;
@@ -76,7 +74,7 @@ public class ChunkBuffer {
 
     /**
      * write the page header and data into the PageWriter's outputstream
-     * 
+     *
      * @param data
      *            the data of the page
      * @param valueCount
@@ -204,18 +202,14 @@ public class ChunkBuffer {
         return headerSize + size;
     }
 
-    /**
-     * reset exist data in page for next stage
-     */
+    /** reset exist data in page for next stage */
     public void reset() {
         minTimestamp = -1;
         pageBuffer.reset();
         totalValueCount = 0;
     }
 
-    /**
-     * @return the max possible allocated size currently
-     */
+    /** @return the max possible allocated size currently */
     public long estimateMaxPageMemSize() {
         // return size of buffer + page max size;
         return pageBuffer.size() + estimateMaxPageHeaderSize();
@@ -226,11 +220,8 @@ public class ChunkBuffer {
         return PageHeader.calculatePageHeaderSize(schema.getType());
     }
 
-    /**
-     * @return current data size that the writer has serialized.
-     */
+    /** @return current data size that the writer has serialized. */
     public long getCurrentDataSize() {
         return pageBuffer.size();
     }
-
 }

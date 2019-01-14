@@ -18,12 +18,16 @@ package org.apache.iotdb.tsfile.encoding.bitpacking;
 /**
  * This class is used to encode(decode) Long in Java with specified bit-width. User need to guarantee that the length of
  * every given Long in binary mode is less than or equal to the bit-width.
+ *
  * <p>
  * e.g., if bit-width is 31, then Long '2147483648'(2^31) is not allowed but '2147483647'(2^31-1) is allowed.
+ *
  * <p>
  * For a full example, Width: 3 Input: 5 4 7 3 0 1 3 2
+ *
  * <p>
  * Output:
+ *
  * <p>
  * +-----------------------+ +-----------------------+ +-----------------------+ |1 |0 |1 |1 |0 |0 |1 |1 | |1 |0 |1 |1
  * |0 |0 |0 |0 | |0 |1 |0 |1 |1 |0 |1 |0 | +-----------------------+ +-----------------------+ +-----------------------+
@@ -33,13 +37,9 @@ package org.apache.iotdb.tsfile.encoding.bitpacking;
  */
 public class LongPacker {
 
-    /**
-     * Number of Long values for each pack operation
-     */
+    /** Number of Long values for each pack operation */
     private static final int NUM_OF_LONGS = 8;
-    /**
-     * bit-width
-     */
+    /** bit-width */
     private int width;
 
     public LongPacker(int width) {
@@ -152,7 +152,6 @@ public class LongPacker {
             valueIdx++;
             totalBits = 0;
         }
-
     }
 
     /**

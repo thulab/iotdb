@@ -31,9 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-/**
- * @author Zhang Jinrui
- */
+/** @author Zhang Jinrui */
 public class PlainEncoder extends Encoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlainEncoder.class);
     public EndianType endianType;

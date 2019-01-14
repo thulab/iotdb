@@ -35,7 +35,7 @@ import java.util.List;
 
 /**
  * Encodes values using a combination of run length encoding and bit packing, according to the following grammar:
- * 
+ *
  * <pre>
  * {@code
  * rle-bit-packing-hybrid: <length> <bitwidth> <encoded-data>
@@ -60,29 +60,19 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RleEncoder.class);
     public EndianType endianType;
 
-    /**
-     * we save all value in a list and calculate its bitwidth
-     */
+    /** we save all value in a list and calculate its bitwidth */
     protected List<T> values;
 
-    /**
-     * the bit width used for bit-packing and rle
-     */
+    /** the bit width used for bit-packing and rle */
     protected int bitWidth;
 
-    /**
-     * for a given value now buffered, how many times it occurs
-     */
+    /** for a given value now buffered, how many times it occurs */
     protected int repeatCount;
 
-    /**
-     * the number of group which using bit packing, it is saved in header
-     */
+    /** the number of group which using bit packing, it is saved in header */
     protected int bitPackedGroupCount;
 
-    /**
-     * the number of buffered value in array
-     */
+    /** the number of buffered value in array */
     protected int numBufferedValues;
 
     /**
@@ -90,26 +80,18 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
      */
     protected List<byte[]> bytesBuffer;
 
-    /**
-     * flag which indicate encoding mode false -- rle true -- bit-packing
-     */
+    /** flag which indicate encoding mode false -- rle true -- bit-packing */
     protected boolean isBitPackRun;
 
-    /**
-     * previous value written, used to detect repeated values
-     */
+    /** previous value written, used to detect repeated values */
     protected T preValue;
 
-    /**
-     * array to buffer values temporarily
-     */
+    /** array to buffer values temporarily */
     protected T[] bufferedValues;
 
     protected boolean isBitWidthSaved;
 
-    /**
-     * output stream to buffer {@code <bitwidth> <encoded-data>}
-     */
+    /** output stream to buffer {@code <bitwidth> <encoded-data>} */
     protected ByteArrayOutputStream byteCache;
 
     protected TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
@@ -169,18 +151,15 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
     }
 
     /**
-     * Write bytes to OutputStream using rle. rle format: {@code
-     * [header][value]
-     * header: (repeated value) << 1}
-     * 
+     * Write bytes to OutputStream using rle. rle format: {@code [header][value] header: (repeated
+     * value) << 1}
+     *
      * @throws IOException
      *             cannot write RLE run
      */
     protected abstract void writeRleRun() throws IOException;
 
-    /**
-     * Start a bit-packing run transform values to bytes and buffer them in cache
-     */
+    /** Start a bit-packing run transform values to bytes and buffer them in cache */
     public void writeOrAppendBitPackedRun() {
         if (bitPackedGroupCount >= config.RLE_MAX_BIT_PACKED_NUM) {
             // we've packed as many values as we can for this run,
@@ -200,10 +179,9 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
 
     /**
      * End a bit-packing run write all bit-packing group to OutputStream bit-packing format: {@code
-     * [header][lastBitPackedNum][bit-packing group]+
-     * [bit-packing group]+ are saved in List<byte[]> bytesBuffer
-     * }
-     * 
+     * [header][lastBitPackedNum][bit-packing group]+ [bit-packing group]+ are saved in List<byte[]>
+     * bytesBuffer }
+     *
      * @param lastBitPackedNum
      *            - in last bit-packing group, it may have useful values less than 8. This param indicates how many
      *            values are useful
@@ -239,7 +217,8 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
         if (value.equals(preValue)) {
             repeatCount++;
             if (repeatCount >= config.RLE_MIN_REPEATED_NUM && repeatCount <= config.RLE_MAX_REPEATED_NUM) {
-                // value occurs more than RLE_MIN_REPEATED_NUM times but less than EncodingConfig.RLE_MAX_REPEATED_NUM
+                // value occurs more than RLE_MIN_REPEATED_NUM times but less than
+                // EncodingConfig.RLE_MAX_REPEATED_NUM
                 // we'll use rle, so just keep on counting repeats for now
                 // we'll write current value to OutputStream when we encounter a different value
                 return;
@@ -285,9 +264,7 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
         }
     }
 
-    /**
-     * clean all useless value in bufferedValues and set 0
-     */
+    /** clean all useless value in bufferedValues and set 0 */
     protected abstract void clearBuffer();
 
     protected abstract void convertBuffer();

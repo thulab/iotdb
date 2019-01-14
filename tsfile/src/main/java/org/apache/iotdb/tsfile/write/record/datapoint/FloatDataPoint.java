@@ -31,12 +31,10 @@ import java.io.IOException;
  */
 public class FloatDataPoint extends DataPoint {
     private static final Logger LOG = LoggerFactory.getLogger(FloatDataPoint.class);
-    /** actual value **/
+    /** actual value * */
     private float value;
 
-    /**
-     * constructor of FloatDataPoint, the value type will be set automatically
-     */
+    /** constructor of FloatDataPoint, the value type will be set automatically */
     public FloatDataPoint(String measurementId, float v) {
         super(TSDataType.FLOAT, measurementId);
         this.value = v;
@@ -49,7 +47,6 @@ public class FloatDataPoint extends DataPoint {
             return;
         }
         writer.write(time, value);
-
     }
 
     @Override

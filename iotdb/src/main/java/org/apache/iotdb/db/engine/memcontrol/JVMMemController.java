@@ -60,7 +60,6 @@ public class JVMMemController extends BasicMemController {
 
     @Override
     public void clear() {
-
     }
 
     @Override

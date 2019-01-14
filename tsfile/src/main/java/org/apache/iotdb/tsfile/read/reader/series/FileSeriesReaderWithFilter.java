@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * <p>
  * Series reader is used to query one series of one tsfile, this reader has a filter which has the same series as the
  * querying series.
  */
@@ -57,5 +56,4 @@ public class FileSeriesReaderWithFilter extends FileSeriesReader {
                 chunkMetaData.getTsDataType());
         return filter.satisfy(digest);
     }
-
 }

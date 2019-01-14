@@ -38,9 +38,8 @@ import org.apache.iotdb.tsfile.read.common.Path;
 
 /**
  * test ast node parsing on authorization
- * 
- * @author kangrong
  *
+ * @author kangrong
  */
 @RunWith(Parameterized.class)
 public class TSPlanContextPropertyTest {

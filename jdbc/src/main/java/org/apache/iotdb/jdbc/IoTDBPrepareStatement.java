@@ -32,9 +32,7 @@ import java.util.*;
 
 public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedStatement {
     private final String sql;
-    /**
-     * save the SQL parameters as (paramLoc,paramValue) pair
-     */
+    /** save the SQL parameters as (paramLoc,paramValue) pair */
     private final Map<Integer, String> parameters = new HashMap<Integer, String>();
 
     public IoTDBPrepareStatement(IoTDBConnection connection, Iface client, TS_SessionHandle sessionHandle, String sql,
@@ -351,7 +349,6 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
             newSql.append(parts.get(i));
         }
         return newSql.toString();
-
     }
 
     private List<String> splitSqlStatement(final String sql) {
@@ -388,7 +385,5 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
         }
         parts.add(sql.substring(off, sql.length()));
         return parts;
-
     }
-
 }

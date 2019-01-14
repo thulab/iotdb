@@ -75,7 +75,6 @@ public class IoTDBMultiSeriesTest {
         insertData();
 
         connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX + "127.0.0.1:6667/", "root", "root");
-
     }
 
     @AfterClass
@@ -129,7 +128,8 @@ public class IoTDBMultiSeriesTest {
         }
     }
 
-    // "select s0 from root.vehicle.d0 where s0 >= 20" : test select same series with same series filter
+    // "select s0 from root.vehicle.d0 where s0 >= 20" : test select same series with same series
+    // filter
     @Test
     public void selectOneSeriesWithValueFilterTest() throws ClassNotFoundException, SQLException {
 
@@ -162,7 +162,8 @@ public class IoTDBMultiSeriesTest {
         }
     }
 
-    // "select s0 from root.vehicle.d0 where time > 22987 " : test select clause with only global time filter
+    // "select s0 from root.vehicle.d0 where time > 22987 " : test select clause with only global time
+    // filter
     @Test
     public void seriesGlobalTimeFilterTest() throws ClassNotFoundException, SQLException {
 
@@ -198,7 +199,8 @@ public class IoTDBMultiSeriesTest {
         }
     }
 
-    // "select s1 from root.vehicle.d0 where s0 < 111" : test select clause with different series filter
+    // "select s1 from root.vehicle.d0 where s0 < 111" : test select clause with different series
+    // filter
     @Test
     public void crossSeriesReadUpdateTest() throws ClassNotFoundException, SQLException {
         Class.forName(Config.JDBC_DRIVER_NAME);

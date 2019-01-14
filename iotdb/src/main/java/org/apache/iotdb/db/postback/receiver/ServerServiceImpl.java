@@ -42,22 +42,20 @@ import org.apache.iotdb.db.engine.filenode.IntervalFileNode;
 import org.apache.iotdb.db.engine.filenode.OverflowChangeType;
 import org.apache.iotdb.db.exception.FileNodeManagerException;
 
-/**
- * @author lta
- */
+/** @author lta */
 public class ServerServiceImpl implements ServerService.Iface {
     private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.TsfileDriver";
     private ThreadLocal<String> uuid = new ThreadLocal<String>();
     private ThreadLocal<Map<String, List<String>>> fileNodeMap = new ThreadLocal<>(); // String means Storage Group,
     // List means the set of new Files(AbsulutePath) in local IoTDB
     private ThreadLocal<Map<String, Map<String, Long>>> fileNodeStartTime = new ThreadLocal<>(); // String means
-                                                                                                 // AbsulutePath of new
-                                                                                                 // Files
+    // AbsulutePath of new
+    // Files
     // Map String1 means timeseries
     // String2 means startTime
-    private ThreadLocal<Map<String, Map<String, Long>>> fileNodeEndTime = new ThreadLocal<>();// String means
-                                                                                              // AbsulutePath of new
-                                                                                              // Files
+    private ThreadLocal<Map<String, Map<String, Long>>> fileNodeEndTime = new ThreadLocal<>(); // String means
+    // AbsulutePath of new
+    // Files
     // Map String1 means timeseries
     // String2 means endTime
     private ThreadLocal<Integer> fileNum = new ThreadLocal<Integer>();
@@ -65,19 +63,17 @@ public class ServerServiceImpl implements ServerService.Iface {
     private IoTDBConfig tsfileDBconfig = IoTDBDescriptor.getInstance().getConfig();
     private String postbackPath;
     private String dataPath = new File(tsfileDBconfig.dataDir).getAbsolutePath() + File.separator; // Absolute
-                                                                                                   // seriesPath of
-                                                                                                   // IoTDB data
-                                                                                                   // directory
+    // seriesPath of
+    // IoTDB data
+    // directory
     private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs(); // Absolute paths of IoTDB bufferWrite
-                                                                             // directory
+    // directory
     private IoTDBConfig tsfileDBConfig = IoTDBDescriptor.getInstance().getConfig();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
     private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
-    /**
-     * Init threadLocal variable
-     */
+    /** Init threadLocal variable */
     @Override
     public void init(String storageGroup) {
         LOGGER.info("IoTDB post back receiver: postback process starts to receive data of storage group {}.",
@@ -88,9 +84,7 @@ public class ServerServiceImpl implements ServerService.Iface {
         fileNodeEndTime.set(new HashMap<>());
     }
 
-    /**
-     * Verify IP address of sender
-     */
+    /** Verify IP address of sender */
     @Override
     public boolean getUUID(String uuid, String IPaddress) throws TException {
         this.uuid.set(uuid);
@@ -279,9 +273,7 @@ public class ServerServiceImpl implements ServerService.Iface {
         return true;
     }
 
-    /**
-     * Release threadLocal variable resources
-     */
+    /** Release threadLocal variable resources */
     @Override
     public void afterReceiving() {
         uuid.remove();
@@ -293,9 +285,7 @@ public class ServerServiceImpl implements ServerService.Iface {
         LOGGER.info("IoTDB post back receiver: the postBack has finished!");
     }
 
-    /**
-     * Get all tsfiles' info which are sent from sender, it is prepare for merging these data
-     */
+    /** Get all tsfiles' info which are sent from sender, it is prepare for merging these data */
     @Override
     public void getFileNodeInfo() throws TException {
         // String filePath = postbackPath + uuid.get() + File.separator + "data";
@@ -335,15 +325,14 @@ public class ServerServiceImpl implements ServerService.Iface {
         // fileNodeEndTime.get().put(fileTF.getAbsolutePath(), endTimeMap);
         // filesPath.add(fileTF.getAbsolutePath());
         // num++;
-        // LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" + fileNum.get());
+        // LOGGER.info("IoTDB receiver : Getting FileNode Info has complete : " + num + "/" +
+        // fileNum.get());
         // }
         // fileNodeMap.get().put(storageGroupPB.getName(), filesPath);
         // }
     }
 
-    /**
-     * Insert all data in the tsfile into IoTDB.
-     */
+    /** Insert all data in the tsfile into IoTDB. */
     @Override
     public void mergeOldData(String filePath) throws TException {
         // Set<String> timeseries = new HashSet<>();
@@ -352,7 +341,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // Statement statement = null;
         // try {
         // Class.forName(JDBC_DRIVER_NAME);
-        // connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort + "/", "root",
+        // connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort +
+        // "/", "root",
         // "root");
         // statement = connection.createStatement();
         // int count = 0;
@@ -365,7 +355,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // String key = it.next().toString(); // key represent devices
         // TsdeviceId deltaObj = deviceIdMap.get(key);
         // TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-        // blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input, deltaObj.offset,
+        // blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
+        // deltaObj.offset,
         // deltaObj.metadataBlockSize));
         // List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
         // timeseries.clear();
@@ -426,7 +417,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // } catch (IOException e) {
         // LOGGER.error("IoTDB receiver can not parse tsfile into SQL because{}", e.getMessage());
         // } catch (SQLException | ClassNotFoundException e) {
-        // LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}", e.getMessage());
+        // LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}",
+        // e.getMessage());
         // } finally {
         // try {
         // input.close();
@@ -459,7 +451,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // Statement statement = null;
         // try {
         // Class.forName(JDBC_DRIVER_NAME);
-        // connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort + "/", "root",
+        // connection = DriverManager.getConnection("jdbc:iotdb://localhost:" + tsfileDBConfig.rpcPort +
+        // "/", "root",
         // "root");
         // statement = connection.createStatement();
         // int count = 0;
@@ -472,7 +465,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // String key = it.next().toString(); // key represent devices
         // TsdeviceId deltaObj = deviceIdMap.get(key);
         // TsRowGroupBlockMetaData blockMeta = new TsRowGroupBlockMetaData();
-        // blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input, deltaObj.offset,
+        // blockMeta.convertToTSF(ReadWriteThriftFormatUtils.readRowGroupBlockMetaData(input,
+        // deltaObj.offset,
         // deltaObj.metadataBlockSize));
         // List<RowGroupMetaData> rowGroupMetadataList = blockMeta.getRowGroups();
         // timeseries.clear();
@@ -491,7 +485,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         //
         // TsFile readTsFile = new TsFile(input);
         // ArrayList<Path> paths = new ArrayList<>();
-        // for (String timesery : timeseries) { // compare data with one timesery in a round to get valid data
+        // for (String timesery : timeseries) { // compare data with one timesery in a round to get
+        // valid data
         // paths.clear();
         // paths.add(new Path(timesery));
         // Map<String, String> originDataPoint = new HashMap<>();
@@ -515,7 +510,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // }
         // }
         // }
-        // for (String overlapFile : overlapFiles) // get all data with the timesery in all overlap files.
+        // for (String overlapFile : overlapFiles) // get all data with the timesery in all overlap
+        // files.
         // {
         // TsRandomAccessLocalFileReader inputOverlap = null;
         // try {
@@ -550,7 +546,8 @@ public class ServerServiceImpl implements ServerService.Iface {
         // }
         // }
         // }
-        // if (originDataPoint.isEmpty()) { // If there has no overlap data with the timesery, inserting all
+        // if (originDataPoint.isEmpty()) { // If there has no overlap data with the timesery, inserting
+        // all
         // // data in the postback file
         // for (Entry<String, String> entry : newDataPoint.entrySet()) {
         // String sql = String.format(entry.getKey(), entry.getValue());
@@ -585,12 +582,14 @@ public class ServerServiceImpl implements ServerService.Iface {
         // } catch (IOException e) {
         // LOGGER.error("IoTDB receiver can not parse tsfile into SQL because{}", e.getMessage());
         // } catch (SQLException | ClassNotFoundException e) {
-        // LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}", e.getMessage());
+        // LOGGER.error("IoTDB post back receiver: jdbc cannot connect to IoTDB because {}",
+        // e.getMessage());
         // } finally {
         // try {
         // input.close();
         // } catch (IOException e) {
-        // LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}", filePath, e.getMessage());
+        // LOGGER.error("IoTDB receiver : Cannot close file stream {} because {}", filePath,
+        // e.getMessage());
         // }
         // try {
         // if (statement != null)

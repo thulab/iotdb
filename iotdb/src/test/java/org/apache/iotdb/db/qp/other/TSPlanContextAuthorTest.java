@@ -35,9 +35,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import org.apache.iotdb.tsfile.read.common.Path;
 
-/**
- * test ast node parsing on authorization
- */
+/** test ast node parsing on authorization */
 @RunWith(Parameterized.class)
 public class TSPlanContextAuthorTest {
     private static Path[] emptyPaths = new Path[] {};
@@ -75,5 +73,4 @@ public class TSPlanContextAuthorTest {
             fail();
         assertArrayEquals(paths, author.getPaths().toArray());
     }
-
 }

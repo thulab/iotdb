@@ -30,5 +30,4 @@ public class FileNodeManagerException extends Exception {
     public FileNodeManagerException(Throwable cause) {
         super(cause);
     }
-
 }

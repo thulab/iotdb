@@ -31,12 +31,10 @@ import java.io.IOException;
  */
 public class StringDataPoint extends DataPoint {
     private static final Logger LOG = LoggerFactory.getLogger(StringDataPoint.class);
-    /** actual value **/
+    /** actual value * */
     private Binary value;
 
-    /**
-     * constructor of StringDataPoint, the value type will be set automatically
-     */
+    /** constructor of StringDataPoint, the value type will be set automatically */
     public StringDataPoint(String measurementId, Binary v) {
         super(TSDataType.TEXT, measurementId);
         this.value = v;
@@ -49,7 +47,6 @@ public class StringDataPoint extends DataPoint {
             return;
         }
         writer.write(time, value);
-
     }
 
     @Override

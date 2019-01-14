@@ -97,7 +97,8 @@ public class LogicalPlanSmallTest {
         }
         ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
-        // expected to throw LogicalOperatorException: SLIMIT <SN>: SN must be a positive integer and can not be zero.
+        // expected to throw LogicalOperatorException: SLIMIT <SN>: SN must be a positive integer and
+        // can not be zero.
     }
 
     @Test
@@ -145,7 +146,8 @@ public class LogicalPlanSmallTest {
         executor.insert(path4, 10, "10");
         ConcatPathOptimizer concatPathOptimizer = new ConcatPathOptimizer(executor);
         operator = (SFWOperator) concatPathOptimizer.transform(operator);
-        // expected to throw LogicalOptimizeException: Wrong use of SLIMIT: SLIMIT is not allowed to be used with
+        // expected to throw LogicalOptimizeException: Wrong use of SLIMIT: SLIMIT is not allowed to be
+        // used with
         // complete paths.
     }
 
@@ -176,7 +178,7 @@ public class LogicalPlanSmallTest {
         }
         ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
-        // expected to throw LogicalOperatorException: LIMIT <N>: N must be a positive integer and can not be zero.
+        // expected to throw LogicalOperatorException: LIMIT <N>: N must be a positive integer and can
+        // not be zero.
     }
-
 }

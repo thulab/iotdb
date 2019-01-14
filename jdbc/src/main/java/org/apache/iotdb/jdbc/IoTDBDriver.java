@@ -40,13 +40,10 @@ public class IoTDBDriver implements Driver {
         }
     }
 
-    /**
-     * Is this driver JDBC compliant?
-     */
+    /** Is this driver JDBC compliant? */
     private static final boolean TSFILE_JDBC_COMPLIANT = false;
 
     public IoTDBDriver() {
-
     }
 
     @Override
@@ -91,5 +88,4 @@ public class IoTDBDriver implements Driver {
     public boolean jdbcCompliant() {
         return TSFILE_JDBC_COMPLIANT;
     }
-
 }

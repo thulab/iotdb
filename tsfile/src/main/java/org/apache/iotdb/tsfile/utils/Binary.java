@@ -25,7 +25,6 @@ import java.util.Arrays;
 /**
  * Override compareTo() and equals() function to Binary class. This class is used to accept Java String type
  *
- *
  * @author xuyi
  */
 public class Binary implements Comparable<Binary>, Serializable {
@@ -36,7 +35,7 @@ public class Binary implements Comparable<Binary>, Serializable {
 
     /**
      * if the bytes v is modified, the modification is visable to this binary.
-     * 
+     *
      * @param v
      */
     public Binary(byte[] v) {

@@ -51,5 +51,4 @@ public class PublicBAOS extends ByteArrayOutputStream {
     public ByteArrayInputStream transformToInputStream() {
         return new ByteArrayInputStream(this.buf, 0, size());
     }
-
 }

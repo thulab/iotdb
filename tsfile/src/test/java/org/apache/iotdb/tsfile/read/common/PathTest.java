@@ -75,5 +75,4 @@ public class PathTest {
         testPath(Path.replace(rep3, src), "d.e", "f", "d.e.f");
         testPath(Path.replace(rep4, src), "d.e.f", "g", "d.e.f.g");
     }
-
 }

@@ -17,10 +17,7 @@ package org.apache.iotdb.db.engine.overflow.utils;
 
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
-/**
- * TimePair represents an overflow operation.
- */
-
+/** TimePair represents an overflow operation. */
 public class TimePair {
 
     public long s; // start time
@@ -68,9 +65,7 @@ public class TimePair {
         this.mergestatus = status;
     }
 
-    /**
-     * Set TimePair s = -1 and e = -1 means reset.
-     */
+    /** Set TimePair s = -1 and e = -1 means reset. */
     public void reset() {
         s = -1;
         e = -1;

@@ -25,10 +25,7 @@ import org.apache.iotdb.tsfile.read.controller.ChunkLoader;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * <p>
- * Series reader is used to query one series of one tsfile.
- */
+/** Series reader is used to query one series of one tsfile. */
 public abstract class FileSeriesReader {
 
     protected ChunkLoader chunkLoader;
@@ -54,7 +51,6 @@ public abstract class FileSeriesReader {
         } else {
             return chunkToRead < chunkMetaDataList.size();
         }
-
     }
 
     public BatchData nextBatch() throws IOException {
@@ -96,5 +92,4 @@ public abstract class FileSeriesReader {
     public void close() throws IOException {
         chunkLoader.close();
     }
-
 }

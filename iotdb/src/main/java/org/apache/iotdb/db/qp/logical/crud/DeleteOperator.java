@@ -17,9 +17,7 @@ package org.apache.iotdb.db.qp.logical.crud;
 
 import org.apache.iotdb.db.qp.logical.Operator;
 
-/**
- * this class extends {@code RootOperator} and process delete statement
- */
+/** this class extends {@code RootOperator} and process delete statement */
 public class DeleteOperator extends SFWOperator {
 
     private long time;
@@ -36,5 +34,4 @@ public class DeleteOperator extends SFWOperator {
     public long getTime() {
         return time;
     }
-
 }

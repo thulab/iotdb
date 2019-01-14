@@ -63,7 +63,6 @@ public class CreateDataSender2 {
         }
 
         return timeseriesMap;
-
     }
 
     public static void createTimeseries(Statement statement, Map<String, String> timeseriesMap) throws SQLException {

@@ -19,9 +19,8 @@ import java.util.Random;
 
 /**
  * This class is used for Junit test to get some unified constant.
- * 
- * @author kangrong
  *
+ * @author kangrong
  */
 public class CommonTestConstant {
     public static final float float_min_delta = 0.00001f;

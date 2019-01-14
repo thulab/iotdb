@@ -26,20 +26,20 @@ import java.math.BigDecimal;
 
 /**
  * This is a abstract class representing a data point. DataPoint consists of a measurement id and a data type. subclass
- * of DataPoint need override method {@code write(long time, IChunkWriter writer)} .Every subclass has its data type and
- * overrides a setting method for its data type.
+ * of DataPoint need override method {@code write(long time, IChunkWriter
+ * writer)} .Every subclass has its data type and overrides a setting method for its data type.
  *
  * @author kangrong
  */
 public abstract class DataPoint {
-    /** value type of this DataPoint **/
+    /** value type of this DataPoint * */
     protected final TSDataType type;
-    /** measurementId of this DataPoint **/
+    /** measurementId of this DataPoint * */
     protected final String measurementId;
 
     /**
      * constructor of DataPoint
-     * 
+     *
      * @param type
      *            value type of this DataPoint
      * @param measurementId

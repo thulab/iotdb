@@ -22,9 +22,7 @@ import java.util.LinkedHashMap;
 import org.apache.iotdb.db.exception.PathErrorException;
 import org.apache.iotdb.db.exception.PathErrorException;
 
-/**
- * PNode is the shorthand for "Property Node", which make up The {@code PTree}
- */
+/** PNode is the shorthand for "Property Node", which make up The {@code PTree} */
 public class PNode implements Serializable {
 
     private static final long serialVersionUID = -7166236304286006338L;
@@ -33,9 +31,7 @@ public class PNode implements Serializable {
     private HashMap<String, PNode> children;
     private boolean isLeaf;
 
-    /**
-     * This HashMap contains all the {@code MNode} this {@code PNode} is responsible for
-     */
+    /** This HashMap contains all the {@code MNode} this {@code PNode} is responsible for */
     private LinkedHashMap<String, Integer> linkedMTreePathMap;
 
     public PNode(String name, PNode parent, boolean isLeaf) {

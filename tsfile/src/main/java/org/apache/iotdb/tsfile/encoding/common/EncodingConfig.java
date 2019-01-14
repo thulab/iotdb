@@ -21,7 +21,8 @@ package org.apache.iotdb.tsfile.encoding.common;
  * @author xuyi
  */
 public class EncodingConfig {
-    // if number n repeats more than(>=) RLE_MAX_REPEATED_NUM times, use rle encoding, otherwise use bit-packing
+    // if number n repeats more than(>=) RLE_MAX_REPEATED_NUM times, use rle encoding, otherwise use
+    // bit-packing
     public static final int RLE_MAX_REPEATED_NUM = 8;
 
     // when to start a new bit-pacing group

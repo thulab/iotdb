@@ -26,9 +26,7 @@ import org.apache.iotdb.tsfile.read.reader.series.FileSeriesReader;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * multi-way merging data set ,no need to use TimeGenerator
- */
+/** multi-way merging data set ,no need to use TimeGenerator */
 public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     private List<FileSeriesReader> readers;
@@ -37,7 +35,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
     private List<Boolean> hasDataRemaining;
 
-    /** heap only need to store time **/
+    /** heap only need to store time * */
     private PriorityQueue<Long> timeHeap;
 
     private Set<Long> timeSet;
@@ -130,9 +128,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
         return record;
     }
 
-    /**
-     * keep heap from storing duplicate time
-     */
+    /** keep heap from storing duplicate time */
     private void timeHeapPut(long time) {
         if (!timeSet.contains(time)) {
             timeSet.add(time);

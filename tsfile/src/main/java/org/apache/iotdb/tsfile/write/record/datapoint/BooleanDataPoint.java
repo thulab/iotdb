@@ -31,12 +31,10 @@ import java.io.IOException;
  */
 public class BooleanDataPoint extends DataPoint {
     private static final Logger LOG = LoggerFactory.getLogger(BooleanDataPoint.class);
-    /** actual value **/
+    /** actual value * */
     private boolean value;
 
-    /**
-     * constructor of BooleanDataPoint, the value type will be set automatically
-     */
+    /** constructor of BooleanDataPoint, the value type will be set automatically */
     public BooleanDataPoint(String measurementId, boolean v) {
         super(TSDataType.BOOLEAN, measurementId);
         this.value = v;

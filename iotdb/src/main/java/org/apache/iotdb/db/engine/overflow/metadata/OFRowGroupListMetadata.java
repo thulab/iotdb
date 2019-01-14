@@ -26,9 +26,7 @@ import java.util.List;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-/**
- * Metadata of overflow RowGroup list
- */
+/** Metadata of overflow RowGroup list */
 public class OFRowGroupListMetadata {
 
     private String deviceId;
@@ -44,7 +42,7 @@ public class OFRowGroupListMetadata {
 
     /**
      * add OFSeriesListMetadata metadata to list
-     * 
+     *
      * @param timeSeries
      */
     public void addSeriesListMetaData(OFSeriesListMetadata timeSeries) {

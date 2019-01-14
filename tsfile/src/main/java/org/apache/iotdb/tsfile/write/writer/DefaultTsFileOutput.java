@@ -70,5 +70,4 @@ public class DefaultTsFileOutput implements TsFileOutput {
     public void truncate(long position) throws IOException {
         outputStream.getChannel().truncate(position);
     }
-
 }

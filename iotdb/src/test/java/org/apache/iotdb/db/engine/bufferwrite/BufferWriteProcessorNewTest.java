@@ -50,7 +50,6 @@ public class BufferWriteProcessorNewTest {
 
         @Override
         public void act() throws Exception {
-
         }
     };
 
@@ -65,7 +64,6 @@ public class BufferWriteProcessorNewTest {
 
         @Override
         public void act() throws Exception {
-
         }
     };
     Map<String, Action> parameters = new HashMap<>();

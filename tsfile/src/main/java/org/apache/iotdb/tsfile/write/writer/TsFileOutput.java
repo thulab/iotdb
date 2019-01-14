@@ -42,9 +42,9 @@ public interface TsFileOutput {
     void write(ByteBuffer b) throws IOException;
 
     /**
-     * gets the current position of the Output. This method is usually used for recording where the data is. <br/>
+     * gets the current position of the Output. This method is usually used for recording where the data is. <br>
      * For example, if the Output is a fileOutputStream, then getPosition returns its file position.
-     * 
+     *
      * @return current position
      * @throws java.io.IOException
      *             if an I/O error occurs.
@@ -53,7 +53,7 @@ public interface TsFileOutput {
 
     /**
      * close the output
-     * 
+     *
      * @throws IOException
      *             if an I/O error occurs.
      */
@@ -61,7 +61,7 @@ public interface TsFileOutput {
 
     /**
      * convert this TsFileOutput as a outputstream.
-     * 
+     *
      * @return an output stream whose position is the same with this Output
      * @throws IOException
      *             if an I/O error occurs.
@@ -78,10 +78,9 @@ public interface TsFileOutput {
 
     /**
      * The same with {@link java.nio.channels.FileChannel#truncate(long)}
-     * 
+     *
      * @param position
      * @throws IOException
      */
     void truncate(long position) throws IOException;
-
 }

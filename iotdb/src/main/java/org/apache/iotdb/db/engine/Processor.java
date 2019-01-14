@@ -26,15 +26,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * <p>
  * Processor is used for implementing different processor with different operation.<br>
- * 
+ *
  * @see BufferWriteProcessor
  * @see FileNodeProcessor
- * 
  * @author liukun
  * @author kangrong
- *
  */
 // TODO remove this class
 public abstract class Processor {
@@ -43,7 +40,7 @@ public abstract class Processor {
 
     /**
      * Construct processor using name space seriesPath
-     * 
+     *
      * @param processorName
      */
     public Processor(String processorName) {
@@ -51,30 +48,22 @@ public abstract class Processor {
         this.lock = new ReentrantReadWriteLock();
     }
 
-    /**
-     * Release the read lock
-     */
+    /** Release the read lock */
     public void readUnlock() {
         lock.readLock().unlock();
     }
 
-    /**
-     * Acquire the read lock
-     */
+    /** Acquire the read lock */
     public void readLock() {
         lock.readLock().lock();
     }
 
-    /**
-     * Acquire the write lock
-     */
+    /** Acquire the write lock */
     public void writeLock() {
         lock.writeLock().lock();
     }
 
-    /**
-     * Release the write lock
-     */
+    /** Release the write lock */
     public void writeUnlock() {
         lock.writeLock().unlock();
     }
@@ -113,7 +102,7 @@ public abstract class Processor {
 
     /**
      * Get the name space seriesPath
-     * 
+     *
      * @return
      */
     public String getProcessorName() {
@@ -122,7 +111,7 @@ public abstract class Processor {
 
     /**
      * Try to get the write lock
-     * 
+     *
      * @return
      */
     public boolean tryWriteLock() {
@@ -131,7 +120,7 @@ public abstract class Processor {
 
     /**
      * Try to get the read lock
-     * 
+     *
      * @return
      */
     public boolean tryReadLock() {
@@ -175,7 +164,7 @@ public abstract class Processor {
     /**
      * Close the processor.<br>
      * Notice: Thread is not safe
-     * 
+     *
      * @throws IOException
      * @throws ProcessorException
      */

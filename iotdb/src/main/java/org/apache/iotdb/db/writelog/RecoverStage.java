@@ -16,9 +16,7 @@
 package org.apache.iotdb.db.writelog;
 
 public enum RecoverStage {
-    /**
-     * This is just the start point of the recovery automata
-     */
+    /** This is just the start point of the recovery automata */
     init,
 
     /**

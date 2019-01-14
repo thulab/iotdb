@@ -61,7 +61,5 @@ public class FloatStatisticsTest {
         assertEquals(100.13453f + 1.34f + 200.435d, (float) floatStats3.getSum(), maxError);
         assertEquals(1.34f, (float) floatStats3.getFirst(), maxError);
         assertEquals(200.435f, (float) floatStats3.getLast(), maxError);
-
     }
-
 }

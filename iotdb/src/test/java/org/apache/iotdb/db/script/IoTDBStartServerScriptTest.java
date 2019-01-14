@@ -38,7 +38,8 @@ public class IoTDBStartServerScriptTest {
     public void tearDown() throws Exception {
     }
 
-    // Skip this test for now because if you close IoTDB by stop-server script, it cannot detect whether it is closed or
+    // Skip this test for now because if you close IoTDB by stop-server script, it cannot detect
+    // whether it is closed or
     // not.
     // @Test
     public void test() throws IOException, InterruptedException {

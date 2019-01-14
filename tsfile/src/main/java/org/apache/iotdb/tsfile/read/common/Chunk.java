@@ -20,9 +20,7 @@ import org.apache.iotdb.tsfile.file.header.ChunkHeader;
 
 import java.nio.ByteBuffer;
 
-/**
- * used in query
- */
+/** used in query */
 public class Chunk {
 
     private ChunkHeader chunkHeader;

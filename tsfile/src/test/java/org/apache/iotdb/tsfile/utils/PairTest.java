@@ -65,5 +65,4 @@ public class PairTest {
         Pair<Float, Double> p2 = new Pair<Float, Double>(32.5f, 123.123d);
         assertEquals("<32.5,123.123>", p2.toString());
     }
-
 }

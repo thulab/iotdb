@@ -71,9 +71,7 @@ public class TSFileDescriptor {
         return Loader.getResource(filename, classLoader);
     }
 
-    /**
-     * load an .properties file and set TSFileConfig variables
-     */
+    /** load an .properties file and set TSFileConfig variables */
     private void loadProps() {
         InputStream inputStream = null;
         String url = System.getProperty(SystemConstant.TSFILE_CONF, null);

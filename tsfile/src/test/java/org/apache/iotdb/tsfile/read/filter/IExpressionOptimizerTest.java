@@ -68,7 +68,6 @@ public class IExpressionOptimizerTest {
         } catch (QueryFilterOptimizationException e) {
             e.printStackTrace();
         }
-
     }
 
     @Test

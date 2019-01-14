@@ -711,7 +711,6 @@ public class BytesUtils {
                 LOG.error("tsfile-common BytesUtils: cannot convert an integer {} to a byte array, pos {}, width {}",
                         srcNum, pos, width, e);
             }
-
         }
     }
 
@@ -737,7 +736,6 @@ public class BytesUtils {
                 LOG.error("tsfile-common BytesUtils: cannot convert a long {} to a byte array, pos {}, width {}",
                         srcNum, pos, width, e);
             }
-
         }
     }
 
@@ -873,5 +871,4 @@ public class BytesUtils {
         s = (short) (s0 | s1);
         return s;
     }
-
 }

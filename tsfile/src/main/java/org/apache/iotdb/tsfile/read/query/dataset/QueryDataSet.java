@@ -35,14 +35,10 @@ public abstract class QueryDataSet {
         this.dataTypes = dataTypes;
     }
 
-    /**
-     * This method is used for batch query.
-     */
+    /** This method is used for batch query. */
     public abstract boolean hasNext() throws IOException;
 
-    /**
-     * This method is used for batch query, return RowRecord.
-     */
+    /** This method is used for batch query, return RowRecord. */
     public abstract RowRecord next() throws IOException;
 
     public List<Path> getPaths() {
@@ -52,5 +48,4 @@ public abstract class QueryDataSet {
     public List<TSDataType> getDataTypes() {
         return dataTypes;
     }
-
 }

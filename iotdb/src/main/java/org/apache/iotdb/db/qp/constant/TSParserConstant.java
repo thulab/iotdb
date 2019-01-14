@@ -51,5 +51,4 @@ public class TSParserConstant {
         }
         return antlrQpMap.get(antlrIntType);
     }
-
 }

@@ -83,7 +83,7 @@ public class TsFileGeneratorForTest {
             file.delete();
     }
 
-    static private void generateSampleInputDataFile() throws IOException {
+    private static void generateSampleInputDataFile() throws IOException {
         File file = new File(inputDataFile);
         if (file.exists())
             file.delete();
@@ -126,7 +126,7 @@ public class TsFileGeneratorForTest {
         fw.close();
     }
 
-    static public void write() throws IOException, InterruptedException, WriteProcessException {
+    public static void write() throws IOException, InterruptedException, WriteProcessException {
         File file = new File(outputDataFile);
         File errorFile = new File(errorOutputDataFile);
         if (file.exists())
@@ -212,7 +212,7 @@ public class TsFileGeneratorForTest {
         return schemaBuilder.build();
     }
 
-    static public void writeToFile(FileSchema schema) throws InterruptedException, IOException, WriteProcessException {
+    public static void writeToFile(FileSchema schema) throws InterruptedException, IOException, WriteProcessException {
         Scanner in = getDataFile(inputDataFile);
         long lineCount = 0;
         long startTime = System.currentTimeMillis();
@@ -240,7 +240,7 @@ public class TsFileGeneratorForTest {
         LOG.info("out file size:{}MB", FileUtils.getLocalFileByte(outputDataFile, FileUtils.Unit.MB));
     }
 
-    static private Scanner getDataFile(String path) {
+    private static Scanner getDataFile(String path) {
         File file = new File(path);
         try {
             Scanner in = new Scanner(file);

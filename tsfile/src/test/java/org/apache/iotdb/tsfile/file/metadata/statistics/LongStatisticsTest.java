@@ -84,5 +84,4 @@ public class LongStatisticsTest {
         assertEquals(1, (long) longStats3.getFirst());
         assertEquals(max2, (long) longStats3.getLast());
     }
-
 }

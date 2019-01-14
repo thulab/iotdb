@@ -296,12 +296,10 @@ public class IoTDBConnection implements Connection {
 
     @Override
     public void rollback() throws SQLException {
-
     }
 
     @Override
     public void rollback(Savepoint arg0) throws SQLException {
-
     }
 
     @Override

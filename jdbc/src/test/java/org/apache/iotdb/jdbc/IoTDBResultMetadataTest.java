@@ -105,7 +105,6 @@ public class IoTDBResultMetadataTest {
         for (int i = 1; i <= colums.length; i++) {
             assertEquals(metadata.getColumnLabel(i), colums[i - 1]);
         }
-
     }
 
     @Test
@@ -162,5 +161,4 @@ public class IoTDBResultMetadataTest {
         metadata = new IoTDBResultMetadata(null, operationType, null);
         assertEquals(metadata.getColumnTypeName(1), operationType);
     }
-
 }

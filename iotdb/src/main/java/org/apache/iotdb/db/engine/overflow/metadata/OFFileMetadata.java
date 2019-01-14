@@ -41,7 +41,7 @@ public class OFFileMetadata {
 
     /**
      * add OFRowGroupListMetadata to list
-     * 
+     *
      * @param rowGroupListMetadata
      * @return void
      */
@@ -98,5 +98,4 @@ public class OFFileMetadata {
     public static OFFileMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
         throw new NotImplementedException();
     }
-
 }

@@ -26,7 +26,6 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import java.util.ArrayList;
 
 /**
- * <p>
  * <code>BatchData</code> is a self-defined data structure which is optimized for different type of values. This class
  * can be viewed as a collection which is more efficient than ArrayList.
  */
@@ -44,7 +43,7 @@ public class BatchData {
     private int curTimeIdx; // the index of current ArrayList in timeRet
     private int timeLength; // the insert timestamp number of timeRet
 
-    private int valueArrayIdx;// the number of ArrayList in valueRet
+    private int valueArrayIdx; // the number of ArrayList in valueRet
     private int curValueIdx; // the index of current ArrayList in valueRet
     private int valueLength; // the insert value number of valueRet
 
@@ -297,9 +296,7 @@ public class BatchData {
         valueLength++;
     }
 
-    /**
-     * Checks if the given index is in range. If not, throws an appropriate runtime exception.
-     */
+    /** Checks if the given index is in range. If not, throws an appropriate runtime exception. */
     private void rangeCheck(int idx) {
         if (idx < 0) {
             throw new IndexOutOfBoundsException("BatchData value range check, Index is negative: " + idx);
@@ -310,9 +307,7 @@ public class BatchData {
         }
     }
 
-    /**
-     * Checks if the given index is in range. If not, throws an appropriate runtime exception.
-     */
+    /** Checks if the given index is in range. If not, throws an appropriate runtime exception. */
     private void rangeCheckForTime(int idx) {
         if (idx < 0) {
             throw new IndexOutOfBoundsException("BatchData time range check, Index is negative: " + idx);

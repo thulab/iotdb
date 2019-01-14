@@ -39,5 +39,4 @@ public class ChunkReaderWithFilter extends ChunkReader {
                 chunkHeader.getDataType());
         return filter.satisfy(digest);
     }
-
 }

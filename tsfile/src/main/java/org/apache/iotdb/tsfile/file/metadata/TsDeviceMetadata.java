@@ -27,24 +27,16 @@ import java.util.List;
 
 public class TsDeviceMetadata {
 
-    /**
-     * size of ChunkGroupMetadataBlock in byte
-     **/
-    private int serializedSize = 2 * Long.BYTES + Integer.BYTES;// this field does not need to be serialized.
+    /** size of ChunkGroupMetadataBlock in byte */
+    private int serializedSize = 2 * Long.BYTES + Integer.BYTES; // this field does not need to be serialized.
 
-    /**
-     * start time for a device
-     **/
+    /** start time for a device */
     private long startTime = Long.MAX_VALUE;
 
-    /**
-     * end time for a device
-     **/
+    /** end time for a device */
     private long endTime = Long.MIN_VALUE;
 
-    /**
-     * Row groups in this file
-     */
+    /** Row groups in this file */
     private List<ChunkGroupMetaData> chunkGroupMetadataList = new ArrayList<>();
 
     public int getSerializedSize() {
@@ -65,7 +57,7 @@ public class TsDeviceMetadata {
 
     /**
      * set the ChunkGroupMetadataList and recalculate serialized size.
-     * 
+     *
      * @param chunkGroupMetadataList
      */
     public void setChunkGroupMetadataList(List<ChunkGroupMetaData> chunkGroupMetadataList) {
@@ -185,5 +177,4 @@ public class TsDeviceMetadata {
         return "TsDeviceMetadata{" + "serializedSize=" + serializedSize + ", startTime=" + startTime + ", endTime="
                 + endTime + ", chunkGroupMetadataList=" + chunkGroupMetadataList + '}';
     }
-
 }

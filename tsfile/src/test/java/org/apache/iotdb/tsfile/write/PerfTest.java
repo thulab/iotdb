@@ -50,13 +50,13 @@ import java.util.Scanner;
  */
 public class PerfTest {
     private static final Logger LOG = LoggerFactory.getLogger(PerfTest.class);
-    public static final int ROW_COUNT = 1000;// 0000;
+    public static final int ROW_COUNT = 1000; // 0000;
     public static TsFileWriter innerWriter;
-    static public String inputDataFile;
-    static public String outputDataFile;
-    static public String errorOutputDataFile;
-    static public JSONObject jsonSchema;
-    static public Random r = new Random();
+    public static String inputDataFile;
+    public static String outputDataFile;
+    public static String errorOutputDataFile;
+    public static JSONObject jsonSchema;
+    public static Random r = new Random();
 
     @Before
     public void prepare() throws IOException {
@@ -89,7 +89,7 @@ public class PerfTest {
         logger.setLevel(Level.toLevel("info"));
     }
 
-    static private void generateSampleInputDataFile() throws IOException {
+    private static void generateSampleInputDataFile() throws IOException {
         File file = new File(inputDataFile);
         if (file.exists())
             file.delete();
@@ -133,7 +133,7 @@ public class PerfTest {
         write();
     }
 
-    static private void write() throws IOException, InterruptedException, WriteProcessException {
+    private static void write() throws IOException, InterruptedException, WriteProcessException {
         File file = new File(outputDataFile);
         File errorFile = new File(errorOutputDataFile);
         if (file.exists())
@@ -157,7 +157,7 @@ public class PerfTest {
         LOG.info("write to file successfully!!");
     }
 
-    static private Scanner getDataFile(String path) {
+    private static Scanner getDataFile(String path) {
         File file = new File(path);
         try {
             Scanner in = new Scanner(file);
@@ -168,7 +168,7 @@ public class PerfTest {
         }
     }
 
-    static private void writeToFile(FileSchema schema) throws InterruptedException, IOException, WriteProcessException {
+    private static void writeToFile(FileSchema schema) throws InterruptedException, IOException, WriteProcessException {
         Scanner in = getDataFile(inputDataFile);
         long lineCount = 0;
         long startTime = System.currentTimeMillis();

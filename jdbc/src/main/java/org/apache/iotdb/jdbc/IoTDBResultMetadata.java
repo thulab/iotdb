@@ -207,5 +207,4 @@ public class IoTDBResultMetadata implements ResultSetMetaData {
         // TODO Auto-generated method stub
         return false;
     }
-
 }

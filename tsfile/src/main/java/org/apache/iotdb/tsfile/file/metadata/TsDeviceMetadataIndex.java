@@ -23,25 +23,16 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 public class TsDeviceMetadataIndex {
-    /**
-     * The offset of the TsDeviceMetadata
-     */
+    /** The offset of the TsDeviceMetadata */
     private long offset;
-    /**
-     * The size of the TsDeviceMetadata in the disk
-     */
+    /** The size of the TsDeviceMetadata in the disk */
     private int len;
-    /**
-     * The start time of the device
-     */
+    /** The start time of the device */
     private long startTime;
-    /**
-     * The end time of the device
-     */
+    /** The end time of the device */
     private long endTime;
 
     public TsDeviceMetadataIndex() {
-
     }
 
     public TsDeviceMetadataIndex(long offset, int len, TsDeviceMetadata deviceMetadata) {

@@ -24,9 +24,7 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
 import java.nio.ByteBuffer;
 
-/**
- * class to construct digest.
- */
+/** class to construct digest. */
 public class DigestForFilter {
 
     private ByteBuffer minValue;
@@ -109,5 +107,4 @@ public class DigestForFilter {
     public TSDataType getType() {
         return type;
     }
-
 }

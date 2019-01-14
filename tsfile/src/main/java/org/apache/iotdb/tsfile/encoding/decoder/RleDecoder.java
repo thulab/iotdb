@@ -31,41 +31,29 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
 /**
- * Abstract class for all rle decoder. Decoding values according to following grammar:
- * {@code <length> <bitwidth> <encoded-data>}. For more information about rle format, see RleEncoder
+ * Abstract class for all rle decoder. Decoding values according to following grammar: {@code
+ * <length> <bitwidth> <encoded-data>}. For more information about rle format, see RleEncoder
  */
 public abstract class RleDecoder extends Decoder {
 
     public EndianType endianType;
     protected TSFileConfig config = TSFileDescriptor.getInstance().getConfig();
-    /**
-     * mode to indicate current encoding type 0 - RLE 1 - BIT_PACKED
-     */
+    /** mode to indicate current encoding type 0 - RLE 1 - BIT_PACKED */
     protected MODE mode;
-    /**
-     * bit width for bit-packing and rle to decode
-     */
+    /** bit width for bit-packing and rle to decode */
     protected int bitWidth;
-    /**
-     * number of data left for reading in current buffer
-     */
+    /** number of data left for reading in current buffer */
     protected int currentCount;
-    /**
-     * how many bytes for all encoded data like [{@code <bitwidth> <encoded-data>}] in inputstream
-     */
+    /** how many bytes for all encoded data like [{@code <bitwidth> <encoded-data>}] in inputstream */
     protected int length;
     /**
      * a flag to indicate whether current pattern is end. false - need to start reading a new page true - current page
      * isn't over
      */
     protected boolean isLengthAndBitWidthReaded;
-    /**
-     * buffer to save data format like [{@code <bitwidth> <encoded-data>}] for decoder
-     */
+    /** buffer to save data format like [{@code <bitwidth> <encoded-data>}] for decoder */
     protected ByteBuffer byteCache;
-    /**
-     * number of bit-packing group in which is saved in header
-     */
+    /** number of bit-packing group in which is saved in header */
     protected int bitPackingNum;
 
     public RleDecoder(EndianType endianType) {
@@ -84,7 +72,7 @@ public abstract class RleDecoder extends Decoder {
 
     /**
      * get header for both rle and bit-packing current encode mode which is saved in first bit of header
-     * 
+     *
      * @return int value
      * @throws IOException
      *             cannot get header

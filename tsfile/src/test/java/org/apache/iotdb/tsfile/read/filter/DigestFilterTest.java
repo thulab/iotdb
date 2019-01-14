@@ -94,5 +94,4 @@ public class DigestFilterTest {
         Assert.assertEquals(true, orFilter.satisfy(digest1));
         Assert.assertEquals(true, orFilter.satisfy(digest2));
     }
-
 }

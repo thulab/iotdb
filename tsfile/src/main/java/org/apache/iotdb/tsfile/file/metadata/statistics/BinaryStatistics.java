@@ -32,7 +32,7 @@ public class BinaryStatistics extends Statistics<Binary> {
     private Binary max = new Binary("");
     private Binary min = new Binary("");
     private Binary first = new Binary("");
-    private double sum;// FIXME sum is meaningless
+    private double sum; // FIXME sum is meaningless
     private Binary last = new Binary("");
 
     @Override

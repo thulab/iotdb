@@ -18,12 +18,16 @@ package org.apache.iotdb.tsfile.encoding.bitpacking;
 /**
  * This class is used to encode(decode) Integer in Java with specified bit-width. User need to guarantee that the length
  * of every given Integer in binary mode is less than or equal to the bit-width.
+ *
  * <p>
  * e.g., if bit-width is 4, then Integer '16'(10000)b is not allowed but '15'(1111)b is allowed.
+ *
  * <p>
  * For a full example, Width: 3 Input: 5 4 7 3 0 1 3 2
+ *
  * <p>
  * Output:
+ *
  * <p>
  * +-----------------------+ +-----------------------+ +-----------------------+ |1 |0 |1 |1 |0 |0 |1 |1 | |1 |0 |1 |1
  * |0 |0 |0 |0 | |0 |1 |0 |1 |1 |0 |1 |0 | +-----------------------+ +-----------------------+ +-----------------------+
@@ -33,13 +37,9 @@ package org.apache.iotdb.tsfile.encoding.bitpacking;
  */
 public class IntPacker {
 
-    /**
-     * Number of Integers for each pack operation
-     */
+    /** Number of Integers for each pack operation */
     private static final int NUM_OF_INTS = 8;
-    /**
-     * bit-width
-     */
+    /** bit-width */
     private int width;
 
     public IntPacker(int width) {
@@ -115,12 +115,14 @@ public class IntPacker {
     public void unpack8Values(byte[] buf, int offset, int[] values) {
         int byteIdx = offset;
         long buffer = 0;
-        // total bits which have read from 'buf' to 'buffer'. i.e., number of available bits to be decoded.
+        // total bits which have read from 'buf' to 'buffer'. i.e., number of available bits to be
+        // decoded.
         int totalBits = 0;
         int valueIdx = 0;
 
         while (valueIdx < NUM_OF_INTS) {
-            // If current available bits are not enough to decode one Integer, then add next byte from buf to 'buffer'
+            // If current available bits are not enough to decode one Integer, then add next byte from buf
+            // to 'buffer'
             // until totalBits >= width
             while (totalBits < width) {
                 buffer = ((buffer << 8) | (buf[byteIdx] & 0xFF));
@@ -128,7 +130,8 @@ public class IntPacker {
                 totalBits += 8;
             }
 
-            // If current available bits are enough to decode one Integer, then decode one Integer one by one
+            // If current available bits are enough to decode one Integer, then decode one Integer one by
+            // one
             // until left bits in 'buffer' is not enough to decode one Integer.
             while (totalBits >= width && valueIdx < 8) {
                 values[valueIdx] = (int) (buffer >>> (totalBits - width));

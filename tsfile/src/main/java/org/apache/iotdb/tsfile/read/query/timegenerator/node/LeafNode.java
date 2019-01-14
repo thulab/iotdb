@@ -75,5 +75,4 @@ public class LeafNode implements Node {
     public NodeType getType() {
         return NodeType.LEAF;
     }
-
 }

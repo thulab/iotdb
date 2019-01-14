@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * @author kangrong
- */
+/** @author kangrong */
 public class SnappyTest {
     private String randomString(int length) {
         StringBuilder builder = new StringBuilder(length);
@@ -76,5 +74,4 @@ public class SnappyTest {
         System.out.println(uncompressedByteBuffer.remaining());
         assert input.equals(ReadWriteIOUtils.readStringFromDirectByteBuffer(uncompressedByteBuffer));
     }
-
 }

@@ -37,9 +37,7 @@ import org.junit.Test;
 import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
 import org.apache.iotdb.tsfile.write.schema.FileSchema;
 
-/**
- * @author kangrong
- */
+/** @author kangrong */
 public class JsonConverterTest {
 
     @Test
@@ -57,14 +55,11 @@ public class JsonConverterTest {
         Collection<MeasurementSchema> measurements = fileSchema.getAllMeasurementSchema().values();
         String[] measureDesStrings = { "[s4,DOUBLE,RLE,{max_error=12},UNCOMPRESSED]",
                 "[s5,INT32,TS_2DIFF,{},UNCOMPRESSED]", "[s1,INT32,RLE,{},UNCOMPRESSED]",
-                "[s2,INT64,TS_2DIFF,{},UNCOMPRESSED]",
-
-        };
+                "[s2,INT64,TS_2DIFF,{},UNCOMPRESSED]", };
         int i = 0;
         for (MeasurementSchema desc : measurements) {
             assertEquals(measureDesStrings[i++], desc.toString());
         }
-
     }
 
     @Test
@@ -101,7 +96,7 @@ public class JsonConverterTest {
 
     /**
      * check whether two given JSONObjects are equal.
-     * 
+     *
      * @param obj1
      *            the first JSONObject
      * @param obj2
@@ -116,5 +111,4 @@ public class JsonConverterTest {
             assertEquals(obj1.get((String) k).toString(), obj2.get((String) k).toString());
         });
     }
-
 }

@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 /**
- * This class is the parent class of all Encoders. Every encoder has a specific {@code <encoderType>} which represents
- * the type of this encoder
+ * This class is the parent class of all Encoders. Every encoder has a specific {@code
+ * <encoderType>} which represents the type of this encoder
  *
  * @author Zhang Jinrui
  */

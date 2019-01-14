@@ -118,9 +118,7 @@ public class TsFileSequenceReader {
         return fileMetadataSize;
     }
 
-    /**
-     * this function does not modify the position of the file reader.
-     */
+    /** this function does not modify the position of the file reader. */
     public String readTailMagic() throws IOException {
         long totalSize = tsFileInput.size();
         ByteBuffer magicStringBytes = ByteBuffer.allocate(TSFileConfig.MAGIC_STRING.length());
@@ -129,9 +127,7 @@ public class TsFileSequenceReader {
         return new String(magicStringBytes.array());
     }
 
-    /**
-     * this function does not modify the position of the file reader.
-     */
+    /** this function does not modify the position of the file reader. */
     public String readHeadMagic() throws IOException {
         ByteBuffer magicStringBytes = ByteBuffer.allocate(TSFileConfig.MAGIC_STRING.length());
         tsFileInput.read(magicStringBytes, 0);
@@ -139,16 +135,12 @@ public class TsFileSequenceReader {
         return new String(magicStringBytes.array());
     }
 
-    /**
-     * this function does not modify the position of the file reader.
-     */
+    /** this function does not modify the position of the file reader. */
     public TsFileMetaData readFileMetadata() throws IOException {
         return TsFileMetaData.deserializeFrom(readData(fileMetadataPos, fileMetadataSize));
     }
 
-    /**
-     * this function does not modify the position of the file reader.
-     */
+    /** this function does not modify the position of the file reader. */
     public TsDeviceMetadata readTsDeviceMetaData(TsDeviceMetadataIndex index) throws IOException {
         return TsDeviceMetadata.deserializeFrom(readData(index.getOffset(), index.getLen()));
     }
@@ -156,7 +148,7 @@ public class TsFileSequenceReader {
     /**
      * read data from current position of the input, and deserialize it to a ChunkGroupFooter. <br>
      * This method is not threadsafe.</>
-     * 
+     *
      * @return a ChunkGroupFooter
      * @throws IOException
      *             io error
@@ -167,7 +159,7 @@ public class TsFileSequenceReader {
 
     /**
      * read data from current position of the input, and deserialize it to a ChunkGroupFooter.
-     * 
+     *
      * @param position
      *            the offset of the chunk group footer in the file
      * @param markerRead
@@ -184,7 +176,7 @@ public class TsFileSequenceReader {
      * After reading the footer of a ChunkGroup, call this method to set the file pointer to the start of the data of
      * this ChunkGroup if you want to read its data next. <br>
      * This method is not threadsafe.</>
-     * 
+     *
      * @param footer
      *            the chunkGroupFooter which you want to read data
      */
@@ -195,7 +187,7 @@ public class TsFileSequenceReader {
     /**
      * read data from current position of the input, and deserialize it to a ChunkHeader. <br>
      * This method is not threadsafe.</>
-     * 
+     *
      * @return a ChunkHeader
      * @throws IOException
      *             io error
@@ -207,7 +199,7 @@ public class TsFileSequenceReader {
     /**
      * notice, the position of the channel MUST be at the end of this header. <br>
      * This method is not threadsafe.</>
-     * 
+     *
      * @return the pages of this chunk
      */
     public ByteBuffer readChunk(ChunkHeader header) throws IOException {
@@ -216,7 +208,7 @@ public class TsFileSequenceReader {
 
     /**
      * notice, this function will modify channel's position.
-     * 
+     *
      * @param position
      *            the offset of the chunk data
      * @return the pages of this chunk
@@ -244,7 +236,7 @@ public class TsFileSequenceReader {
 
     /**
      * notice, this function will modify channel's position.
-     * 
+     *
      * @param dataSize
      *            the size of chunkdata
      * @param position
@@ -257,7 +249,7 @@ public class TsFileSequenceReader {
 
     /**
      * not thread safe.
-     * 
+     *
      * @param type
      * @return
      * @throws IOException
@@ -297,7 +289,7 @@ public class TsFileSequenceReader {
             return buffer;
         default:
             unCompressor.uncompress(buffer.array(), buffer.position(), buffer.remaining(), uncompressedBuffer.array(),
-                    0);// FIXME if the buffer is not array-impelmented.
+                    0); // FIXME if the buffer is not array-impelmented.
             return uncompressedBuffer;
         }
     }
@@ -329,7 +321,7 @@ public class TsFileSequenceReader {
      * read data from tsFileInput, from the current position (if position = -1), or the given position. <br>
      * if position = -1, the tsFileInput's position will be changed to the current position + real data size that been
      * read. Other wise, the tsFileInput's position is not changed.
-     * 
+     *
      * @param position
      *            the start position of data in the tsFileInput, or the current position if position = -1
      * @param size
@@ -347,9 +339,7 @@ public class TsFileSequenceReader {
         return buffer;
     }
 
-    /**
-     * notice, the target bytebuffer are not flipped.
-     */
+    /** notice, the target bytebuffer are not flipped. */
     public int readRaw(long position, int length, ByteBuffer target) throws IOException {
         return ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), target, position, length);
     }

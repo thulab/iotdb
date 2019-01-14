@@ -37,10 +37,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>
  * JsonConverter is used to convert JsonObject to TSFile Schema which is a java class defined in tsfile project. the
  * main function of this converter is to receive a json object of schema and register all measurements.
- * </p>
+ *
  * <p>
  * The format of JSON schema is as follow:
  *
@@ -84,7 +83,6 @@ public class JsonConverter {
      * @throws InvalidJsonSchemaException
      *             throw exception when json schema is not valid
      */
-
     public static Map<String, MeasurementSchema> converterJsonToMeasurementSchemas(JSONObject jsonSchema)
             throws InvalidJsonSchemaException {
         Map<String, MeasurementSchema> result = new HashMap<>();
@@ -94,6 +92,7 @@ public class JsonConverter {
         /**
          * get schema of all measurements in JSONArray from JSONObject
          *
+         * <p>
          * "schema": [ { "measurement_id": "s1", "data_type": "INT32", "encoding": "RLE" }, { "measurement_id": "s2",
          * "data_type": "INT64", "encoding": "TS_2DIFF" }... ]
          */
@@ -107,18 +106,17 @@ public class JsonConverter {
 
     /**
      * convert the input JSONObject to MeasurementSchema
-     * 
+     *
      * @param measurementObj
      *            properties of one measurement
-     *
+     *            <p>
      *            an example:
-     *
+     *            <p>
      *            { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
-     *
+     *            <p>
      *            // some measurement may have some properties
-     *
+     *            <p>
      *            "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"], "max_error":12, "max_point_number":3 }
-     *
      * @return converted MeasurementSchema
      */
     public static MeasurementSchema convertJsonToMeasurementSchema(JSONObject measurementObj) {
@@ -165,9 +163,9 @@ public class JsonConverter {
      * @return converted File Schema in type of JSONObject
      */
     public static JSONObject converterFileSchemaToJson(FileSchema fileSchema) {
-        /** JSONObject form of FileSchema **/
+        /** JSONObject form of FileSchema * */
         JSONObject ret = new JSONObject();
-        /** JSONObject form of all MeasurementSchemas in fileSchema **/
+        /** JSONObject form of all MeasurementSchemas in fileSchema * */
         JSONArray jsonSchema = new JSONArray();
 
         for (MeasurementSchema measurementSchema : fileSchema.getAllMeasurementSchema().values()) {
@@ -180,17 +178,17 @@ public class JsonConverter {
 
     /**
      * given a MeasurementSchema and convert it to a JSONObject
-     * 
+     *
      * @param measurementSchema
      *            the given descriptor in type of {@linkplain MeasurementSchema MeasurementSchema}
      * @return converted MeasurementSchema in form of JSONObject
-     *
+     *         <p>
      *         an example:
-     *
+     *         <p>
      *         { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
-     *
+     *         <p>
      *         // some measurement may have some properties
-     *
+     *         <p>
      *         "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"], "max_error":12, "max_point_number":3 }
      */
     private static JSONObject convertMeasurementSchemaToJson(MeasurementSchema measurementSchema) {
@@ -202,5 +200,4 @@ public class JsonConverter {
         measurementSchema.getProps().forEach(measurementObj::put);
         return measurementObj;
     }
-
 }

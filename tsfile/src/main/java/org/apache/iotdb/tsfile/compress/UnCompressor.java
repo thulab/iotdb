@@ -25,14 +25,12 @@ import org.xerial.snappy.Snappy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * uncompress data according to type in metadata
- */
+/** uncompress data according to type in metadata */
 public abstract class UnCompressor {
 
     /**
      * get the UnCompressor based on the CompressionType
-     * 
+     *
      * @param name
      *            CompressionType
      * @return the UnCompressor of specified CompressionType
@@ -54,7 +52,6 @@ public abstract class UnCompressor {
     public abstract int getUncompressedLength(byte[] array, int offset, int length) throws IOException;
 
     /**
-     *
      * @param buffer
      *            MUST be DirectByteBuffer
      * @return
@@ -64,7 +61,7 @@ public abstract class UnCompressor {
 
     /**
      * uncompress the byte array
-     * 
+     *
      * @param byteArray
      *            to be uncompressed bytes
      * @return bytes after uncompressed
@@ -72,7 +69,6 @@ public abstract class UnCompressor {
     public abstract byte[] uncompress(byte[] byteArray);
 
     /**
-     *
      * @param byteArray
      * @param offset
      * @param length
@@ -85,7 +81,7 @@ public abstract class UnCompressor {
 
     /**
      * if the data is large, using this function is better.
-     * 
+     *
      * @param compressed
      *            MUST be DirectByteBuffer
      * @param uncompressed
@@ -96,7 +92,7 @@ public abstract class UnCompressor {
 
     public abstract CompressionType getCodecName();
 
-    static public class NoUnCompressor extends UnCompressor {
+    public static class NoUnCompressor extends UnCompressor {
 
         @Override
         public int getUncompressedLength(byte[] array, int offset, int length) {
@@ -130,7 +126,7 @@ public abstract class UnCompressor {
         }
     }
 
-    static public class SnappyUnCompressor extends UnCompressor {
+    public static class SnappyUnCompressor extends UnCompressor {
         private static final Logger LOGGER = LoggerFactory.getLogger(SnappyUnCompressor.class);
 
         @Override

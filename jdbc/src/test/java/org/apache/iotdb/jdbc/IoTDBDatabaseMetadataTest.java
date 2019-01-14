@@ -41,13 +41,13 @@ import static org.mockito.Mockito.when;
  * path e.g., databaseMetaData.getColumns("ts", "root.vehicle.d0.s0", null, null); (4) show storage group
  * databaseMetaData.getColumns("sg", null, null, null); (5) show metadata in json
  * ((TsfileDatabaseMetadata)databaseMetaData).getMetadataInJson()
+ *
  * <p>
  * The tests utilize the mockito framework to mock responses from an IoTDB server. The status of the IoTDB server mocked
  * here is determined by the following four sql commands: SET STORAGE GROUP TO root.vehicle; CREATE TIMESERIES
  * root.vehicle.d0.s0 WITH DATATYPE=INT32, ENCODING=RLE; CREATE TIMESERIES root.vehicle.d0.s1 WITH DATATYPE=INT64,
  * ENCODING=RLE; CREATE TIMESERIES root.vehicle.d0.s2 WITH DATATYPE=FLOAT, ENCODING=RLE;
  */
-
 public class IoTDBDatabaseMetadataTest {
     @Mock
     private IoTDBConnection connection;
@@ -73,9 +73,7 @@ public class IoTDBDatabaseMetadataTest {
         databaseMetaData = connection.getMetaData();
     }
 
-    /**
-     * get all columns' name under a given path
-     */
+    /** get all columns' name under a given path */
     @SuppressWarnings("resource")
     @Test
     public void AllColumns() throws Exception {
@@ -108,9 +106,7 @@ public class IoTDBDatabaseMetadataTest {
         }
     }
 
-    /**
-     * get all devices under a given column
-     */
+    /** get all devices under a given column */
     @SuppressWarnings("resource")
     @Test
     public void device() throws Exception {
@@ -141,9 +137,7 @@ public class IoTDBDatabaseMetadataTest {
         }
     }
 
-    /**
-     * show timeseries <path> usage 1
-     */
+    /** show timeseries <path> usage 1 */
     @SuppressWarnings({ "resource", "serial" })
     @Test
     public void ShowTimeseriesPath1() throws Exception {
@@ -199,9 +193,7 @@ public class IoTDBDatabaseMetadataTest {
         }
     }
 
-    /**
-     * show timeseries <path> usage 2: Get information about a specific column, e.g., DataType
-     */
+    /** show timeseries <path> usage 2: Get information about a specific column, e.g., DataType */
     @SuppressWarnings({ "resource", "serial" })
     @Test
     public void ShowTimeseriesPath2() throws Exception {
@@ -235,9 +227,7 @@ public class IoTDBDatabaseMetadataTest {
         }
     }
 
-    /**
-     * show storage group
-     */
+    /** show storage group */
     @SuppressWarnings("resource")
     @Test
     public void ShowStorageGroup() throws Exception {
@@ -267,9 +257,7 @@ public class IoTDBDatabaseMetadataTest {
         }
     }
 
-    /**
-     * show metadata in json
-     */
+    /** show metadata in json */
     @SuppressWarnings("resource")
     @Test
     public void ShowTimeseriesInJson() throws Exception {

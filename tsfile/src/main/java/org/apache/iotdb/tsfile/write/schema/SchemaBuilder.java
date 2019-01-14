@@ -24,16 +24,12 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 
 import java.util.Map;
 
-/**
- * This class is used to build FileSchema of tsfile
- */
+/** This class is used to build FileSchema of tsfile */
 public class SchemaBuilder {
-    /** the FileSchema which is being built **/
+    /** the FileSchema which is being built * */
     private FileSchema fileSchema;
 
-    /**
-     * init schema by default value
-     */
+    /** init schema by default value */
     public SchemaBuilder() {
         fileSchema = new FileSchema();
     }

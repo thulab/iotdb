@@ -31,7 +31,7 @@ import java.util.Set;
 
 /**
  * Encodes values using bitmap, according to the following grammar:
- * 
+ *
  * <pre>
  * {@code
  * bitmap-encoding: <length> <num> <encoded-data>
@@ -48,9 +48,7 @@ import java.util.Set;
 public class BitmapEncoder extends Encoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(BitmapEncoder.class);
 
-    /**
-     * Bitmap Encoder stores all current values in a list temporally
-     */
+    /** Bitmap Encoder stores all current values in a list temporally */
     private List<Integer> values;
 
     /**
@@ -114,7 +112,8 @@ public class BitmapEncoder extends Encoder {
             }
             ReadWriteForEncodingUtils.writeUnsignedVarInt(value, byteCache);
             byteCache.write(buffer);
-            // LOGGER.debug("tsfile-encoding BitmapEncoder: encode value {}, bitmap index {}", value, buffer);
+            // LOGGER.debug("tsfile-encoding BitmapEncoder: encode value {}, bitmap index {}", value,
+            // buffer);
         }
         ReadWriteForEncodingUtils.writeUnsignedVarInt(byteCache.size(), out);
         ReadWriteForEncodingUtils.writeUnsignedVarInt(len, out);

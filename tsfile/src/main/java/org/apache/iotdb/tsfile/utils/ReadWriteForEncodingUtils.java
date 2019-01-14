@@ -21,9 +21,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-/***
- * Utils to read/write stream
- */
+/** * Utils to read/write stream */
 public class ReadWriteForEncodingUtils {
 
     /**
@@ -143,8 +141,6 @@ public class ReadWriteForEncodingUtils {
      * 111010-1101111-0011010-0010101, function writeUnsignedVarInt will split every seven bits and write them to stream
      * from low bit to high bit like: 1-0010101 1-0011010 1-1101111 0-0111010 1 represents has next byte to write, 0
      * represents number end
-     *
-     *
      *
      * @param value
      *            value to write into stream

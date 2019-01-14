@@ -33,10 +33,7 @@ import org.junit.Test;
 
 import org.apache.iotdb.db.utils.EnvironmentUtils;
 
-/**
- * @author liukun
- *
- */
+/** @author liukun */
 public class SerializeUtilTest {
 
     private String filePath = "serializeUtilTest";
@@ -45,7 +42,6 @@ public class SerializeUtilTest {
     public void setUp() throws Exception {
         EnvironmentUtils.closeStatMonitor();
         EnvironmentUtils.cleanDir(filePath);
-
     }
 
     @After
@@ -77,7 +73,6 @@ public class SerializeUtilTest {
             e.printStackTrace();
             fail(e.getMessage());
         }
-
     }
 
     @Test
@@ -124,5 +119,4 @@ public class SerializeUtilTest {
             fail(e.getMessage());
         }
     }
-
 }

@@ -95,8 +95,8 @@ public class TestHelper {
 
     public static ChunkMetaData createSimpleTimeSeriesChunkMetaData() {
         ChunkMetaData metaData = new ChunkMetaData(ChunkMetaDataTest.MEASUREMENT_UID, ChunkMetaDataTest.DATA_TYPE,
-                ChunkMetaDataTest.FILE_OFFSET, ChunkMetaDataTest.START_TIME, ChunkMetaDataTest.END_TIME// ,
-                                                                                                       // ChunkMetaDataTest.ENCODING_TYPE
+                ChunkMetaDataTest.FILE_OFFSET, ChunkMetaDataTest.START_TIME, ChunkMetaDataTest.END_TIME // ,
+        // ChunkMetaDataTest.ENCODING_TYPE
         );
         metaData.setNumOfPoints(ChunkMetaDataTest.NUM_OF_POINTS);
         metaData.setDigest(new TsDigest());

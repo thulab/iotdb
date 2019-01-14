@@ -34,9 +34,7 @@ public class ChunkGroupFooter {
 
     private int numberOfChunks;
 
-    /**
-     * The time when endRowgroup() is called.
-     */
+    /** The time when endRowgroup() is called. */
     private long writtenTime;
 
     // this field does not need to be serialized.

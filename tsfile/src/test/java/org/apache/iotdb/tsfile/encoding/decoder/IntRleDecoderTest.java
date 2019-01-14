@@ -185,7 +185,6 @@ public class IntRleDecoderTest {
                 } else {
                     encoder.encode(true, baos);
                 }
-
             }
             encoder.flush(baos);
         }
@@ -203,7 +202,6 @@ public class IntRleDecoderTest {
                 } else {
                     assertEquals(true, value_);
                 }
-
             }
         }
     }

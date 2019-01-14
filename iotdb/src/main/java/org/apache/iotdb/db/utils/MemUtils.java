@@ -57,7 +57,7 @@ public class MemUtils {
     // TODO : move this down to TsFile ?
     /**
      * Calculate how much memory will be used if the given record is written to Bufferwrite.
-     * 
+     *
      * @param record
      * @return
      */
@@ -74,7 +74,7 @@ public class MemUtils {
 
     /**
      * Calculate how much memory will be used if the given record is written to Bufferwrite.
-     * 
+     *
      * @param record
      * @return
      */

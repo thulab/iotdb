@@ -34,7 +34,8 @@
 // this.tmpFilePath = tmpFilePath;
 // }
 //
-// public PrioritySeriesReader merge(List<PrioritySeriesReader> prioritySeriesReaders) throws IOException {
+// public PrioritySeriesReader merge(List<PrioritySeriesReader> prioritySeriesReaders) throws
+// IOException {
 // TimeValuePairSerializer serializer = new FixLengthTimeValuePairSerializer(tmpFilePath);
 // PriorityMergeReader reader = new PriorityMergeReader(prioritySeriesReaders);
 // while (reader.hasNext()) {

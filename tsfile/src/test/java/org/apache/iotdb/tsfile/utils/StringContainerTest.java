@@ -19,11 +19,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-/**
- * 
- * @author kangrong
- *
- */
+/** @author kangrong */
 public class StringContainerTest {
 
     @Test
@@ -145,7 +141,6 @@ public class StringContainerTest {
         StringContainer copyC = c.clone();
         assertTrue(c.equals(copyC));
         assertFalse(c == copyC);
-
     }
 
     @Test
@@ -169,7 +164,5 @@ public class StringContainerTest {
         StringContainer c4 = new StringContainer(",");
         c4.addTail("a", "b", "c123");
         assertNotEquals(c1.hashCode(), c4.hashCode());
-
     }
-
 }

@@ -50,14 +50,10 @@ public class IoTDBStatement implements Statement {
     private static final String SHOW_TIMESERIES_COMMAND_LOWERCASE = "show timeseries";
     private static final String SHOW_STORAGE_GROUP_COMMAND_LOWERCASE = "show storage group";
     ZoneId zoneId;
-    /**
-     * Keep state so we can fail certain calls made after close().
-     */
+    /** Keep state so we can fail certain calls made after close(). */
     private boolean isClosed = false;
 
-    /**
-     * Keep state so we can fail certain calls made after cancel().
-     */
+    /** Keep state so we can fail certain calls made after cancel(). */
     private boolean isCancelled = false;
 
     /**
@@ -67,9 +63,7 @@ public class IoTDBStatement implements Statement {
      */
     private int maxRows = 0;
 
-    /**
-     * Add SQLWarnings to the warningChain if needed.
-     */
+    /** Add SQLWarnings to the warningChain if needed. */
     private SQLWarning warningChain = null;
 
     public IoTDBStatement(IoTDBConnection connection, TSIService.Iface client, TS_SessionHandle sessionHandle,
@@ -188,6 +182,7 @@ public class IoTDBStatement implements Statement {
     /**
      * There are four kinds of sql here: (1) show timeseries path (2) show storage group (3) query sql (4) update sql
      *
+     * <p>
      * (1) and (2) return new TsfileMetadataResultSet (3) return new TsfileQueryResultSet (4) simply get executed
      *
      * @param sql
@@ -561,5 +556,4 @@ public class IoTDBStatement implements Statement {
                     String.format("Cannot get column %s data type because %s", columnName, e.getMessage()));
         }
     }
-
 }

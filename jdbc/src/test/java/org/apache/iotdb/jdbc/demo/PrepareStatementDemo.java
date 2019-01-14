@@ -75,5 +75,4 @@ public class PrepareStatementDemo {
             connection.close();
         }
     }
-
 }

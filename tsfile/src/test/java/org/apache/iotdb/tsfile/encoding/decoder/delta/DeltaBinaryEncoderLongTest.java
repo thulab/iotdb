@@ -107,5 +107,4 @@ public class DeltaBinaryEncoderLongTest {
             assertEquals(data[i++], reader.readLong(buffer));
         }
     }
-
 }

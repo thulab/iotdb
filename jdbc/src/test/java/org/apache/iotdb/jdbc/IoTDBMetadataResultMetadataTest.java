@@ -30,7 +30,6 @@ public class IoTDBMetadataResultMetadataTest {
 
     @Before
     public void setUp() throws Exception {
-
     }
 
     @After
@@ -100,7 +99,5 @@ public class IoTDBMetadataResultMetadataTest {
         for (int i = 1; i <= cols.length; i++) {
             assertEquals(metadata.getColumnName(i), cols[i - 1]);
         }
-
     }
-
 }

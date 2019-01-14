@@ -61,7 +61,6 @@ public class BufferwriteMetaSizeControlTest {
 
         @Override
         public void act() throws Exception {
-
         }
     };
 
@@ -76,7 +75,6 @@ public class BufferwriteMetaSizeControlTest {
 
         @Override
         public void act() throws Exception {
-
         }
     };
 
@@ -165,7 +163,6 @@ public class BufferwriteMetaSizeControlTest {
         assertTrue(processor.getMetaSize() < dbConfig.bufferwriteFileSizeThreshold);
         processor.close();
         fail("Method unimplemented");
-
     }
 
     private FileSchema constructFileSchema(String processorName) throws WriteProcessException {
@@ -180,7 +177,6 @@ public class BufferwriteMetaSizeControlTest {
             throw e;
         }
         return fileSchema;
-
     }
 
     private FileSchema getFileSchemaFromColumnSchema(List<ColumnSchema> schemaList, String deviceType)

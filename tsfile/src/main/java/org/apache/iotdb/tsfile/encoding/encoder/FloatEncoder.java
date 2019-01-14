@@ -30,7 +30,7 @@ import java.io.IOException;
 
 /**
  * Encoder for float or double value using rle or two diff according to following grammar:
- * 
+ *
  * <pre>
  * {@code
  * float encoder: <maxPointvalue> <encoded-data>
@@ -43,19 +43,13 @@ public class FloatEncoder extends Encoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(FloatEncoder.class);
     private Encoder encoder;
 
-    /**
-     * number for accuracy of decimal places
-     */
+    /** number for accuracy of decimal places */
     private int maxPointNumber;
 
-    /**
-     * maxPointValue = 10^(maxPointNumber)
-     */
+    /** maxPointValue = 10^(maxPointNumber) */
     private double maxPointValue;
 
-    /**
-     * flag to check whether maxPointNumber is saved in stream
-     */
+    /** flag to check whether maxPointNumber is saved in stream */
     private boolean isMaxPointNumberSaved;
 
     public FloatEncoder(TSEncoding encodingType, TSDataType dataType, int maxPointNumber) {
@@ -144,5 +138,4 @@ public class FloatEncoder extends Encoder {
     public long getMaxByteSize() {
         return encoder.getMaxByteSize();
     }
-
 }

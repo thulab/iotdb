@@ -33,9 +33,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Utils to convert between thrift format and TsFile format
- */
+/** Utils to convert between thrift format and TsFile format */
 public class Utils {
 
     /**

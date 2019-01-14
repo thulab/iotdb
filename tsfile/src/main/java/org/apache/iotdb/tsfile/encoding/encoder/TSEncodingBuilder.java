@@ -32,7 +32,6 @@ import java.util.Map;
  * several configuration related to responding encoding type to generate {@linkplain Encoder Encoder} instance.<br>
  * Each TSEncoding has a responding TSEncodingBuilder. The design referring to visit pattern provides same outer
  * interface for different TSEncodings and gets rid of the duplicate switch-case code.
- *
  */
 public abstract class TSEncodingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(TSEncodingBuilder.class);
@@ -66,7 +65,7 @@ public abstract class TSEncodingBuilder {
 
     /**
      * return a series's encoder with different types and parameters according to its measurement id and data type
-     * 
+     *
      * @param type
      *            - given data type
      * @return - return a {@linkplain Encoder Encoder}
@@ -88,9 +87,7 @@ public abstract class TSEncodingBuilder {
         return "";
     }
 
-    /**
-     * for all TSDataType
-     */
+    /** for all TSDataType */
     public static class PLAIN extends TSEncodingBuilder {
         private int maxStringLength = conf.maxStringLength;
 
@@ -115,9 +112,7 @@ public abstract class TSEncodingBuilder {
         }
     }
 
-    /**
-     * for ENUMS, INT32, BOOLEAN, INT64, FLOAT, DOUBLE
-     */
+    /** for ENUMS, INT32, BOOLEAN, INT64, FLOAT, DOUBLE */
     public static class RLE extends TSEncodingBuilder {
         private int maxPointNumber = conf.floatPrecision;
 
@@ -162,9 +157,7 @@ public abstract class TSEncodingBuilder {
         }
     }
 
-    /**
-     * for INT32, INT64, FLOAT, DOUBLE
-     */
+    /** for INT32, INT64, FLOAT, DOUBLE */
     public static class TS_2DIFF extends TSEncodingBuilder {
 
         private int maxPointNumber = 0;
@@ -208,12 +201,9 @@ public abstract class TSEncodingBuilder {
         public String toString() {
             return JsonFormatConstant.MAX_POINT_NUMBER + ":" + maxPointNumber;
         }
-
     }
 
-    /**
-     * for ENUMS
-     */
+    /** for ENUMS */
     public static class GORILLA extends TSEncodingBuilder {
 
         @Override
@@ -230,8 +220,6 @@ public abstract class TSEncodingBuilder {
 
         @Override
         public void initFromProps(Map<String, String> props) {
-
         }
-
     }
 }

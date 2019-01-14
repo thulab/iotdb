@@ -541,6 +541,9 @@
                                 <configuration>
                                     <configFile>${project.basedir}/java-google-style.xml</configFile>
                                     <encoding>UTF-8</encoding>
+                                    <lineEnding>LF</lineEnding>
+                                    <useSystemNewlineCharacter>false</useSystemNewlineCharacter>
+               						<newlineCharacter>\n</newlineCharacter>
                                 </configuration>
                             </execution>
                         </executions>
@@ -570,6 +573,9 @@
                                 <configuration>
                                     <configFile>${project.parent.basedir}/java-google-style.xml</configFile>
                                     <encoding>UTF-8</encoding>
+                                    <lineEnding>LF</lineEnding>
+                                    <useSystemNewlineCharacter>false</useSystemNewlineCharacter>
+               						<newlineCharacter>\n</newlineCharacter>
                                 </configuration>
                             </execution>
                         </executions>

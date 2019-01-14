@@ -58,9 +58,7 @@ public class PathPrivilege {
         return Objects.hash(privileges, path);
     }
 
-    /**
-     * Sort PathPrivilege by referenceCnt in descent order.
-     */
+    /** Sort PathPrivilege by referenceCnt in descent order. */
     public static Comparator<PathPrivilege> referenceDescentSorter = (o1,
             o2) -> -Integer.compare(o1.referenceCnt.get(), o2.referenceCnt.get());
 

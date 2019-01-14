@@ -26,5 +26,4 @@ public class MergeSeriesDataSource {
     public OverflowInsertFile getInsertFile() {
         return insertFile;
     }
-
 }

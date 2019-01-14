@@ -53,7 +53,6 @@ public class LogWriterReaderTest {
         plans.add(deletePlan);
         for (PhysicalPlan plan : plans) {
             logs.add(PhysicalPlanLogTransfer.operatorToLog(plan));
-
         }
     }
 

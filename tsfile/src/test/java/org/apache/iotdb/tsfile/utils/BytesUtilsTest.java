@@ -49,7 +49,6 @@ public class BytesUtilsTest {
         int rb2 = BytesUtils.bytesToInt(ret, 4);
         assertEquals("testBytesToFloat", b1, rb1);
         assertEquals("testBytesToFloat", b2, rb2);
-
     }
 
     @Test
@@ -380,5 +379,4 @@ public class BytesUtilsTest {
         InputStream in = new ByteArrayInputStream(bs);
         assertEquals(l, BytesUtils.readBool(in));
     }
-
 }

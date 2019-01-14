@@ -24,7 +24,6 @@ public class OverflowProcessorException extends ProcessorException {
     }
 
     public OverflowProcessorException(PathErrorException pathExcp) {
-
     }
 
     public OverflowProcessorException(String msg) {
@@ -34,5 +33,4 @@ public class OverflowProcessorException extends ProcessorException {
     public OverflowProcessorException(Throwable throwable) {
         super(throwable.getMessage());
     }
-
 }

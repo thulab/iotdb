@@ -56,81 +56,63 @@ public class PageWriter {
         this.valueEncoder = valueEncoder;
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, boolean value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, short value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, int value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, long value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, float value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, double value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, BigDecimal value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * write a time value pair into encoder
-     */
+    /** write a time value pair into encoder */
     public void write(long time, Binary value) throws IOException {
         timeEncoder.encode(time, timeOut);
         valueEncoder.encode(value, valueOut);
     }
 
-    /**
-     * flush all data remained in encoders.
-     */
+    /** flush all data remained in encoders. */
     private void prepareEndWriteOnePage() throws IOException {
         timeEncoder.flush(timeOut);
         valueEncoder.flush(valueOut);
     }
 
     /**
-     * getUncompressedBytes return data what it has been written in form of
-     * <code>size of time list, time list, value list</code>
+     * getUncompressedBytes return data what it has been written in form of <code>
+     * size of time list, time list, value list</code>
      *
      * @return a new readable ByteBuffer whose position is 0.
      */
@@ -154,9 +136,7 @@ public class PageWriter {
         return timeOut.size() + valueOut.size() + timeEncoder.getMaxByteSize() + valueEncoder.getMaxByteSize();
     }
 
-    /**
-     * reset data in ByteArrayOutputStream
-     */
+    /** reset data in ByteArrayOutputStream */
     public void reset() {
         timeOut.reset();
         valueOut.reset();
@@ -169,5 +149,4 @@ public class PageWriter {
     public void setValueEncoder(Encoder encoder) {
         this.valueEncoder = encoder;
     }
-
 }

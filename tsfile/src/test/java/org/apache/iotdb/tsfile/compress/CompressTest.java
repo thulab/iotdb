@@ -27,11 +27,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * 
- * @author kangrong
- *
- */
+/** @author kangrong */
 public class CompressTest {
     private final String inputString = "Hello snappy-java! Snappy-java is a JNI-based wrapper of "
             + "Snappy, a fast compressor/decompressor.";
@@ -78,5 +74,4 @@ public class CompressTest {
         String result = new String(uncompressed, "UTF-8");
         assertEquals(inputString, result);
     }
-
 }

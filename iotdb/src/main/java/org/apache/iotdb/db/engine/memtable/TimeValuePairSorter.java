@@ -29,7 +29,7 @@ public interface TimeValuePairSorter {
 
     /**
      * notice, by default implementation, calling this method will cause calling getSortedTimeValuePairList().
-     * 
+     *
      * @return an iterator of data in this class.
      */
     default Iterator<TimeValuePair> getIterator() {
@@ -38,7 +38,7 @@ public interface TimeValuePairSorter {
 
     /**
      * notice, by default implementation, calling this method will cause calling getSortedTimeValuePairList().
-     * 
+     *
      * @return if there is no data in this sorter, return true.
      */
     default boolean isEmpty() {

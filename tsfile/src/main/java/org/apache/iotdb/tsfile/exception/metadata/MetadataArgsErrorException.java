@@ -28,5 +28,4 @@ public class MetadataArgsErrorException extends Exception {
     public MetadataArgsErrorException(String msg) {
         super(msg);
     }
-
 }

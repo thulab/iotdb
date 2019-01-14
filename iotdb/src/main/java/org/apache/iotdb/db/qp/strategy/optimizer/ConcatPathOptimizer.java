@@ -37,9 +37,7 @@ import org.apache.iotdb.db.qp.constant.SQLConstant;
 import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
 import org.apache.iotdb.tsfile.read.common.Path;
 
-/**
- * concat paths in select and from clause
- */
+/** concat paths in select and from clause */
 public class ConcatPathOptimizer implements ILogicalOptimizer {
     private static final Logger LOG = LoggerFactory.getLogger(ConcatPathOptimizer.class);
     private QueryProcessExecutor executor;
@@ -74,7 +72,8 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
             if (((QueryOperator) operator).hasSlimit()) {
                 checkSlimitUsageConstraint(select, initialSuffixPaths, prefixPaths);
 
-                // Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of the selectOperator
+                // Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of the
+                // selectOperator
                 int seriesLimit = ((QueryOperator) operator).getSeriesLimit();
                 int seriesOffset = ((QueryOperator) operator).getSeriesOffset();
                 slimitTrim(select, seriesLimit, seriesOffset);
@@ -139,6 +138,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
     /**
      * Check whether SLIMIT is wrongly used with complete paths and throw an exception if it is.
      *
+     * <p>
      * Considering a query seriesPath, there are three types: 1)complete seriesPath, 2)prefix seriesPath, 3)seriesPath
      * with stars. And SLIMIT is designed to be used with 2) or 3). In another word, SLIMIT is not allowed to be used
      * with 1).
@@ -179,7 +179,8 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
                     }
                 }
 
-                if (i >= sz) { // the case of 1)complete seriesPath, i.e., SLIMIT is wrongly used with complete paths
+                if (i >= sz) { // the case of 1)complete seriesPath, i.e., SLIMIT is wrongly used with
+                    // complete paths
                     throw new LogicalOptimizeException(
                             "Wrong use of SLIMIT: SLIMIT is not allowed to be used with complete paths.");
                 }
@@ -189,7 +190,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
 
     /**
      * Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of the selectOperator
-     * 
+     *
      * @param select
      * @param seriesLimit
      *            is ensured to be positive integer
@@ -247,7 +248,8 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         } else {
             // Transform "select s1 from root.car.d1, root.car.d2 where s1 > 10" to
             // "select s1 from root.car.d1, root.car.d2 where root.car.d1.s1 > 10 and root.car.d2.s1 > 10"
-            // Note that, two fork tree has to be maintained while removing stars in paths for DNFFilterOptimizer
+            // Note that, two fork tree has to be maintained while removing stars in paths for
+            // DNFFilterOptimizer
             // requirement.
             return constructTwoForkFilterTreeWithAND(noStarPaths, operator);
         }

@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>
  * A reader for sequentially inserts data，including a list of sealedTsFile, unSealedTsFile and data in MemTable.
  */
 public class SequenceDataReader implements IReader {
@@ -65,7 +64,6 @@ public class SequenceDataReader implements IReader {
                 seriesReaders.add(new MemChunkReaderWithFilter(sources.getReadableChunk(), filter));
             }
         }
-
     }
 
     @Override
@@ -119,5 +117,4 @@ public class SequenceDataReader implements IReader {
     public BatchData currentBatch() {
         return null;
     }
-
 }

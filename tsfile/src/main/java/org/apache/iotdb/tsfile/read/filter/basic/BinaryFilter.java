@@ -17,9 +17,7 @@ package org.apache.iotdb.tsfile.read.filter.basic;
 
 import java.io.Serializable;
 
-/**
- * Definition for binary filter operations.
- */
+/** Definition for binary filter operations. */
 public abstract class BinaryFilter implements Filter, Serializable {
 
     private static final long serialVersionUID = 1039585564327602465L;

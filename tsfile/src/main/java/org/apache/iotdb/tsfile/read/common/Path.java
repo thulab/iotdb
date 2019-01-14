@@ -163,15 +163,14 @@ public class Path {
 
     /**
      * replace prefix of descPrefix with given parameter {@code srcPrefix}. If the level of the path constructed by
-     * {@code srcPrefix} is larger than {@code descPrefix}, return {@code
-     * srcPrefix} directly.
+     * {@code srcPrefix} is larger than {@code descPrefix}, return {@code srcPrefix} directly.
      *
      * @param srcPrefix
      *            the prefix to replace descPrefix
      * @param descPrefix
      *            to be replaced
-     * @return If the level of the path constructed by {@code srcPrefix} is larger than {@code descPrefix}, return
-     *         {@code srcPrefix} directly.
+     * @return If the level of the path constructed by {@code srcPrefix} is larger than {@code
+     *     descPrefix}, return {@code srcPrefix} directly.
      */
     public static Path replace(String srcPrefix, Path descPrefix) {
         if ("".equals(srcPrefix) || descPrefix.startWith(srcPrefix))
@@ -196,7 +195,8 @@ public class Path {
      *            the prefix to replace descPrefix
      * @param descPrefix
      *            to be replaced
-     * @return If the level of {@code srcPrefix} is larger than {@code descPrefix}, return {@code srcPrefix} directly.
+     * @return If the level of {@code srcPrefix} is larger than {@code descPrefix}, return {@code
+     *     srcPrefix} directly.
      */
     public static Path replace(Path srcPrefix, Path descPrefix) {
         return replace(srcPrefix.fullPath, descPrefix);

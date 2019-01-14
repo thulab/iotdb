@@ -59,6 +59,7 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
      * All leaf nodes of queryFilter in queryExpression are SeriesFilters, We use a TimeGenerator to control query
      * processing.
      *
+     * <p>
      * for more information, see DataSetWithTimeGenerator
      *
      * @return DataSet with TimeGenerator
@@ -72,7 +73,8 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
         // get TimeGenerator by IExpression
         TimeGenerator timeGenerator = new TimeGeneratorImpl(IExpression, chunkLoader, metadataQuerier);
 
-        // the size of hasFilter is equal to selectedPathList, if a series has a filter, it is true, otherwise false
+        // the size of hasFilter is equal to selectedPathList, if a series has a filter, it is true,
+        // otherwise false
         List<Boolean> cached = removeFilteredPaths(IExpression, selectedPathList);
         List<SeriesReaderByTimestamp> readersOfSelectedSeries = new ArrayList<>();
         List<TSDataType> dataTypes = new ArrayList<>();
@@ -106,7 +108,6 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
         }
 
         return cached;
-
     }
 
     private void getAllFilteredPaths(IExpression IExpression, HashSet<Path> paths) {
@@ -117,5 +118,4 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
             paths.add(((SingleSeriesExpression) IExpression).getSeriesPath());
         }
     }
-
 }

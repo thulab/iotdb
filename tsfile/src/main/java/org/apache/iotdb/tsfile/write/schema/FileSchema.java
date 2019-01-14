@@ -34,16 +34,12 @@ import java.util.Map;
  * @author kangrong
  */
 public class FileSchema {
-    static private final Logger LOG = LoggerFactory.getLogger(FileSchema.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileSchema.class);
 
-    /**
-     * {@code Map<measurementId, MeasurementSchema>}
-     */
+    /** {@code Map<measurementId, MeasurementSchema>} */
     private Map<String, MeasurementSchema> measurementSchema;
 
-    /**
-     * init measurementSchema and additionalProperties as empty map
-     */
+    /** init measurementSchema and additionalProperties as empty map */
     public FileSchema() {
         this.measurementSchema = new HashMap<>();
     }
@@ -51,6 +47,7 @@ public class FileSchema {
     /**
      * example: { "measurement_id": "sensor_cpu_50", "data_type": "INT32", "encoding": "RLE" }
      *
+     * <p>
      * {"schema": [ { "measurement_id": "sensor_1", "data_type": "FLOAT", "encoding": "RLE" }, { "measurement_id":
      * "sensor_2", "data_type": "INT32", "encoding": "TS_2DIFF" }, { "measurement_id": "sensor_3", "data_type": "INT32",
      * "encoding": "TS_2DIFF" } ] };
@@ -63,9 +60,7 @@ public class FileSchema {
         this(JsonConverter.converterJsonToMeasurementSchemas(jsonSchema));
     }
 
-    /**
-     * init additionalProperties and register measurements
-     */
+    /** init additionalProperties and register measurements */
     public FileSchema(Map<String, MeasurementSchema> measurements) {
         this();
         this.registerMeasurements(measurements);
@@ -77,7 +72,6 @@ public class FileSchema {
             return null;
         }
         return measurementSchema.getType();
-
     }
 
     public MeasurementSchema getMeasurementSchema(String measurementUID) {
@@ -88,26 +82,19 @@ public class FileSchema {
         return measurementSchema;
     }
 
-    /**
-     * register a measurementSchema
-     */
+    /** register a measurementSchema */
     public void registerMeasurement(MeasurementSchema descriptor) {
         // add to measurementSchema as <measurementID, MeasurementSchema>
         this.measurementSchema.put(descriptor.getMeasurementId(), descriptor);
     }
 
-    /**
-     * register all measurementSchema in input map
-     */
+    /** register all measurementSchema in input map */
     private void registerMeasurements(Map<String, MeasurementSchema> measurements) {
         measurements.forEach((id, md) -> registerMeasurement(md));
     }
 
-    /**
-     * check is this schema contains input measurementID
-     */
+    /** check is this schema contains input measurementID */
     public boolean hasMeasurement(String measurementId) {
         return measurementSchema.containsKey(measurementId);
     }
-
 }

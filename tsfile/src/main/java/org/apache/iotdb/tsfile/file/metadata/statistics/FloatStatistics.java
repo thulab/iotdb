@@ -97,7 +97,6 @@ public class FloatStatistics extends Statistics<Float> {
             updateStats(floatStats.getMin(), floatStats.getMax(), floatStats.getFirst(), floatStats.getSum(),
                     floatStats.getLast());
         }
-
     }
 
     public void initializeStats(float min, float max, float first, double sum, float last) {

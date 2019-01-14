@@ -110,5 +110,4 @@ public enum CompressionType {
             return "";
         }
     }
-
 }

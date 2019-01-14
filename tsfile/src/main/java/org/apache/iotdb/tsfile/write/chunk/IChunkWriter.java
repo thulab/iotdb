@@ -28,49 +28,31 @@ import java.math.BigDecimal;
  */
 public interface IChunkWriter {
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, int value) throws IOException;
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, long value) throws IOException;
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, boolean value) throws IOException;
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, float value) throws IOException;
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, double value) throws IOException;
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, BigDecimal value) throws IOException;
 
-    /**
-     * write a time value pair
-     */
+    /** write a time value pair */
     void write(long time, Binary value) throws IOException;
 
-    /**
-     * flush data to TsFileIOWriter
-     */
+    /** flush data to TsFileIOWriter */
     void writeToFileWriter(TsFileIOWriter tsfileWriter) throws IOException;
 
-    /**
-     * estimate memory used size of this series
-     */
+    /** estimate memory used size of this series */
     long estimateMaxSeriesMemSize();
 
     /**
@@ -79,10 +61,7 @@ public interface IChunkWriter {
      */
     long getCurrentChunkSize();
 
-    /**
-     * seal the current page which may has not enough data points in force.
-     *
-     */
+    /** seal the current page which may has not enough data points in force. */
     void sealCurrentPage();
 
     int getNumOfPages();

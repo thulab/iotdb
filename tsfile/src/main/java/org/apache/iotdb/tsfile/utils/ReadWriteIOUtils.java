@@ -386,9 +386,7 @@ public class ReadWriteIOUtils {
         return length;
     }
 
-    /**
-     * List<Integer>
-     */
+    /** List<Integer> */
     public static List<Integer> readIntegerList(InputStream inputStream) throws IOException {
         int size = readInt(inputStream);
         if (size <= 0)
@@ -434,9 +432,7 @@ public class ReadWriteIOUtils {
         return list;
     }
 
-    /**
-     * CompressionType
-     */
+    /** CompressionType */
     public static int write(CompressionType compressionType, OutputStream outputStream) throws IOException {
         short n = compressionType.serialize();
         return write(n, outputStream);
@@ -457,9 +453,7 @@ public class ReadWriteIOUtils {
         return CompressionType.deserialize(n);
     }
 
-    /**
-     * TSDataType
-     */
+    /** TSDataType */
     public static int write(TSDataType dataType, OutputStream outputStream) throws IOException {
         short n = dataType.serialize();
         return write(n, outputStream);
@@ -480,9 +474,7 @@ public class ReadWriteIOUtils {
         return TSDataType.deserialize(n);
     }
 
-    /**
-     * TSEncoding
-     */
+    /** TSEncoding */
     public static int write(TSEncoding encoding, OutputStream outputStream) throws IOException {
         short n = encoding.serialize();
         return write(n, outputStream);
@@ -503,9 +495,7 @@ public class ReadWriteIOUtils {
         return TSEncoding.deserialize(n);
     }
 
-    /**
-     * TSFreqType
-     */
+    /** TSFreqType */
     public static int write(TSFreqType freqType, OutputStream outputStream) throws IOException {
         short n = freqType.serialize();
         return write(n, outputStream);

@@ -22,5 +22,4 @@ import org.apache.iotdb.db.query.component.executor.QueryJobExecutor;
 public interface QueryJobDispatcher {
 
     QueryJobExecutor dispatch(QueryJob queryJob);
-
 }

@@ -33,9 +33,7 @@ import org.apache.iotdb.tsfile.read.common.RowRecord;
 import org.apache.iotdb.tsfile.read.query.dataset.QueryDataSet;
 import org.apache.iotdb.db.metadata.ColumnSchema;
 
-/**
- * TimeValuePairUtils to convert between thrift format and TsFile format
- */
+/** TimeValuePairUtils to convert between thrift format and TsFile format */
 public class Utils {
 
     public static Map<String, List<TSColumnSchema>> convertAllSchema(Map<String, List<ColumnSchema>> allSchema) {

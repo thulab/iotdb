@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>
  * Singleton pattern, to manage all query tokens. Each jdbc request has an unique job id, in this jdbc request,
  * OpenedFilePathsManager manage all the opened files, and store in the set of current job id.
  */
@@ -38,9 +37,7 @@ public class OpenedFilePathsManager {
      */
     private ThreadLocal<Long> jobIdContainer;
 
-    /**
-     * Map<jobId, Set<filePaths>>
-     */
+    /** Map<jobId, Set<filePaths>> */
     private ConcurrentHashMap<Long, Set<String>> filePathsMap;
 
     private OpenedFilePathsManager() {
@@ -56,9 +53,7 @@ public class OpenedFilePathsManager {
         filePathsMap.put(jobId, new HashSet<>());
     }
 
-    /**
-     * Add the unique file paths to filePathsMap.
-     */
+    /** Add the unique file paths to filePathsMap. */
     public void addUsedFilesForCurrentRequestThread(long jobId, QueryDataSource dataSource) {
         for (IntervalFileNode intervalFileNode : dataSource.getSeqDataSource().getSealedTsFiles()) {
             String sealedFilePath = intervalFileNode.getFilePath();
@@ -94,9 +89,9 @@ public class OpenedFilePathsManager {
     }
 
     /**
-     * Increase the usage reference of filePath of job id. Before the invoking of this method,
-     * <code>this.setJobIdForCurrentRequestThread</code> has been invoked, so <code>filePathsMap.get(jobId)</code> must
-     * not return null.
+     * Increase the usage reference of filePath of job id. Before the invoking of this method, <code>
+     * this.setJobIdForCurrentRequestThread</code> has been invoked, so <code>filePathsMap.get(jobId)
+     * </code> must not return null.
      */
     public void addFilePathToMap(long jobId, String filePath) {
         if (!filePathsMap.get(jobId).contains(filePath)) {

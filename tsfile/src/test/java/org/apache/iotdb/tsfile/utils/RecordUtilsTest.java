@@ -33,11 +33,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * 
- * @author kangrong
- *
- */
+/** @author kangrong */
 public class RecordUtilsTest {
     FileSchema schema;
     JSONObject jsonSchema = generateTestData();
@@ -121,7 +117,6 @@ public class RecordUtilsTest {
         assertEquals(tuple.getMeasurementId(), "s1");
         assertEquals(tuple.getType(), TSDataType.INT32);
         assertEquals(tuple.getValue(), 1);
-
     }
 
     @Test
@@ -144,7 +139,7 @@ public class RecordUtilsTest {
         assertEquals(record.time, 1471522347000l);
         assertEquals(record.deviceId, "d1");
         List<DataPoint> tuples = record.dataPointList;
-        assertEquals(5, tuples.size());// enum type is omitted.
+        assertEquals(5, tuples.size()); // enum type is omitted.
         DataPoint tuple = tuples.get(0);
         assertEquals(tuple.getMeasurementId(), "s1");
         assertEquals(tuple.getType(), TSDataType.INT32);
@@ -203,7 +198,5 @@ public class RecordUtilsTest {
         assertEquals(record.time, 1471522347000l);
         tuples = record.dataPointList;
         assertEquals(tuples.size(), 0);
-
     }
-
 }

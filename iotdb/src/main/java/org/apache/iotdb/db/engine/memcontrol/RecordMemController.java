@@ -25,9 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * This class hold global memory usage of MemUsers. This only counts record(tuple) sizes.
- */
+/** This class hold global memory usage of MemUsers. This only counts record(tuple) sizes. */
 public class RecordMemController extends BasicMemController {
 
     private static Logger logger = LoggerFactory.getLogger(RecordMemController.class);

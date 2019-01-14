@@ -97,7 +97,6 @@ public class LongStatistics extends Statistics<Long> {
             updateStats(longStats.getMin(), longStats.getMax(), longStats.getFirst(), longStats.getSum(),
                     longStats.getLast());
         }
-
     }
 
     void initializeStats(long min, long max, long firstValue, double sum, long last) {
@@ -195,5 +194,4 @@ public class LongStatistics extends Statistics<Long> {
         this.last = ReadWriteIOUtils.readLong(byteBuffer);
         this.sum = ReadWriteIOUtils.readDouble(byteBuffer);
     }
-
 }

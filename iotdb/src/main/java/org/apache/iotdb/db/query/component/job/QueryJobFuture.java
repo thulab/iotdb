@@ -34,14 +34,14 @@ public interface QueryJobFuture {
 
     /**
      * Get current status of corresponding QueryJob
-     * 
+     *
      * @return status
      */
     QueryJobStatus getCurrentStatus();
 
     /**
      * Retrieve OnePassQueryDataSet from EngineQueryRouter result pool.
-     * 
+     *
      * @return null if the queryJob is not finished.
      */
     QueryDataSet retrieveQueryDataSet();

@@ -64,6 +64,7 @@ public interface IChunkGroupWriter {
     /**
      * get the max memory occupied at this time.
      *
+     * <p>
      * Note that, this method should be called after running {@code long calcAllocatedSize()}
      *
      * @return - allocated memory size.

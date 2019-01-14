@@ -106,6 +106,5 @@ public class ReadOnlyTsFileTest {
             count++;
         }
         Assert.assertEquals(101, count);
-
     }
 }

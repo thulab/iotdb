@@ -279,5 +279,4 @@ public class MManagerImproveTest {
     public void tearDown() throws Exception {
         EnvironmentUtils.cleanEnv();
     }
-
 }

@@ -60,5 +60,4 @@ public class ReadWriteToBytesUtilsTest {
             assert i == k;
         }
     }
-
 }

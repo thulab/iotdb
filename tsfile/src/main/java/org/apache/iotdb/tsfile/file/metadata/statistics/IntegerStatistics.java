@@ -98,7 +98,6 @@ public class IntegerStatistics extends Statistics<Integer> {
             updateStats(intStats.getMin(), intStats.getMax(), intStats.getFirst(), intStats.getSum(),
                     intStats.getLast());
         }
-
     }
 
     void initializeStats(int min, int max, int first, double sum, int last) {

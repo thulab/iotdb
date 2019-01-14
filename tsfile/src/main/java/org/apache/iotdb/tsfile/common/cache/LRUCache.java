@@ -78,5 +78,4 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
     }
 
     public abstract T loadObjectByKey(K key) throws IOException;
-
 }

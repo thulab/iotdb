@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 
 public enum PhysicalPlanCodec {
-
     MULTIINSERTPLAN(SystemLogOperator.INSERT, codecInstances.multiInsertPlanCodec), UPDATEPLAN(SystemLogOperator.UPDATE,
             codecInstances.updatePlanCodec), DELETEPLAN(SystemLogOperator.DELETE, codecInstances.deletePlanCodec);
 
@@ -227,6 +226,5 @@ public enum PhysicalPlanCodec {
                 return ans;
             }
         };
-
     }
 }

@@ -28,9 +28,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 
-/**
- * @author Zhang Jinrui
- */
+/** @author Zhang Jinrui */
 public class PlainDecoder extends Decoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PlainDecoder.class);

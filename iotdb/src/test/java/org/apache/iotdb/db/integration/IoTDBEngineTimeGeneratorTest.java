@@ -100,9 +100,7 @@ public class IoTDBEngineTimeGeneratorTest {
         EnvironmentUtils.cleanEnv();
     }
 
-    /**
-     * value >= 14 && time > 500
-     */
+    /** value >= 14 && time > 500 */
     @Test
     public void testOneSeriesWithValueAndTimeFilter() throws IOException, FileNodeManagerException {
         System.out.println("Test >>> root.vehicle.d0.s0 >= 14 && time > 500");
@@ -126,9 +124,7 @@ public class IoTDBEngineTimeGeneratorTest {
         assertEquals(count, cnt);
     }
 
-    /**
-     * root.vehicle.d1.s0 >= 5, and d1.s0 has no data
-     */
+    /** root.vehicle.d1.s0 >= 5, and d1.s0 has no data */
     @Test
     public void testEmptySeriesWithValueFilter() throws IOException, FileNodeManagerException {
         System.out.println("Test >>> root.vehicle.d1.s0 >= 5");
@@ -147,9 +143,7 @@ public class IoTDBEngineTimeGeneratorTest {
         assertEquals(0, cnt);
     }
 
-    /**
-     * root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900
-     */
+    /** root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900 */
     @Test
     public void testMultiSeriesWithValueFilterAndTimeFilter() throws IOException, FileNodeManagerException {
         System.out.println("Test >>> root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11.5 || time > 900");
@@ -242,16 +236,12 @@ public class IoTDBEngineTimeGeneratorTest {
         }
     }
 
-    /**
-     * value >= 14 && time > 500
-     */
+    /** value >= 14 && time > 500 */
     private static boolean satisfyTimeFilter1(long time) {
         return time % 17 >= 14 && time > 500;
     }
 
-    /**
-     * root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11 || time > 900
-     */
+    /** root.vehicle.d0.s0 >= 5 && root.vehicle.d0.s2 >= 11 || time > 900 */
     private static boolean satisfyTimeFilter2(long time) {
         return (time % 17 >= 5 || time > 900) && (time % 31 >= 11.5 || time > 900);
     }

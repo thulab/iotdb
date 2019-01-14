@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-/**
- * @author CGF
- */
+/** @author CGF */
 public class BooleanStatistics extends Statistics<Boolean> {
     private boolean max;
     private boolean min;
@@ -182,5 +180,4 @@ public class BooleanStatistics extends Statistics<Boolean> {
         this.last = ReadWriteIOUtils.readBool(byteBuffer);
         this.sum = ReadWriteIOUtils.readDouble(byteBuffer);
     }
-
 }

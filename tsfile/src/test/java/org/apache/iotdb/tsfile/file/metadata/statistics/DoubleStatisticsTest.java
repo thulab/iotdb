@@ -62,5 +62,4 @@ public class DoubleStatisticsTest {
         assertEquals(1.34d, (double) doubleStats3.getFirst(), maxError);
         assertEquals(200.435d, (double) doubleStats3.getLast(), maxError);
     }
-
 }

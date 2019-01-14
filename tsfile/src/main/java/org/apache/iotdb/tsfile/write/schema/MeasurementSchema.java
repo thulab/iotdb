@@ -67,9 +67,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     public MeasurementSchema() {
     }
 
-    /**
-     * set properties as an empty Map
-     */
+    /** set properties as an empty Map */
     public MeasurementSchema(String measurementId, TSDataType type, TSEncoding encoding) {
         this(measurementId, type, encoding,
                 CompressionType.valueOf(TSFileDescriptor.getInstance().getConfig().compressor), Collections.emptyMap());
@@ -81,7 +79,6 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     }
 
     /**
-     *
      * @param measurementId
      * @param type
      * @param encoding
@@ -157,7 +154,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
 
     /**
      * get Encoder of value from encodingConverter by measurementID and data type
-     * 
+     *
      * @return Encoder for value
      */
     public Encoder getValueEncoder() {
@@ -288,9 +285,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
         return Objects.hash(type, encoding, measurementId, encodingConverter, compressor, conf, props);
     }
 
-    /**
-     * compare by measurementID
-     */
+    /** compare by measurementID */
     @Override
     public int compareTo(MeasurementSchema o) {
         if (equals(o))

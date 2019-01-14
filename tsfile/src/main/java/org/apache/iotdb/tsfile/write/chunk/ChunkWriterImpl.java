@@ -38,9 +38,8 @@ import org.apache.iotdb.tsfile.exception.write.PageException;
 import org.apache.iotdb.tsfile.write.writer.TsFileIOWriter;
 
 /**
- *
- * A implementation of {@code IChunkWriter}. {@code ChunkWriterImpl} consists of a {@code ChunkBuffer}, a
- * {@code PageWriter}, and two {@code Statistics}.
+ * A implementation of {@code IChunkWriter}. {@code ChunkWriterImpl} consists of a {@code
+ * ChunkBuffer}, a {@code PageWriter}, and two {@code Statistics}.
  *
  * @author kangrong
  * @see IChunkWriter IChunkWriter
@@ -52,24 +51,20 @@ public class ChunkWriterImpl implements IChunkWriter {
     private static final int MINIMUM_RECORD_COUNT_FOR_CHECK = 1500;
 
     private final TSDataType dataType;
-    /**
-     * help to encode data of this series
-     */
+    /** help to encode data of this series */
     private final ChunkBuffer chunkBuffer;
-    /**
-     * page size threshold
-     */
+    /** page size threshold */
     private final long psThres;
+
     private final int pageCountUpperBound;
-    /**
-     * value writer to encode data
-     */
+    /** value writer to encode data */
     private PageWriter dataPageWriter;
 
     /**
      * value count in a page. It will be reset after calling {@code writePageHeaderAndDataIntoBuff()}
      */
     private int valueCountInOnePage;
+
     private int valueCountInOnePageForNextCheck;
     /**
      * statistic on a page. It will be reset after calling {@code writePageHeaderAndDataIntoBuff()}
@@ -105,9 +100,7 @@ public class ChunkWriterImpl implements IChunkWriter {
         this.dataPageWriter.setValueEncoder(measurementSchema.getValueEncoder());
     }
 
-    /**
-     * reset statistics of page by dataType of this measurement
-     */
+    /** reset statistics of page by dataType of this measurement */
     private void resetPageStatistics() {
         this.pageStatistics = Statistics.getStatsByType(dataType);
     }
@@ -213,13 +206,10 @@ public class ChunkWriterImpl implements IChunkWriter {
                         measurementSchema.getMeasurementId(), psThres, currentColumnSize, valueCountInOnePage,
                         valueCountInOnePageForNextCheck);
             }
-
         }
     }
 
-    /**
-     * flush data into {@code IChunkWriter}
-     */
+    /** flush data into {@code IChunkWriter} */
     private void writePage() {
         try {
             chunkBuffer.writePageHeaderAndDataIntoBuff(dataPageWriter.getUncompressedBytes(), valueCountInOnePage,

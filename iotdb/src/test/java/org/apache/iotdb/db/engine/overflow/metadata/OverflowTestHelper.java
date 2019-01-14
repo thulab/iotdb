@@ -33,8 +33,8 @@ public class OverflowTestHelper {
     public static final TSDataType DATA_TYPE = TSDataType.INT64;
 
     public static ChunkMetaData createSimpleTimeSeriesChunkMetaData() {
-        ChunkMetaData metaData = new ChunkMetaData(MEASUREMENT_UID, DATA_TYPE, FILE_OFFSET, START_TIME, END_TIME// ,
-                                                                                                                // ChunkMetaDataTest.ENCODING_TYPE
+        ChunkMetaData metaData = new ChunkMetaData(MEASUREMENT_UID, DATA_TYPE, FILE_OFFSET, START_TIME, END_TIME // ,
+        // ChunkMetaDataTest.ENCODING_TYPE
         );
         metaData.setNumOfPoints(NUM_OF_POINTS);
         metaData.setDigest(new TsDigest());

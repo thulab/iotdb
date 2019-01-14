@@ -24,14 +24,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**
- * Encoder for int value using rle or bit-packing
- */
+/** Encoder for int value using rle or bit-packing */
 public class IntRleEncoder extends RleEncoder<Integer> {
 
-    /**
-     * Packer for packing int value
-     */
+    /** Packer for packing int value */
     private IntPacker packer;
 
     public IntRleEncoder(EndianType endianType) {
@@ -80,9 +76,7 @@ public class IntRleEncoder extends RleEncoder<Integer> {
         preValue = 0;
     }
 
-    /**
-     * write bytes to OutputStream using rle rle format: [header][value]
-     */
+    /** write bytes to OutputStream using rle rle format: [header][value] */
     @Override
     protected void writeRleRun() throws IOException {
         endPreviousBitPackedRun(config.RLE_MIN_REPEATED_NUM);

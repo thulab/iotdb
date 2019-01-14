@@ -107,5 +107,4 @@ public class DeltaBinaryEncoderIntegerTest {
             assertEquals(data[i++], reader.readInt(buffer));
         }
     }
-
 }

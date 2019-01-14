@@ -93,5 +93,4 @@ public class TimeFilter {
     public static TimeNotEq notEq(long value) {
         return new TimeNotEq(value);
     }
-
 }

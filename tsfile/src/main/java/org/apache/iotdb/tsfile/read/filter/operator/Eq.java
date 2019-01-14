@@ -65,5 +65,4 @@ public class Eq<T extends Comparable<T>> extends UnaryFilter<T> {
     public String toString() {
         return getFilterType() + " == " + value;
     }
-
 }

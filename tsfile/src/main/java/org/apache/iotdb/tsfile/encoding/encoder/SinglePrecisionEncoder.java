@@ -21,10 +21,7 @@ import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-/**
- * Encoder for int value using gorilla encoding
- *
- */
+/** Encoder for int value using gorilla encoding */
 public class SinglePrecisionEncoder extends GorillaEncoder {
     private int preValue;
 
@@ -52,7 +49,8 @@ public class SinglePrecisionEncoder extends GorillaEncoder {
                 int leadingZeroNumTmp = Integer.numberOfLeadingZeros(tmp);
                 int tailingZeroNumTmp = Integer.numberOfTrailingZeros(tmp);
                 if (leadingZeroNumTmp >= leadingZeroNum && tailingZeroNumTmp >= tailingZeroNum) {
-                    // case: write '10' and effective bits without first leadingZeroNum '0' and last tailingZeroNum '0'
+                    // case: write '10' and effective bits without first leadingZeroNum '0' and last
+                    // tailingZeroNum '0'
                     writeBit(true, out);
                     writeBit(false, out);
                     writeBits(tmp, out, TSFileConfig.FLOAT_LENGTH - 1 - leadingZeroNum, tailingZeroNum);
@@ -95,7 +93,8 @@ public class SinglePrecisionEncoder extends GorillaEncoder {
 
     @Override
     public long getMaxByteSize() {
-        // max(first 4 byte, case '11' bit + 5bit + 6bit + 32bit = 45bit) + NaN(case '11' bit + 5bit + 6bit + 32bit =
+        // max(first 4 byte, case '11' bit + 5bit + 6bit + 32bit = 45bit) + NaN(case '11' bit + 5bit +
+        // 6bit + 32bit =
         // 45bit) = 90bit
         return 12;
     }

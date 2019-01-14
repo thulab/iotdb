@@ -23,9 +23,7 @@ import org.apache.iotdb.tsfile.read.filter.factory.FilterType;
 
 import java.io.Serializable;
 
-/**
- * NotFilter necessary. Use InvertExpressionVisitor
- */
+/** NotFilter necessary. Use InvertExpressionVisitor */
 public class NotFilter implements Filter, Serializable {
 
     private static final long serialVersionUID = 584860326604020881L;
@@ -62,5 +60,4 @@ public class NotFilter implements Filter, Serializable {
     public String toString() {
         return "NotFilter: " + that;
     }
-
 }
