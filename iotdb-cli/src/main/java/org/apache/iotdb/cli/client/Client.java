@@ -146,7 +146,7 @@ public class Client extends AbstractClient {
                     for (int i = 0; i < cmds.length; i++) {
                         String cmd = cmds[i];
                         if (cmd != null && !cmd.trim().equals("")) {
-                            OPERATION_RESULT result = handleInputInputCmd(cmd, connection);
+                            OperationResult result = handleInputInputCmd(cmd, connection);
                             switch (result) {
                             case RETURN_OPER:
                                 return;

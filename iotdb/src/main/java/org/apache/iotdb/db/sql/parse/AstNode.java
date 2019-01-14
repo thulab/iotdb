@@ -131,7 +131,7 @@ public class AstNode extends CommonTree implements Node, Serializable {
    * Get origin AstNodeOrigin.
    *
    * @return information about the object from which this AstNode originated, or null if this
-   * AstNode was not expanded from an object reference
+   *     AstNode was not expanded from an object reference
    */
   public AstNodeOrigin getOrigin() {
     return origin;
@@ -145,8 +145,8 @@ public class AstNode extends CommonTree implements Node, Serializable {
   }
 
   /**
-   *
-   * @return
+   * dump string.
+   * @return dump string
    */
   public String dump() {
     StringBuilder sb = new StringBuilder("\n");
@@ -185,7 +185,7 @@ public class AstNode extends CommonTree implements Node, Serializable {
     return sb;
   }
 
-  private void getRootNodeWithValidASTStr() {
+  private void getRootNodeWithValidAstStr() {
 
     if (rootNode != null && rootNode.parent == null && rootNode.hasValidMemoizedString()) {
       return;
@@ -200,7 +200,6 @@ public class AstNode extends CommonTree implements Node, Serializable {
       rootNode.toStringTree(rootNode);
       rootNode.isValidAstStr = true;
     }
-    return;
   }
 
   private boolean hasValidMemoizedString() {
@@ -279,7 +278,7 @@ public class AstNode extends CommonTree implements Node, Serializable {
 
     // The root might have changed because of tree modifications.
     // Compute the new root for this tree and set the astStr.
-    getRootNodeWithValidASTStr();
+    getRootNodeWithValidAstStr();
 
     // If rootNotModified is false, then startIndx and endIndx will be
     // stale.

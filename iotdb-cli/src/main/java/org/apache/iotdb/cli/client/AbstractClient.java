@@ -460,12 +460,12 @@ public abstract class AbstractClient {
         + "                                           \n");
   }
 
-  protected static OPERATION_RESULT handleInputInputCmd(String cmd, IoTDBConnection connection) {
+  protected static OperationResult handleInputInputCmd(String cmd, IoTDBConnection connection) {
     String specialCmd = cmd.toLowerCase().trim();
 
     if (specialCmd.equals(QUIT_COMMAND) || specialCmd.equals(EXIT_COMMAND)) {
       System.out.println(specialCmd + " normally");
-      return OPERATION_RESULT.RETURN_OPER;
+      return OperationResult.RETURN_OPER;
     }
     if (specialCmd.equals(HELP)) {
       System.out.println(String.format("    <your-sql>\t\t\t execute your sql statment"));
@@ -485,7 +485,7 @@ public abstract class AbstractClient {
       System.out.println(
           String.format("    %s=xxx\t eg. set max lines for cli to ouput, -1 equals to unlimited.",
               SET_MAX_DISPLAY_NUM));
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
     if (specialCmd.equals(SHOW_METADATA_COMMAND)) {
       try {
@@ -493,7 +493,7 @@ public abstract class AbstractClient {
       } catch (SQLException e) {
         System.out.println("Failed to show timeseries because: " + e.getMessage());
       }
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     if (specialCmd.startsWith(SET_TIMESTAMP_DISPLAY)) {
@@ -501,16 +501,16 @@ public abstract class AbstractClient {
       if (values.length != 2) {
         System.out.println(String.format("Time display format error, please input like %s=ISO8601",
             SET_TIMESTAMP_DISPLAY));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       try {
         setTimeFormat(cmd.split("=")[1]);
       } catch (Exception e) {
         System.out.println(String.format("time display format error, %s", e.getMessage()));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       System.out.println("Time display type has set to " + cmd.split("=")[1].trim());
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     if (specialCmd.startsWith(SET_TIME_ZONE)) {
@@ -518,16 +518,16 @@ public abstract class AbstractClient {
       if (values.length != 2) {
         System.out.println(
             String.format("Time zone format error, please input like %s=+08:00", SET_TIME_ZONE));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       try {
         connection.setTimeZone(cmd.split("=")[1].trim());
       } catch (Exception e) {
         System.out.println(String.format("Time zone format error, %s", e.getMessage()));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       System.out.println("Time zone has set to " + values[1].trim());
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     if (specialCmd.startsWith(SET_FETCH_SIZE)) {
@@ -536,16 +536,16 @@ public abstract class AbstractClient {
         System.out
             .println(String
                 .format("Fetch size format error, please input like %s=10000", SET_FETCH_SIZE));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       try {
         setFetchSize(cmd.split("=")[1]);
       } catch (Exception e) {
         System.out.println(String.format("Fetch size format error, %s", e.getMessage()));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       System.out.println("Fetch size has set to " + values[1].trim());
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     if (specialCmd.startsWith(SET_MAX_DISPLAY_NUM)) {
@@ -554,16 +554,16 @@ public abstract class AbstractClient {
         System.out
             .println(String.format("Max display number format error, please input like %s = 10000",
                 SET_MAX_DISPLAY_NUM));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       try {
         setMaxDisplayNumber(cmd.split("=")[1]);
       } catch (Exception e) {
         System.out.println(String.format("Max display number format error, %s", e.getMessage()));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       System.out.println("Max display number has set to " + values[1].trim());
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     if (specialCmd.startsWith(SHOW_TIMEZONE)) {
@@ -572,15 +572,15 @@ public abstract class AbstractClient {
       } catch (Exception e) {
         System.out.println("Cannot get time zone from server side because: " + e.getMessage());
       }
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
     if (specialCmd.startsWith(SHOW_TIMESTAMP_DISPLAY)) {
       System.out.println("Current time format: " + timeFormat);
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
     if (specialCmd.startsWith(SHOW_FETCH_SIZE)) {
       System.out.println("Current fetch size: " + fetchSize);
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     if (specialCmd.startsWith(IMPORT_CMD)) {
@@ -589,7 +589,7 @@ public abstract class AbstractClient {
         System.out.println(String.format(
             "Please input like: import /User/myfile. "
                 + "Noted that your file path cannot contain any space character)"));
-        return OPERATION_RESULT.CONTINUE_OPER;
+        return OperationResult.CONTINUE_OPER;
       }
       try {
         System.out.println(cmd.split(" ")[1]);
@@ -602,7 +602,7 @@ public abstract class AbstractClient {
       } catch (TException e) {
         System.out.println("Cannot connect to server");
       }
-      return OPERATION_RESULT.CONTINUE_OPER;
+      return OperationResult.CONTINUE_OPER;
     }
 
     Statement statement = null;
@@ -630,10 +630,10 @@ public abstract class AbstractClient {
     }
     long costTime = System.currentTimeMillis() - startTime;
     System.out.println(String.format("It costs %.3fs", costTime / 1000.0));
-    return OPERATION_RESULT.NO_OPER;
+    return OperationResult.NO_OPER;
   }
 
-  enum OPERATION_RESULT {
+  enum OperationResult {
     RETURN_OPER, CONTINUE_OPER, NO_OPER
   }
 }
