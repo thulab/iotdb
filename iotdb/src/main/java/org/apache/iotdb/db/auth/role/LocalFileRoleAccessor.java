@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.iotdb.db.auth.Role;
+package org.apache.iotdb.db.auth.role;
 
 import org.apache.iotdb.db.auth.entity.PathPrivilege;
 import org.apache.iotdb.db.auth.entity.Role;
 import org.apache.iotdb.db.conf.IoTDBConstant;
-import org.apache.iotdb.db.utils.IOUtils;
-import org.apache.iotdb.db.auth.entity.PathPrivilege;
-import org.apache.iotdb.db.auth.entity.Role;
 import org.apache.iotdb.db.utils.IOUtils;
 
 import java.io.*;

@@ -18,7 +18,6 @@ package org.apache.iotdb.db.engine.memcontrol;
 import org.apache.iotdb.db.conf.IoTDBConfig;
 import org.apache.iotdb.db.conf.IoTDBDescriptor;
 import org.apache.iotdb.db.exception.BufferWriteProcessorException;
-import org.apache.iotdb.db.exception.BufferWriteProcessorException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +40,7 @@ public class MemControllerTest {
         BasicMemController memController = BasicMemController.getInstance();
         memController.clear();
         memController.setWarningThreshold(8 * GB);
-        memController.setDangerouseThreshold(16 * GB);
+        memController.setDangerousThreshold(16 * GB);
 
         Object[] dummyUser = new Object[20];
         for (int i = 0; i < dummyUser.length; i++)

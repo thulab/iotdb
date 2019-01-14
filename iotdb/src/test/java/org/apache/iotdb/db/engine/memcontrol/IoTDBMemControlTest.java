@@ -84,7 +84,7 @@ public class IoTDBMemControlTest {
             config.memThresholdDangerous = 5 * IoTDBConstant.MB;
 
             BasicMemController.getInstance().setCheckInterval(15 * 1000);
-            BasicMemController.getInstance().setDangerouseThreshold(config.memThresholdDangerous); // force initialize
+            BasicMemController.getInstance().setDangerousThreshold(config.memThresholdDangerous); // force initialize
             BasicMemController.getInstance().setWarningThreshold(config.memThresholdWarning);
 
             deamon.active();

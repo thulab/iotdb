@@ -42,6 +42,7 @@ public class BasicFunctionOperator extends FunctionOperator {
 
   /**
    * BasicFunctionOperator Constructor.
+   *
    * @param tokenIntType token in Int Type
    * @param path path
    * @param value value
@@ -60,6 +61,7 @@ public class BasicFunctionOperator extends FunctionOperator {
 
   /**
    * get path.
+   *
    * @return path
    */
   public String getPath() {
@@ -72,6 +74,7 @@ public class BasicFunctionOperator extends FunctionOperator {
 
   /**
    * set reversed token.
+   *
    * @throws LogicalOperatorException Logical Operator Exception
    */
   public void setReversedTokenIntType() throws LogicalOperatorException {
