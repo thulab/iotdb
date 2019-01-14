@@ -375,7 +375,7 @@ public class ServerServiceImpl implements ServerService.Iface {
         // .getTimeSeriesChunkMetaDataList();
         // for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
         // TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
-        // String measurementUID = properties.getMeasurementUID();
+        // String measurementUID = properties.getMeasurementUid();
         // measurementUID = key + "." + measurementUID;
         // timeseries.add(measurementUID);
         // }
@@ -482,7 +482,7 @@ public class ServerServiceImpl implements ServerService.Iface {
         // .getTimeSeriesChunkMetaDataList();
         // for (TimeSeriesChunkMetaData timeSeriesChunkMetaData : timeSeriesChunkMetaDataList) {
         // TimeSeriesChunkProperties properties = timeSeriesChunkMetaData.getProperties();
-        // String measurementUID = properties.getMeasurementUID();
+        // String measurementUID = properties.getMeasurementUid();
         // measurementUID = key + "." + measurementUID;
         // timeseries.add(measurementUID);
         // }

@@ -76,7 +76,7 @@ public enum PhysicalPlanCodec {
                 buffer.clear();
                 buffer.put((byte) type);
                 buffer.putLong(t.getDeleteTime());
-                byte[] pathBytes = BytesUtils.StringToBytes(t.getPaths().get(0).getFullPath());
+                byte[] pathBytes = BytesUtils.stringToBytes(t.getPaths().get(0).getFullPath());
                 buffer.putInt(pathBytes.length);
                 buffer.put(pathBytes);
 
@@ -116,11 +116,11 @@ public enum PhysicalPlanCodec {
                     buffer.putLong(pair.right);
                 }
 
-                byte[] valueBytes = BytesUtils.StringToBytes(updatePlan.getValue());
+                byte[] valueBytes = BytesUtils.stringToBytes(updatePlan.getValue());
                 buffer.putInt(valueBytes.length);
                 buffer.put(valueBytes);
 
-                byte[] pathBytes = BytesUtils.StringToBytes(updatePlan.getPath().getFullPath());
+                byte[] pathBytes = BytesUtils.stringToBytes(updatePlan.getPath().getFullPath());
                 buffer.putInt(pathBytes.length);
                 buffer.put(pathBytes);
 
@@ -168,14 +168,14 @@ public enum PhysicalPlanCodec {
                 buffer.put((byte) plan.getInsertType());
                 buffer.putLong(plan.getTime());
 
-                byte[] deviceBytes = BytesUtils.StringToBytes(plan.getDeviceId());
+                byte[] deviceBytes = BytesUtils.stringToBytes(plan.getDeviceId());
                 buffer.putInt(deviceBytes.length);
                 buffer.put(deviceBytes);
 
                 List<String> measurementList = plan.getMeasurements();
                 buffer.putInt(measurementList.size());
                 for (String m : measurementList) {
-                    byte[] mBytes = BytesUtils.StringToBytes(m);
+                    byte[] mBytes = BytesUtils.stringToBytes(m);
                     buffer.putInt(mBytes.length);
                     buffer.put(mBytes);
                 }
@@ -183,7 +183,7 @@ public enum PhysicalPlanCodec {
                 List<String> valueList = plan.getValues();
                 buffer.putInt(valueList.size());
                 for (String m : valueList) {
-                    byte[] vBytes = BytesUtils.StringToBytes(m);
+                    byte[] vBytes = BytesUtils.stringToBytes(m);
                     buffer.putInt(vBytes.length);
                     buffer.put(vBytes);
                 }

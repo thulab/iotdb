@@ -44,7 +44,7 @@ public class Binary implements Comparable<Binary>, Serializable {
   }
 
   public static Binary valueOf(String value) {
-    return new Binary(BytesUtils.StringToBytes(value));
+    return new Binary(BytesUtils.stringToBytes(value));
   }
 
   @Override

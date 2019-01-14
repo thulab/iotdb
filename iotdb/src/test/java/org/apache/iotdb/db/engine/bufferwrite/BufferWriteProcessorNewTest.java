@@ -26,10 +26,6 @@ import org.apache.iotdb.tsfile.exception.write.WriteProcessException;
 import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.utils.Pair;
-import org.apache.iotdb.db.engine.querycontext.ReadOnlyMemChunk;
-import org.apache.iotdb.db.exception.BufferWriteProcessorException;
-import org.apache.iotdb.db.utils.FileSchemaUtils;
-import org.apache.iotdb.db.utils.TimeValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,7 +132,7 @@ public class BufferWriteProcessorNewTest {
         right = pair.right;
         assertEquals(true, left.isEmpty());
         assertEquals(1, right.size());
-        assertEquals(measurementId, right.get(0).getMeasurementUID());
+        assertEquals(measurementId, right.get(0).getMeasurementUid());
         assertEquals(dataType, right.get(0).getTsDataType());
 
         // test recovery
@@ -148,7 +144,7 @@ public class BufferWriteProcessorNewTest {
         right = pair.right;
         assertEquals(true, left.isEmpty());
         assertEquals(1, right.size());
-        assertEquals(measurementId, right.get(0).getMeasurementUID());
+        assertEquals(measurementId, right.get(0).getMeasurementUid());
         assertEquals(dataType, right.get(0).getTsDataType());
         bufferWriteProcessor.close();
     }

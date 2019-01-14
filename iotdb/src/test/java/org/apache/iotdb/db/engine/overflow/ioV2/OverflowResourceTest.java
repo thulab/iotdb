@@ -70,7 +70,7 @@ public class OverflowResourceTest {
         assertEquals(1, chunkMetaDatas.size());
         ChunkMetaData chunkMetaData = chunkMetaDatas.get(0);
         assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getTsDataType());
-        assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getMeasurementUID());
+        assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getMeasurementUid());
         // close
         work.close();
         // append file
@@ -85,7 +85,7 @@ public class OverflowResourceTest {
         assertEquals(1, chunkMetaDatas.size());
         chunkMetaData = chunkMetaDatas.get(0);
         assertEquals(OverflowTestUtils.dataType1, chunkMetaData.getTsDataType());
-        assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getMeasurementUID());
+        assertEquals(OverflowTestUtils.measurementId1, chunkMetaData.getMeasurementUid());
         assertEquals(originlength, insertFile.length());
     }
 }

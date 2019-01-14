@@ -17,7 +17,6 @@ package org.apache.iotdb.tsfile.file.metadata.utils;
 
 import org.apache.iotdb.tsfile.file.metadata.*;
 import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
-import org.apache.iotdb.tsfile.file.metadata.*;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -100,8 +99,8 @@ public class Utils {
 
     public static void isTimeSeriesChunkMetadataEqual(ChunkMetaData metadata1, ChunkMetaData metadata2) {
         if (Utils.isTwoObjectsNotNULL(metadata1, metadata2, "ChunkMetaData")) {
-            if (Utils.isTwoObjectsNotNULL(metadata1.getMeasurementUID(), metadata2.getMeasurementUID(), "sensorUID")) {
-                assertTrue(metadata1.getMeasurementUID().equals(metadata2.getMeasurementUID()));
+            if (Utils.isTwoObjectsNotNULL(metadata1.getMeasurementUid(), metadata2.getMeasurementUid(), "sensorUID")) {
+                assertTrue(metadata1.getMeasurementUid().equals(metadata2.getMeasurementUid()));
             }
             assertTrue(metadata1.getOffsetOfChunkHeader() == metadata2.getOffsetOfChunkHeader());
             assertTrue(metadata1.getNumOfPoints() == metadata2.getNumOfPoints());

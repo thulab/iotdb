@@ -19,11 +19,8 @@ import org.apache.iotdb.tsfile.file.metadata.*;
 import org.apache.iotdb.tsfile.read.TsFileSequenceReader;
 import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.common.cache.LRUCache;
-import org.apache.iotdb.tsfile.file.metadata.*;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.*;
 
 public class MetadataQuerierByFileImpl implements MetadataQuerier {
@@ -98,7 +95,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
                 // s1, s2
                 for (ChunkMetaData chunkMetaData : chunkGroupMetaData.getChunkMetaDataList()) {
 
-                    String currentMeasurement = chunkMetaData.getMeasurementUID();
+                    String currentMeasurement = chunkMetaData.getMeasurementUid();
 
                     // s1
                     if (selectedMeasurements.contains(currentMeasurement)) {
@@ -143,7 +140,7 @@ public class MetadataQuerierByFileImpl implements MetadataQuerier {
         for (ChunkGroupMetaData chunkGroupMetaData : tsDeviceMetadata.getChunkGroups()) {
             List<ChunkMetaData> chunkMetaDataListInOneChunkGroup = chunkGroupMetaData.getChunkMetaDataList();
             for (ChunkMetaData chunkMetaData : chunkMetaDataListInOneChunkGroup) {
-                if (path.getMeasurement().equals(chunkMetaData.getMeasurementUID())) {
+                if (path.getMeasurement().equals(chunkMetaData.getMeasurementUid())) {
                     chunkMetaDataList.add(chunkMetaData);
                 }
             }

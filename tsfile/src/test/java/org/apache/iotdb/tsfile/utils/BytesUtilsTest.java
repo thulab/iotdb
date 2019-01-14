@@ -168,7 +168,7 @@ public class BytesUtilsTest {
     @Test
     public void testStringToBytes() {
         String b = "lqfkgv12KLDJSL1@#%";
-        byte[] ret = BytesUtils.StringToBytes(b);
+        byte[] ret = BytesUtils.stringToBytes(b);
         String rb1 = BytesUtils.bytesToString(ret);
         assertTrue(b.equals(rb1));
     }

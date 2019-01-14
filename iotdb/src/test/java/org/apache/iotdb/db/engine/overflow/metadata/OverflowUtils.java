@@ -60,8 +60,8 @@ public class OverflowUtils {
 
     public static void isTimeSeriesChunkMetadataEqual(ChunkMetaData metadata1, ChunkMetaData metadata2) {
         if (isTwoObjectsNotNULL(metadata1, metadata2, "ChunkMetaData")) {
-            if (isTwoObjectsNotNULL(metadata1.getMeasurementUID(), metadata2.getMeasurementUID(), "sensorUID")) {
-                assertTrue(metadata1.getMeasurementUID().equals(metadata2.getMeasurementUID()));
+            if (isTwoObjectsNotNULL(metadata1.getMeasurementUid(), metadata2.getMeasurementUid(), "sensorUID")) {
+                assertTrue(metadata1.getMeasurementUid().equals(metadata2.getMeasurementUid()));
             }
             assertTrue(metadata1.getOffsetOfChunkHeader() == metadata2.getOffsetOfChunkHeader());
             assertTrue(metadata1.getNumOfPoints() == metadata2.getNumOfPoints());
