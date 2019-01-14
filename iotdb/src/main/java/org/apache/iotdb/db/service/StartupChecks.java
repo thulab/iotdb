@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.iotdb.db.exception.StartupException;
 import org.apache.iotdb.db.utils.CommonUtils;
 
-import org.apache.iotdb.db.exception.StartupException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +78,7 @@ public class StartupChecks {
 
         @Override
         public void execute() throws StartupException {
-            int version = CommonUtils.getJDKVersion();
+            int version = CommonUtils.getJdkVersion();
             if (version < IoTDBConstant.minSupportedJDKVerion) {
                 throw new StartupException(String.format("Requires JDK version >= %d, current version is %d",
                         IoTDBConstant.minSupportedJDKVerion, version));
