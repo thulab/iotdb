@@ -36,7 +36,7 @@ import org.apache.iotdb.db.qp.strategy.optimizer.DNFFilterOptimizer;
 import org.apache.iotdb.db.qp.strategy.optimizer.MergeSingleFilterOptimizer;
 import org.apache.iotdb.db.qp.strategy.optimizer.RemoveNotOptimizer;
 import org.apache.iotdb.db.sql.ParseGenerator;
-import org.apache.iotdb.db.sql.parse.ASTNode;
+import org.apache.iotdb.db.sql.parse.AstNode;
 import org.apache.iotdb.db.sql.parse.ParseException;
 import org.apache.iotdb.db.sql.parse.ParseUtils;
 
@@ -65,7 +65,7 @@ public class QueryProcessor {
 
     public PhysicalPlan parseSQLToPhysicalPlan(String sqlStr, ZoneId zoneId)
             throws QueryProcessorException, ArgsErrorException, ProcessorException {
-        ASTNode astNode = parseSQLToAST(sqlStr);
+        AstNode astNode = parseSQLToAST(sqlStr);
         Operator operator = parseASTToOperator(astNode, zoneId);
         operator = logicalOptimize(operator, executor);
         PhysicalGenerator physicalGenerator = new PhysicalGenerator(executor);
@@ -82,7 +82,7 @@ public class QueryProcessor {
      *             exception in converting sql to operator
      * @throws ArgsErrorException
      */
-    private RootOperator parseASTToOperator(ASTNode astNode, ZoneId zoneId)
+    private RootOperator parseASTToOperator(AstNode astNode, ZoneId zoneId)
             throws QueryProcessorException, ArgsErrorException {
         LogicalGenerator generator = new LogicalGenerator(zoneId);
         return generator.getLogicalPlan(astNode);
@@ -97,8 +97,8 @@ public class QueryProcessor {
      * @throws IllegalASTFormatException
      *             exception in sql parsing
      */
-    private ASTNode parseSQLToAST(String sqlStr) throws IllegalASTFormatException {
-        ASTNode astTree;
+    private AstNode parseSQLToAST(String sqlStr) throws IllegalASTFormatException {
+        AstNode astTree;
         // parse string to ASTTree
         try {
             astTree = ParseGenerator.generateAST(sqlStr);

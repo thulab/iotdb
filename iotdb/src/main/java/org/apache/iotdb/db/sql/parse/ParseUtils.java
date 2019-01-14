@@ -30,7 +30,7 @@ public final class ParseUtils {
      *
      * @return node at which descent stopped
      */
-    public static ASTNode findRootNonNullToken(ASTNode tree) {
+    public static AstNode findRootNonNullToken(AstNode tree) {
         while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
             tree = tree.getChild(0);
         }
