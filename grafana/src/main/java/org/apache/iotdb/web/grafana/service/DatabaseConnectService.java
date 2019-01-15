@@ -12,16 +12,19 @@
  * the License.
  */
 
-package org.apache.iotdb.db.qp.exception;
+package org.apache.iotdb.web.grafana.service;
 
-import org.apache.iotdb.db.exception.qp.QueryProcessorException;
+import java.time.ZonedDateTime;
+import java.util.List;
+import org.apache.iotdb.tsfile.utils.Pair;
+import org.apache.iotdb.web.grafana.bean.TimeValues;
 
-public class DateTimeFormatException extends QueryProcessorException {
+public interface DatabaseConnectService {
 
-  private static final long serialVersionUID = 5901175084493972130L;
+  int testConnection();
 
-  public DateTimeFormatException(String msg) {
-    super(msg);
-  }
+  List<TimeValues> querySeries(String s, Pair<ZonedDateTime, ZonedDateTime> timeRange);
+
+  List<String> getMetaData();
 
 }

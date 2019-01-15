@@ -246,7 +246,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
       // Transform "select s1 from root.car.d1, root.car.d2 where s1 > 10" to
       // "select s1 from root.car.d1, root.car.d2 where root.car.d1.s1 > 10 and root.car.d2.s1 > 10"
       // Note that,
-      // two fork tree has to be maintained while removing stars in paths for DNFFilterOptimizer
+      // two fork tree has to be maintained while removing stars in paths for DnfFilterOptimizer
       // requirement.
       return constructTwoForkFilterTreeWithAnd(noStarPaths, operator);
     }

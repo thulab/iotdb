@@ -32,7 +32,7 @@ import org.apache.iotdb.db.qp.physical.PhysicalPlan;
 import org.apache.iotdb.db.qp.strategy.LogicalGenerator;
 import org.apache.iotdb.db.qp.strategy.PhysicalGenerator;
 import org.apache.iotdb.db.qp.strategy.optimizer.ConcatPathOptimizer;
-import org.apache.iotdb.db.qp.strategy.optimizer.DNFFilterOptimizer;
+import org.apache.iotdb.db.qp.strategy.optimizer.DnfFilterOptimizer;
 import org.apache.iotdb.db.qp.strategy.optimizer.MergeSingleFilterOptimizer;
 import org.apache.iotdb.db.qp.strategy.optimizer.RemoveNotOptimizer;
 import org.apache.iotdb.db.sql.ParseGenerator;
@@ -161,7 +161,7 @@ public class QueryProcessor {
         }
         RemoveNotOptimizer removeNot = new RemoveNotOptimizer();
         filter = removeNot.optimize(filter);
-        DNFFilterOptimizer dnf = new DNFFilterOptimizer();
+        DnfFilterOptimizer dnf = new DnfFilterOptimizer();
         filter = dnf.optimize(filter);
         MergeSingleFilterOptimizer merge = new MergeSingleFilterOptimizer();
         filter = merge.optimize(filter);
