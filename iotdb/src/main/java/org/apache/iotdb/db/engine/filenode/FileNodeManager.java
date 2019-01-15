@@ -108,6 +108,7 @@ public class FileNodeManager implements IStatistic, IService {
 
   /**
    * get stats parameter hash map.
+   *
    * @return the key represents the params' name, values is AtomicLong type
    */
   public HashMap<String, AtomicLong> getStatParamsHashMap() {
@@ -267,7 +268,7 @@ public class FileNodeManager implements IStatistic, IService {
    *
    * @param tsRecord input Data
    * @param isMonitor if true, the insertion is done by StatMonitor and thestatistic Info will not
-   *     be recorded. if false, the statParamsHashMap will be updated.
+   * be recorded. if false, the statParamsHashMap will be updated.
    * @return an int value represents the insert type
    */
   public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
@@ -707,6 +708,7 @@ public class FileNodeManager implements IStatistic, IService {
 
   /**
    * merge all overflowed filenode.
+   *
    * @throws FileNodeManagerException FileNodeManagerException
    */
   public void mergeAll() throws FileNodeManagerException {
