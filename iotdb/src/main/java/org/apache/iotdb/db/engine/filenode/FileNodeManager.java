@@ -267,8 +267,8 @@ public class FileNodeManager implements IStatistic, IService {
    * insert TsRecord into storage group.
    *
    * @param tsRecord input Data
-   * @param isMonitor if true, the insertion is done by StatMonitor and thestatistic Info will not
-   * be recorded. if false, the statParamsHashMap will be updated.
+   * @param isMonitor if true, the insertion is done by StatMonitor and the statistic Info will not
+   *     be recorded. if false, the statParamsHashMap will be updated.
    * @return an int value represents the insert type
    */
   public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
