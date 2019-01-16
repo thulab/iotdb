@@ -15,11 +15,10 @@
  */
 package org.apache.iotdb.tsfile.encoding.decoder;
 
-import org.apache.iotdb.tsfile.exception.encoding.TSFileDecodingException;
+import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
 import org.apache.iotdb.tsfile.encoding.bitpacking.IntPacker;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.encoding.bitpacking.IntPacker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +89,7 @@ public class IntRleDecoder extends RleDecoder {
             result = currentBuffer[bitPackingNum - currentCount - 1];
             break;
         default:
-            throw new TSFileDecodingException(
+            throw new TsFileDecodingException(
                     String.format("tsfile-encoding IntRleDecoder: not a valid mode %s", mode));
         }
 

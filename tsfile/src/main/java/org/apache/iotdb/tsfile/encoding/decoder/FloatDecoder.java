@@ -15,13 +15,10 @@
  */
 package org.apache.iotdb.tsfile.encoding.decoder;
 
-import org.apache.iotdb.tsfile.exception.encoding.TSFileDecodingException;
+import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
 import org.apache.iotdb.tsfile.utils.Binary;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.encoding.encoder.FloatEncoder;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.encoding.encoder.FloatEncoder;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
@@ -59,7 +56,7 @@ public class FloatDecoder extends Decoder {
                 decoder = new LongRleDecoder(EndianType.LITTLE_ENDIAN);
                 LOGGER.debug("tsfile-encoding FloatDecoder: init decoder using long-rle and double");
             } else {
-                throw new TSFileDecodingException(
+                throw new TsFileDecodingException(
                         String.format("data type %s is not supported by FloatDecoder", dataType));
             }
         } else if (encodingType == TSEncoding.TS_2DIFF) {
@@ -70,11 +67,11 @@ public class FloatDecoder extends Decoder {
                 decoder = new DeltaBinaryDecoder.LongDeltaDecoder();
                 LOGGER.debug("tsfile-encoding FloatDecoder: init decoder using long-delta and double");
             } else {
-                throw new TSFileDecodingException(
+                throw new TsFileDecodingException(
                         String.format("data type %s is not supported by FloatDecoder", dataType));
             }
         } else {
-            throw new TSFileDecodingException(
+            throw new TsFileDecodingException(
                     String.format("%s encoding is not supported by FloatDecoder", encodingType));
         }
         isMaxPointNumberRead = false;
@@ -118,27 +115,27 @@ public class FloatDecoder extends Decoder {
 
     @Override
     public Binary readBinary(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readBinary is not supproted by FloatDecoder");
+        throw new TsFileDecodingException("Method readBinary is not supproted by FloatDecoder");
     }
 
     @Override
     public boolean readBoolean(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readBoolean is not supproted by FloatDecoder");
+        throw new TsFileDecodingException("Method readBoolean is not supproted by FloatDecoder");
     }
 
     @Override
     public short readShort(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readShort is not supproted by FloatDecoder");
+        throw new TsFileDecodingException("Method readShort is not supproted by FloatDecoder");
     }
 
     @Override
     public int readInt(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readInt is not supproted by FloatDecoder");
+        throw new TsFileDecodingException("Method readInt is not supproted by FloatDecoder");
     }
 
     @Override
     public long readLong(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readLong is not supproted by FloatDecoder");
+        throw new TsFileDecodingException("Method readLong is not supproted by FloatDecoder");
     }
 
     @Override

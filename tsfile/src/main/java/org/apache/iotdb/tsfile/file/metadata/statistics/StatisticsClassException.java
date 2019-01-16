@@ -15,9 +15,9 @@
  */
 package org.apache.iotdb.tsfile.file.metadata.statistics;
 
-import org.apache.iotdb.tsfile.exception.TSFileRuntimeException;
+import org.apache.iotdb.tsfile.exception.TsFileRuntimeException;
 
-public class StatisticsClassException extends TSFileRuntimeException {
+public class StatisticsClassException extends TsFileRuntimeException {
     private static final long serialVersionUID = -5445795844780183770L;
 
     public StatisticsClassException(Class<?> className1, Class<?> className2) {

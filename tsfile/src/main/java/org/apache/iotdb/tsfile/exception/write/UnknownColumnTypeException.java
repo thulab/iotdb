@@ -15,15 +15,15 @@
  */
 package org.apache.iotdb.tsfile.exception.write;
 
-import org.apache.iotdb.tsfile.exception.TSFileRuntimeException;
+import org.apache.iotdb.tsfile.exception.TsFileRuntimeException;
 
 /**
  * This Exception is used while getting an unknown column type. <br>
- * This Exception extends super class {@link TSFileRuntimeException}
+ * This Exception extends super class {@link TsFileRuntimeException}
  *
  * @author kangrong
  */
-public class UnknownColumnTypeException extends TSFileRuntimeException {
+public class UnknownColumnTypeException extends TsFileRuntimeException {
     private static final long serialVersionUID = -4003170165687174659L;
     public String type;
 

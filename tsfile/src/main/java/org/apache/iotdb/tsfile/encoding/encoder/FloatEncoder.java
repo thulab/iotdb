@@ -15,11 +15,9 @@
  */
 package org.apache.iotdb.tsfile.encoding.encoder;
 
-import org.apache.iotdb.tsfile.exception.encoding.TSFileEncodingException;
+import org.apache.iotdb.tsfile.exception.encoding.TsFileEncodingException;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
@@ -69,7 +67,7 @@ public class FloatEncoder extends Encoder {
             } else if (dataType == TSDataType.DOUBLE) {
                 encoder = new LongRleEncoder(EndianType.LITTLE_ENDIAN);
             } else {
-                throw new TSFileEncodingException(
+                throw new TsFileEncodingException(
                         String.format("data type %s is not supported by FloatEncoder", dataType));
             }
         } else if (encodingType == TSEncoding.TS_2DIFF) {
@@ -78,11 +76,11 @@ public class FloatEncoder extends Encoder {
             } else if (dataType == TSDataType.DOUBLE) {
                 encoder = new DeltaBinaryEncoder.LongDeltaEncoder();
             } else {
-                throw new TSFileEncodingException(
+                throw new TsFileEncodingException(
                         String.format("data type %s is not supported by FloatEncoder", dataType));
             }
         } else {
-            throw new TSFileEncodingException(
+            throw new TsFileEncodingException(
                     String.format("%s encoding is not supported by FloatEncoder", encodingType));
         }
     }
