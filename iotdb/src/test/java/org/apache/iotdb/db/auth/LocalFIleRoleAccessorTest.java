@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.db.auth;
 
-import org.apache.iotdb.db.auth.Role.LocalFileRoleAccessor;
+import org.apache.iotdb.db.auth.role.LocalFileRoleAccessor;
 import org.apache.iotdb.db.auth.entity.PathPrivilege;
 import org.apache.iotdb.db.auth.entity.Role;
 import org.apache.iotdb.db.utils.EnvironmentUtils;

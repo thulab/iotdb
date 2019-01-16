@@ -23,8 +23,7 @@ import java.io.InputStream;
 import java.time.ZoneId;
 import java.util.Properties;
 
-import org.apache.iotdb.db.engine.memcontrol.BasicMemController;
-import org.apache.iotdb.db.engine.memcontrol.BasicMemController;
+import org.apache.iotdb.db.engine.memcontrol.BasicMemController.ControllerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +147,7 @@ public class IoTDBDescriptor {
 
             conf.memControllerType = Integer
                     .parseInt(properties.getProperty("mem_controller_type", conf.memControllerType + "").trim());
-            conf.memControllerType = conf.memControllerType >= BasicMemController.CONTROLLER_TYPE.values().length ? 0
+            conf.memControllerType = conf.memControllerType >= ControllerType.values().length ? 0
                     : conf.memControllerType;
 
             conf.bufferwriteMetaSizeThreshold = Long.parseLong(properties

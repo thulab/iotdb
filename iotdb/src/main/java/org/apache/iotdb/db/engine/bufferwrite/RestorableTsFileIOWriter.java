@@ -138,7 +138,7 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
         metadatas.put(deviceId, new HashMap<>());
       }
       for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
-        String measurementId = chunkMetaData.getMeasurementUID();
+        String measurementId = chunkMetaData.getMeasurementUid();
         if (!metadatas.get(deviceId).containsKey(measurementId)) {
           metadatas.get(deviceId).put(measurementId, new ArrayList<>());
         }
@@ -265,7 +265,7 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
     if (!append.isEmpty()) {
       for (ChunkGroupMetaData rowGroupMetaData : append) {
         for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
-          addInsertMetadata(rowGroupMetaData.getDeviceID(), chunkMetaData.getMeasurementUID(),
+          addInsertMetadata(rowGroupMetaData.getDeviceID(), chunkMetaData.getMeasurementUid(),
               chunkMetaData);
         }
       }

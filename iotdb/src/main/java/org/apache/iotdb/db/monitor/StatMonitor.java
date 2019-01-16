@@ -95,7 +95,7 @@ public class StatMonitor implements IService {
    * @param curTime TODO need to be fixed because it may contain overflow
    * @return TSRecord contains the DataPoints of a statGroupDeltaName
    */
-  public static TSRecord convertToTsRecord(HashMap<String, AtomicLong> hashMap,
+  public static TSRecord convertToTSRecord(HashMap<String, AtomicLong> hashMap,
       String statGroupDeltaName, long curTime) {
     TSRecord tsRecord = new TSRecord(curTime, statGroupDeltaName);
     tsRecord.dataPointList = new ArrayList<DataPoint>() {
@@ -244,7 +244,7 @@ public class StatMonitor implements IService {
     } else {
       long currentTimeMillis = System.currentTimeMillis();
       HashMap<String, TSRecord> hashMap = new HashMap<>();
-      TSRecord tsRecord = convertToTsRecord(
+      TSRecord tsRecord = convertToTSRecord(
           MonitorConstants.initValues(MonitorConstants.FILENODE_PROCESSOR_CONST), queryPath,
           currentTimeMillis);
       hashMap.put(queryPath, tsRecord);
@@ -262,7 +262,7 @@ public class StatMonitor implements IService {
       for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
         if (entry.getValue() == null) {
           tsRecordHashMap.put(entry.getKey(),
-              convertToTsRecord(
+              convertToTSRecord(
                   MonitorConstants.initValues(MonitorConstants.FILENODE_PROCESSOR_CONST),
                   entry.getKey(), currentTimeMillis));
         } else {

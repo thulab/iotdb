@@ -13,23 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.iotdb.web.grafana.service;
+package org.apache.iotdb.db.auth.role;
 
-import org.apache.iotdb.tsfile.utils.Pair;
-import org.apache.iotdb.web.grafana.bean.TimeValues;
+public class LocalFileRoleManager extends BasicRoleManager {
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
-/**
- * Created by dell on 2017/7/17.
- */
-public interface DBConnectService {
-
-    int testConnection();
-
-    List<TimeValues> querySeries(String s, Pair<ZonedDateTime, ZonedDateTime> timeRange);
-
-    List<String> getMetaData();
-
+    public LocalFileRoleManager(String roleDirPath) {
+        super(new LocalFileRoleAccessor(roleDirPath));
+    }
 }

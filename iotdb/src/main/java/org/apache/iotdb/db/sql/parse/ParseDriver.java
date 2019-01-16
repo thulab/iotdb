@@ -126,21 +126,21 @@ public class ParseDriver {
     }
 
     /**
-     * Tree adaptor for making antlr return ASTNodes instead of CommonTree nodes so that the graph walking algorithms
+     * Tree adaptor for making antlr return AstNodes instead of CommonTree nodes so that the graph walking algorithms
      * and the rules framework defined in ql.lib can be used with the AST Nodes.
      */
     public static final TreeAdaptor adaptor = new CommonTreeAdaptor() {
         /**
-         * Creates an ASTNode for the given token. The ASTNode is a wrapper around antlr's CommonTree class that
+         * Creates an AstNode for the given token. The AstNode is a wrapper around antlr's CommonTree class that
          * implements the Node interface.
          *
          * @param payload
          *            The token.
-         * @return Object (which is actually an ASTNode) for the token.
+         * @return Object (which is actually an AstNode) for the token.
          */
         @Override
         public Object create(Token payload) {
-            return new ASTNode(payload);
+            return new AstNode(payload);
         }
 
         @Override
@@ -151,7 +151,7 @@ public class ParseDriver {
 
         @Override
         public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
-            return new ASTErrorNode(input, start, stop, e);
+            return new AstErrorNode(input, start, stop, e);
         };
 
     };
@@ -168,7 +168,7 @@ public class ParseDriver {
      *
      * @return parsed AST
      */
-    public ASTNode parse(String command) throws ParseException {
+    public AstNode parse(String command) throws ParseException {
         // if (LOG.isDebugEnabled()) {
         // LOG.debug("TSParsing command: " + command);
         // }
@@ -196,7 +196,7 @@ public class ParseDriver {
             throw new ParseException(parser.errors);
         }
 
-        ASTNode tree = (ASTNode) r.getTree();
+        AstNode tree = (AstNode) r.getTree();
         tree.setUnknownTokenBoundaries();
         return tree;
     }

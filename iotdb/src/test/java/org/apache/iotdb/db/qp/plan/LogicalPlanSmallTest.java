@@ -29,7 +29,7 @@ import org.apache.iotdb.db.qp.strategy.LogicalGenerator;
 import org.apache.iotdb.db.qp.strategy.optimizer.ConcatPathOptimizer;
 import org.apache.iotdb.db.qp.utils.MemIntQpExecutor;
 import org.apache.iotdb.db.sql.ParseGenerator;
-import org.apache.iotdb.db.sql.parse.ASTNode;
+import org.apache.iotdb.db.sql.parse.AstNode;
 import org.apache.iotdb.db.sql.parse.ParseException;
 import org.apache.iotdb.db.sql.parse.ParseUtils;
 import org.apache.iotdb.tsfile.common.constant.SystemConstant;
@@ -52,14 +52,14 @@ public class LogicalPlanSmallTest {
     @Test
     public void testSlimit1() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select * from root.vehicle.d1 where s1 < 20 and time <= now() slimit 10";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
         Assert.assertEquals(operator.getClass(), QueryOperator.class);
         Assert.assertEquals(((QueryOperator) operator).getSeriesLimit(), 10);
@@ -68,14 +68,14 @@ public class LogicalPlanSmallTest {
     @Test(expected = LogicalOperatorException.class)
     public void testSlimit2() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select * from root.vehicle.d1 where s1 < 20 and time <= now() slimit 1111111111111111111111";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
         // expected to throw LogicalOperatorException: SLIMIT <SN>: SN should be Int32.
     }
@@ -83,14 +83,14 @@ public class LogicalPlanSmallTest {
     @Test(expected = LogicalOperatorException.class)
     public void testSlimit3() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select * from root.vehicle.d1 where s1 < 20 and time <= now() slimit 0";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
         // expected to throw LogicalOperatorException: SLIMIT <SN>: SN must be a positive integer and can not be zero.
     }
@@ -98,14 +98,14 @@ public class LogicalPlanSmallTest {
     @Test
     public void testSoffset() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select * from root.vehicle.d1 where s1 < 20 and time <= now() slimit 10 soffset 1";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
         Assert.assertEquals(operator.getClass(), QueryOperator.class);
         Assert.assertEquals(((QueryOperator) operator).getSeriesLimit(), 10);
@@ -115,14 +115,14 @@ public class LogicalPlanSmallTest {
     @Test(expected = LogicalOptimizeException.class)
     public void testSlimitLogicalOptimize() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select s1 from root.vehicle.d1 where s1 < 20 and time <= now() slimit 10 soffset 1";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
 
         MemIntQpExecutor executor = new MemIntQpExecutor();
@@ -147,14 +147,14 @@ public class LogicalPlanSmallTest {
     @Test(expected = LogicalOperatorException.class)
     public void testLimit1() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select s1 from root.vehicle.d1 where s1 < 20 and time <= now() limit 111111111111111111111111";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
         // expected to throw LogicalOperatorException: LIMIT <N>: N should be Int32.
     }
@@ -162,14 +162,14 @@ public class LogicalPlanSmallTest {
     @Test(expected = LogicalOperatorException.class)
     public void testLimit2() throws QueryProcessorException, ArgsErrorException {
         String sqlStr = "select s1 from root.vehicle.d1 where s1 < 20 and time <= now() limit 0";
-        ASTNode astTree;
+        AstNode astTree;
         try {
             astTree = ParseGenerator.generateAST(sqlStr); // parse string to ASTTree
         } catch (ParseException e) {
             // e.printStackTrace();
             throw new IllegalASTFormatException("parsing error,statement: " + sqlStr + " .message:" + e.getMessage());
         }
-        ASTNode astNode = ParseUtils.findRootNonNullToken(astTree);
+        AstNode astNode = ParseUtils.findRootNonNullToken(astTree);
         RootOperator operator = generator.getLogicalPlan(astNode);
         // expected to throw LogicalOperatorException: LIMIT <N>: N must be a positive integer and can not be zero.
     }

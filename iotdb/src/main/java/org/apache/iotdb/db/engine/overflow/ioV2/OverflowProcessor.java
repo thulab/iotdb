@@ -45,15 +45,6 @@ import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.Pair;
 import org.apache.iotdb.tsfile.write.record.TSRecord;
 import org.apache.iotdb.tsfile.write.schema.FileSchema;
-import org.apache.iotdb.db.engine.bufferwrite.Action;
-import org.apache.iotdb.db.engine.bufferwrite.FileNodeConstants;
-import org.apache.iotdb.db.engine.memcontrol.BasicMemController;
-import org.apache.iotdb.db.engine.querycontext.MergeSeriesDataSource;
-import org.apache.iotdb.db.engine.querycontext.OverflowInsertFile;
-import org.apache.iotdb.db.engine.querycontext.OverflowSeriesDataSource;
-import org.apache.iotdb.db.exception.OverflowProcessorException;
-import org.apache.iotdb.db.writelog.manager.MultiFileLogNodeManager;
-import org.apache.iotdb.db.writelog.node.WriteLogNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,7 +211,7 @@ public class OverflowProcessor extends Processor {
         case DOUBLE:
             return BytesUtils.doubleToBytes(Double.valueOf(o));
         case TEXT:
-            return BytesUtils.StringToBytes(o);
+            return BytesUtils.stringToBytes(o);
         default:
             LOGGER.error("Unsupport data type: {}", type);
             throw new UnsupportedOperationException("Unsupport data type:" + type);

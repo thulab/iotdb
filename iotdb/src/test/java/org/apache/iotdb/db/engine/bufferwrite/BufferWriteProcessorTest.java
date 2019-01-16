@@ -30,10 +30,6 @@ import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.utils.Pair;
 import org.apache.iotdb.tsfile.write.writer.TsFileIOWriter;
-import org.apache.iotdb.db.engine.querycontext.ReadOnlyMemChunk;
-import org.apache.iotdb.db.exception.ProcessorException;
-import org.apache.iotdb.db.utils.FileSchemaUtils;
-import org.apache.iotdb.db.utils.TimeValuePair;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -144,7 +140,7 @@ public class BufferWriteProcessorTest {
         assertEquals(true, pair.left.isEmpty());
         assertEquals(1, pair.right.size());
         ChunkMetaData chunkMetaData = pair.right.get(0);
-        assertEquals(measurementId, chunkMetaData.getMeasurementUID());
+        assertEquals(measurementId, chunkMetaData.getMeasurementUid());
         assertEquals(dataType, chunkMetaData.getTsDataType());
         bufferWriteProcessor.close();
         assertEquals(false, restoreFile.exists());
@@ -171,7 +167,7 @@ public class BufferWriteProcessorTest {
         assertEquals(true, pair.left.isEmpty());
         assertEquals(1, pair.right.size());
         ChunkMetaData chunkMetaData = pair.right.get(0);
-        assertEquals(measurementId, chunkMetaData.getMeasurementUID());
+        assertEquals(measurementId, chunkMetaData.getMeasurementUid());
         assertEquals(dataType, chunkMetaData.getTsDataType());
         bufferWriteProcessor.close();
         bufferwrite.close();
@@ -203,7 +199,7 @@ public class BufferWriteProcessorTest {
         assertEquals(true, pair.left.isEmpty());
         assertEquals(1, pair.right.size());
         ChunkMetaData chunkMetaData = pair.right.get(0);
-        assertEquals(measurementId, chunkMetaData.getMeasurementUID());
+        assertEquals(measurementId, chunkMetaData.getMeasurementUid());
         assertEquals(dataType, chunkMetaData.getTsDataType());
         for (int i = 87; i <= 100; i++) {
             bufferwrite.write(deviceId, measurementId, i, dataType, String.valueOf(i));

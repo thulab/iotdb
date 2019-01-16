@@ -147,7 +147,7 @@ public class OverflowResource {
                     insertMetadatas.put(deviceId, new HashMap<>());
                 }
                 for (ChunkMetaData chunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
-                    String measurementId = chunkMetaData.getMeasurementUID();
+                    String measurementId = chunkMetaData.getMeasurementUid();
                     if (!insertMetadatas.get(deviceId).containsKey(measurementId)) {
                         insertMetadatas.get(deviceId).put(measurementId, new ArrayList<>());
                     }
@@ -213,7 +213,7 @@ public class OverflowResource {
         if (!appendInsertMetadatas.isEmpty()) {
             for (ChunkGroupMetaData rowGroupMetaData : appendInsertMetadatas) {
                 for (ChunkMetaData seriesChunkMetaData : rowGroupMetaData.getChunkMetaDataList()) {
-                    addInsertMetadata(rowGroupMetaData.getDeviceID(), seriesChunkMetaData.getMeasurementUID(),
+                    addInsertMetadata(rowGroupMetaData.getDeviceID(), seriesChunkMetaData.getMeasurementUid(),
                             seriesChunkMetaData);
                 }
             }

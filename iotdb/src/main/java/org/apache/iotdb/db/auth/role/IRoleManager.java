@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.iotdb.db.auth.Role;
+package org.apache.iotdb.db.auth.role;
 
 import org.apache.iotdb.db.auth.AuthException;
-import org.apache.iotdb.db.auth.entity.Role;
 import org.apache.iotdb.db.auth.entity.Role;
 
 import java.util.List;

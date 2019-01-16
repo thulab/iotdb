@@ -53,7 +53,7 @@ public class IoTDBConnection implements Connection {
         if (url == null) {
             throw new IoTDBURLException("Input url cannot be null");
         }
-        params = Utils.parseURL(url, info);
+        params = Utils.parseUrl(url, info);
 
         supportedProtocols.add(TSProtocolVersion.TSFILE_SERVICE_PROTOCOL_V1);
 

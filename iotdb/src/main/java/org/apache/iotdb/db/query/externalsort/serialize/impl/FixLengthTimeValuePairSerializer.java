@@ -55,7 +55,7 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
     private void writeHeader(TSDataType dataType) throws IOException {
         String typeInString = dataType.toString();
         outputStream.write(BytesUtils.intToBytes(typeInString.length()));
-        outputStream.write(BytesUtils.StringToBytes(typeInString));
+        outputStream.write(BytesUtils.stringToBytes(typeInString));
     }
 
     private void checkPath(String tmpFilePath) throws IOException {
@@ -142,7 +142,7 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
             public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
                 outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
                 outputStream.write(BytesUtils.intToBytes(tvPair.getValue().getBinary().getLength()));
-                outputStream.write(BytesUtils.StringToBytes(tvPair.getValue().getBinary().getStringValue()));
+                outputStream.write(BytesUtils.stringToBytes(tvPair.getValue().getBinary().getStringValue()));
             }
         }
     }
