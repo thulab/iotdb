@@ -101,7 +101,7 @@ public class LongRleDecoder extends RleDecoder {
     }
 
     @Override
-    protected void readNumberInRLE() throws IOException {
+    protected void readNumberInRle() throws IOException {
         currentValue = ReadWriteForEncodingUtils.readLongLittleEndianPaddedOnBitWidth(byteCache, bitWidth);
     }
 

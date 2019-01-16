@@ -17,7 +17,6 @@ package org.apache.iotdb.db.qp.constant;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.iotdb.db.sql.parse.TSParser;
-import org.apache.iotdb.db.sql.parse.TSParser;
 
 public class TSParserConstant {
 

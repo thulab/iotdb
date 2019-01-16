@@ -44,7 +44,8 @@
 // }
 //
 // @Override
-// public List<PrioritySeriesReader> executeWithGlobalTimeFilter(List<PrioritySeriesReader> readers) throws IOException
+// public List<PrioritySeriesReader> executeWithGlobalTimeFilter(List<PrioritySeriesReader> readers)
+// throws IOException
 // {
 // if (readers.size() < minExternalSortSourceCount) {
 // return readers;
@@ -72,7 +73,8 @@
 // i++;
 // }
 // StringBuilder tmpFilePath = new StringBuilder(baseDir).append(jodId).append("_").append(partId);
-// MultiSourceExternalSortJobPart part = new MultiSourceExternalSortJobPart(tmpFilePath.toString(), partGroup);
+// MultiSourceExternalSortJobPart part = new MultiSourceExternalSortJobPart(tmpFilePath.toString(),
+// partGroup);
 // tmpPartList.add(part);
 // partId++;
 // }

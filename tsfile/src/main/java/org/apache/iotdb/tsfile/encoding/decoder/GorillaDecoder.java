@@ -23,8 +23,6 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
-
 public abstract class GorillaDecoder extends Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(GorillaDecoder.class);
     protected static final int EOF = -1;

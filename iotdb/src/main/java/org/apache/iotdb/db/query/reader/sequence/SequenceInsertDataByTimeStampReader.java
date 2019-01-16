@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+//
 // package org.apache.iotdb.read.reader;
 //
 // import org.apache.iotdb.db.engine.filenode.IntervalFileNode;
@@ -33,9 +34,11 @@
 // import java.util.List;
 //
 /// **
-// * A reader for sequence insert data which can get the corresponding value of the specified time point.
+// * A reader for sequence insert data which can get the corresponding value of the specified time
+//    point.
 // */
-// public class SequenceInsertDataByTimeStampReader extends SequenceDataReader implements EngineReaderByTimeStamp {
+// public class SequenceInsertDataByTimeStampReader extends SequenceDataReader implements
+//     EngineReaderByTimeStamp {
 //
 // private long currentTimestamp;
 // private PriorityMergeReaderByTimestamp priorityMergeSortTimeValuePairReader;
@@ -44,31 +47,33 @@
 // throws IOException {
 // super(sortedSeriesDataSource);
 //
-// List<PrioritySeriesReaderByTimestamp> priorityTimeValuePairReaderByTimestamps = new ArrayList<>();
+// List<PrioritySeriesReaderByTimestamp> priorityTimeValuePairReaderByTimestamps =
+// new ArrayList<>();
 // int priority = 1;
 //
 // //data in sealedTsFiles and unSealedTsFile
 // if (sortedSeriesDataSource.getSealedTsFiles() != null) {
 // SealedTsFileWithTimeStampReader sealedTsFileWithTimeStampReader = new
 // SealedTsFileWithTimeStampReader(sortedSeriesDataSource.getSealedTsFiles());
-// priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(sealedTsFileWithTimeStampReader, new
-// PrioritySeriesReader.Priority(priority++)));
+// priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(
+//     sealedTsFileWithTimeStampReader, new PrioritySeriesReader.Priority(priority++)));
 // }
 // if (sortedSeriesDataSource.getUnsealedTsFile() != null) {
 // UnSealedTsFileWithTimeStampReader unSealedTsFileWithTimeStampReader = new
 // UnSealedTsFileWithTimeStampReader(sortedSeriesDataSource.getUnsealedTsFile());
-// priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(unSealedTsFileWithTimeStampReader,
-// new PrioritySeriesReader.Priority(priority++)));
+// priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(
+//     unSealedTsFileWithTimeStampReader, new PrioritySeriesReader.Priority(priority++)));
 // }
 // //data in memTable
 // if (sortedSeriesDataSource.hasRawChunk()) {
 // MemChunkReaderByTimestamp rawSeriesChunkReaderByTimestamp = new
 // MemChunkReaderByTimestamp(sortedSeriesDataSource.getReadableMemChunk());
-// priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(rawSeriesChunkReaderByTimestamp, new
-// PrioritySeriesReader.Priority(priority++)));
+// priorityTimeValuePairReaderByTimestamps.add(new PrioritySeriesReaderByTimestamp(
+//     rawSeriesChunkReaderByTimestamp, new PrioritySeriesReader.Priority(priority++)));
 // }
 //
-// priorityMergeSortTimeValuePairReader = new PriorityMergeReaderByTimestamp(priorityTimeValuePairReaderByTimestamps);
+// priorityMergeSortTimeValuePairReader = new PriorityMergeReaderByTimestamp(
+//     priorityTimeValuePairReaderByTimestamps);
 // currentTimestamp = Long.MIN_VALUE;
 // }
 //
@@ -84,7 +89,8 @@
 //
 // /**
 // * @param timestamp
-// * @return If there is no TimeValuePair whose timestamp equals to given timestamp, then return null.
+// * @return If there is no TimeValuePair whose timestamp equals to given timestamp,
+// * then return null.
 // * @throws IOException
 // */
 // @Override
@@ -98,7 +104,8 @@
 // this.currentTimestamp = currentTimestamp;
 // }
 //
-// private class SealedTsFileWithTimeStampReader extends SequenceDataReader.SealedTsFilesReader implements
+// private class SealedTsFileWithTimeStampReader extends SequenceDataReader.SealedTsFilesReader
+//     implements
 // EngineReaderByTimeStamp {
 //
 // private boolean hasCacheLastTimeValuePair;
@@ -200,8 +207,8 @@
 // }
 // }
 //
-// protected class UnSealedTsFileWithTimeStampReader extends SequenceDataReader.UnSealedTsFileReader implements
-// EngineReaderByTimeStamp {
+// protected class UnSealedTsFileWithTimeStampReader extends SequenceDataReader.
+// UnSealedTsFileReader implements EngineReaderByTimeStamp {
 //
 // public UnSealedTsFileWithTimeStampReader(UnsealedTsFile unsealedTsFile) throws IOException {
 // super(unsealedTsFile);
@@ -218,8 +225,10 @@
 // }
 //
 // protected void initSingleTsFileReader(ITsRandomAccessFileReader randomAccessFileReader,
-// SeriesChunkLoader seriesChunkLoader, List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList) {
-// tsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader, seriesChunkLoader,
+// SeriesChunkLoader seriesChunkLoader,
+//     List<EncodedSeriesChunkDescriptor> encodedSeriesChunkDescriptorList) {
+// tsFileReader = new SeriesReaderFromSingleFileByTimestampImpl(randomAccessFileReader,
+//     seriesChunkLoader,
 // encodedSeriesChunkDescriptorList);
 // }
 //
