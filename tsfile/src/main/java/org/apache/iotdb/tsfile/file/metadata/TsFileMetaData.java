@@ -42,8 +42,8 @@ public class TsFileMetaData {
   private int currentVersion;
 
   /**
-   * String for application that wrote this file. This should be in the format <Application>
-   * version <App Version>(build <App Build Hash>). e.g. impala version 1.0 (build SHA-1_hash_code)
+   * String for application that wrote this file. This should be in the format [Application]
+   * version [App Version](build [App Build Hash]). e.g. impala version 1.0 (build SHA-1_hash_code)
    */
   private String createdBy;
 
