@@ -38,6 +38,7 @@ public class UnSealedTsFileReader implements IReader {
 
   /**
    * Construct funtion for UnSealedTsFileReader.
+   *
    * @param unsealedTsFile -param to initial
    * @param filter -filter
    */
