@@ -15,14 +15,12 @@
  */
 package org.apache.iotdb.db.qp.strategy.optimizer;
 
-import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_AND;
-import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_OR;
+import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_AND;
+import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_OR;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
-import org.apache.iotdb.db.qp.logical.crud.FilterOperator;
 import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
 import org.apache.iotdb.db.qp.logical.crud.FilterOperator;
 

@@ -39,9 +39,6 @@ import org.apache.iotdb.tsfile.utils.Pair;
 import org.apache.iotdb.tsfile.write.record.TSRecord;
 import org.apache.iotdb.tsfile.write.record.datapoint.DataPoint;
 import org.apache.iotdb.tsfile.write.schema.FileSchema;
-import org.apache.iotdb.db.exception.BufferWriteProcessorException;
-import org.apache.iotdb.db.writelog.manager.MultiFileLogNodeManager;
-import org.apache.iotdb.db.writelog.node.WriteLogNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +56,7 @@ public class BufferWriteProcessor extends Processor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
 
     private FileSchema fileSchema;
-    // private RestorableTsFileIOWriter bufferWriteRestoreManager;
+    // private RestorableTsFileIoWriter bufferWriteRestoreManager;
 
     private volatile FlushStatus flushStatus = new FlushStatus();
     private volatile boolean isFlush;
@@ -69,7 +66,7 @@ public class BufferWriteProcessor extends Processor {
 
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
-    RestorableTsFileIOWriter writer;
+    RestorableTsFileIoWriter writer;
 
     private Action bufferwriteFlushAction;
     private Action bufferwriteCloseAction;
@@ -104,7 +101,7 @@ public class BufferWriteProcessor extends Processor {
         this.insertFilePath = new File(dataDir, fileName).getPath();
         bufferWriteRelativePath = processorName + File.separatorChar + fileName;
         try {
-            writer = new RestorableTsFileIOWriter(processorName, insertFilePath);
+            writer = new RestorableTsFileIoWriter(processorName, insertFilePath);
         } catch (IOException e) {
             throw new BufferWriteProcessorException(e);
         }

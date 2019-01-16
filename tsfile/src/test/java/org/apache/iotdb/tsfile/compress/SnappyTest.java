@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.compress;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class SnappyTest {
         Snappy.uncompress(compressed, uncompressedByteBuffer);
         System.out.println("decompression time cost:" + (System.currentTimeMillis() - time));
         System.out.println(uncompressedByteBuffer.remaining());
-        assert input.equals(ReadWriteIOUtils.readStringFromDirectByteBuffer(uncompressedByteBuffer));
+        assert input.equals(ReadWriteIoUtils.readStringFromDirectByteBuffer(uncompressedByteBuffer));
     }
 
 }

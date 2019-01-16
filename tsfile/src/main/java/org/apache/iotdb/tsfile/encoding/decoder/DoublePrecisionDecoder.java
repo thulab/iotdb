@@ -18,12 +18,10 @@ package org.apache.iotdb.tsfile.encoding.decoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 
 /**
  * Decoder for value value using gorilla
@@ -42,7 +40,7 @@ public class DoublePrecisionDecoder extends GorillaDecoder {
             try {
                 int[] buf = new int[8];
                 for (int i = 0; i < 8; i++)
-                    buf[i] = ReadWriteIOUtils.read(buffer);
+                    buf[i] = ReadWriteIoUtils.read(buffer);
                 long res = 0L;
                 for (int i = 0; i < 8; i++) {
                     res += ((long) buf[i] << (i * 8));

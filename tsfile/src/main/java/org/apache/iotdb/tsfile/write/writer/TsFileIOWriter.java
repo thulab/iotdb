@@ -32,19 +32,9 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.file.metadata.statistics.Statistics;
 import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.PublicBAOS;
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.write.schema.FileSchema;
 import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
-import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
-import org.apache.iotdb.tsfile.common.constant.StatisticConstant;
-import org.apache.iotdb.tsfile.file.MetaMarker;
-import org.apache.iotdb.tsfile.file.footer.ChunkGroupFooter;
-import org.apache.iotdb.tsfile.file.header.ChunkHeader;
-import org.apache.iotdb.tsfile.file.metadata.*;
-import org.apache.iotdb.tsfile.file.metadata.enums.CompressionType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
-import org.apache.iotdb.tsfile.file.metadata.statistics.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,7 +207,7 @@ public class TsFileIOWriter {
     public void endFile(FileSchema schema) throws IOException {
 
         // serialize the Separator of MetaData and ChunkGroups
-        ReadWriteIOUtils.write(MetaMarker.Separator, out.wrapAsStream());
+        ReadWriteIoUtils.write(MetaMarker.Separator, out.wrapAsStream());
 
         // get all measurementSchema of this TsFile
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
@@ -237,7 +227,7 @@ public class TsFileIOWriter {
         LOG.debug("finish flushing the footer {}, file pos:{}", tsFileMetaData, out.getPosition());
 
         // write TsFileMetaData size
-        ReadWriteIOUtils.write(size, out.wrapAsStream());// write the size of the file metadata.
+        ReadWriteIoUtils.write(size, out.wrapAsStream());// write the size of the file metadata.
 
         // write magic string
         out.write(magicStringBytes);

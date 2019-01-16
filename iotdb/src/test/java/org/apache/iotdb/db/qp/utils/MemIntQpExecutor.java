@@ -16,7 +16,7 @@
 package org.apache.iotdb.db.qp.utils;
 
 import org.apache.iotdb.db.exception.ProcessorException;
-import org.apache.iotdb.db.qp.constant.SQLConstant;
+import org.apache.iotdb.db.qp.constant.SqlConstant;
 import org.apache.iotdb.db.qp.executor.QueryProcessExecutor;
 import org.apache.iotdb.db.qp.physical.PhysicalPlan;
 import org.apache.iotdb.db.qp.physical.crud.DeletePlan;
@@ -56,9 +56,9 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
 
     @Override
     public TSDataType getSeriesType(Path fullPath) {
-        if (fullPath.equals(SQLConstant.RESERVED_TIME))
+        if (fullPath.equals(SqlConstant.RESERVED_TIME))
             return TSDataType.INT64;
-        if (fullPath.equals(SQLConstant.RESERVED_FREQ))
+        if (fullPath.equals(SqlConstant.RESERVED_FREQ))
             return TSDataType.FLOAT;
         if (fakeAllPaths != null && fakeAllPaths.containsKey(fullPath.toString()))
             return TSDataType.INT32;
@@ -103,7 +103,7 @@ public class MemIntQpExecutor extends QueryProcessExecutor {
 
     @Override
     public boolean judgePathExists(Path path) {
-        if (SQLConstant.isReservedPath(path))
+        if (SqlConstant.isReservedPath(path))
             return true;
         if (fakeAllPaths != null) {
             return fakeAllPaths.containsKey(path.toString());

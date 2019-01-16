@@ -22,8 +22,6 @@ import org.apache.iotdb.db.qp.physical.crud.InsertPlan;
 import org.apache.iotdb.db.qp.physical.crud.UpdatePlan;
 import org.apache.iotdb.db.writelog.transfer.PhysicalPlanLogTransfer;
 import org.apache.iotdb.tsfile.read.common.Path;
-import org.apache.iotdb.db.exception.WALOverSizedException;
-import org.apache.iotdb.db.writelog.transfer.PhysicalPlanLogTransfer;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -63,7 +61,7 @@ public class LogWriterReaderTest {
         writer.write(logs);
         try {
             writer.close();
-            RAFLogReader reader = new RAFLogReader(new File(filePath));
+            RafLogReader reader = new RafLogReader(new File(filePath));
             List<byte[]> res = new ArrayList<>();
             while (reader.hasNext()) {
                 res.add(PhysicalPlanLogTransfer.operatorToLog(reader.next()));

@@ -15,8 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,12 +133,12 @@ public class ChunkMetaData {
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIOUtils.write(measurementUID, outputStream);
-        byteLen += ReadWriteIOUtils.write(offsetOfChunkHeader, outputStream);
-        byteLen += ReadWriteIOUtils.write(numOfPoints, outputStream);
-        byteLen += ReadWriteIOUtils.write(startTime, outputStream);
-        byteLen += ReadWriteIOUtils.write(endTime, outputStream);
-        byteLen += ReadWriteIOUtils.write(tsDataType, outputStream);
+        byteLen += ReadWriteIoUtils.write(measurementUID, outputStream);
+        byteLen += ReadWriteIoUtils.write(offsetOfChunkHeader, outputStream);
+        byteLen += ReadWriteIoUtils.write(numOfPoints, outputStream);
+        byteLen += ReadWriteIoUtils.write(startTime, outputStream);
+        byteLen += ReadWriteIoUtils.write(endTime, outputStream);
+        byteLen += ReadWriteIoUtils.write(tsDataType, outputStream);
 
         if (valuesStatistics == null)
             byteLen += TsDigest.serializeNullTo(outputStream);
@@ -153,12 +152,12 @@ public class ChunkMetaData {
     public int serializeTo(ByteBuffer buffer) {
         int byteLen = 0;
 
-        byteLen += ReadWriteIOUtils.write(measurementUID, buffer);
-        byteLen += ReadWriteIOUtils.write(offsetOfChunkHeader, buffer);
-        byteLen += ReadWriteIOUtils.write(numOfPoints, buffer);
-        byteLen += ReadWriteIOUtils.write(startTime, buffer);
-        byteLen += ReadWriteIOUtils.write(endTime, buffer);
-        byteLen += ReadWriteIOUtils.write(tsDataType, buffer);
+        byteLen += ReadWriteIoUtils.write(measurementUID, buffer);
+        byteLen += ReadWriteIoUtils.write(offsetOfChunkHeader, buffer);
+        byteLen += ReadWriteIoUtils.write(numOfPoints, buffer);
+        byteLen += ReadWriteIoUtils.write(startTime, buffer);
+        byteLen += ReadWriteIoUtils.write(endTime, buffer);
+        byteLen += ReadWriteIoUtils.write(tsDataType, buffer);
 
         if (valuesStatistics == null)
             byteLen += TsDigest.serializeNullTo(buffer);
@@ -172,15 +171,15 @@ public class ChunkMetaData {
     public static ChunkMetaData deserializeFrom(InputStream inputStream) throws IOException {
         ChunkMetaData chunkMetaData = new ChunkMetaData();
 
-        chunkMetaData.measurementUID = ReadWriteIOUtils.readString(inputStream);
+        chunkMetaData.measurementUID = ReadWriteIoUtils.readString(inputStream);
 
-        chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(inputStream);
+        chunkMetaData.offsetOfChunkHeader = ReadWriteIoUtils.readLong(inputStream);
 
-        chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(inputStream);
-        chunkMetaData.startTime = ReadWriteIOUtils.readLong(inputStream);
-        chunkMetaData.endTime = ReadWriteIOUtils.readLong(inputStream);
+        chunkMetaData.numOfPoints = ReadWriteIoUtils.readLong(inputStream);
+        chunkMetaData.startTime = ReadWriteIoUtils.readLong(inputStream);
+        chunkMetaData.endTime = ReadWriteIoUtils.readLong(inputStream);
 
-        chunkMetaData.tsDataType = ReadWriteIOUtils.readDataType(inputStream);
+        chunkMetaData.tsDataType = ReadWriteIoUtils.readDataType(inputStream);
 
         chunkMetaData.valuesStatistics = TsDigest.deserializeFrom(inputStream);
 
@@ -190,12 +189,12 @@ public class ChunkMetaData {
     public static ChunkMetaData deserializeFrom(ByteBuffer buffer) {
         ChunkMetaData chunkMetaData = new ChunkMetaData();
 
-        chunkMetaData.measurementUID = ReadWriteIOUtils.readString(buffer);
-        chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(buffer);
-        chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(buffer);
-        chunkMetaData.startTime = ReadWriteIOUtils.readLong(buffer);
-        chunkMetaData.endTime = ReadWriteIOUtils.readLong(buffer);
-        chunkMetaData.tsDataType = ReadWriteIOUtils.readDataType(buffer);
+        chunkMetaData.measurementUID = ReadWriteIoUtils.readString(buffer);
+        chunkMetaData.offsetOfChunkHeader = ReadWriteIoUtils.readLong(buffer);
+        chunkMetaData.numOfPoints = ReadWriteIoUtils.readLong(buffer);
+        chunkMetaData.startTime = ReadWriteIoUtils.readLong(buffer);
+        chunkMetaData.endTime = ReadWriteIoUtils.readLong(buffer);
+        chunkMetaData.tsDataType = ReadWriteIoUtils.readDataType(buffer);
 
         chunkMetaData.valuesStatistics = TsDigest.deserializeFrom(buffer);
 

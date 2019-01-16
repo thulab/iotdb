@@ -18,7 +18,7 @@ package org.apache.iotdb.tsfile.read;
 import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 import org.apache.iotdb.tsfile.read.reader.DefaultTsFileInput;
 import org.apache.iotdb.tsfile.read.reader.TsFileInput;
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.compress.UnCompressor;
 import org.apache.iotdb.tsfile.file.footer.ChunkGroupFooter;
 import org.apache.iotdb.tsfile.file.header.ChunkHeader;
@@ -30,28 +30,10 @@ import org.apache.iotdb.tsfile.file.metadata.TsFileMetaData;
 import org.apache.iotdb.tsfile.file.metadata.enums.CompressionType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.read.common.Chunk;
-import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
-import org.apache.iotdb.tsfile.compress.UnCompressor;
-import org.apache.iotdb.tsfile.file.footer.ChunkGroupFooter;
-import org.apache.iotdb.tsfile.file.header.ChunkHeader;
-import org.apache.iotdb.tsfile.file.header.PageHeader;
-import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
-import org.apache.iotdb.tsfile.file.metadata.TsDeviceMetadata;
-import org.apache.iotdb.tsfile.file.metadata.TsDeviceMetadataIndex;
-import org.apache.iotdb.tsfile.file.metadata.TsFileMetaData;
-import org.apache.iotdb.tsfile.file.metadata.enums.CompressionType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
-import org.apache.iotdb.tsfile.read.common.Chunk;
-import org.apache.iotdb.tsfile.read.reader.DefaultTsFileInput;
-import org.apache.iotdb.tsfile.read.reader.TsFileInput;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 public class TsFileSequenceReader {
 
@@ -88,7 +70,7 @@ public class TsFileSequenceReader {
         tsFileInput.read(metadataSize, tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES);
         metadataSize.flip();
         // read file metadata size and position
-        fileMetadataSize = ReadWriteIOUtils.readInt(metadataSize);
+        fileMetadataSize = ReadWriteIoUtils.readInt(metadataSize);
         fileMetadataPos = tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES - fileMetadataSize;
         // skip the magic header
         tsFileInput.position(TSFileConfig.MAGIC_STRING.length());
@@ -308,7 +290,7 @@ public class TsFileSequenceReader {
      */
     public byte readMarker() throws IOException {
         markerBuffer.clear();
-        ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), markerBuffer);
+        ReadWriteIoUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), markerBuffer);
         markerBuffer.flip();
         return markerBuffer.get();
     }
@@ -339,9 +321,9 @@ public class TsFileSequenceReader {
     private ByteBuffer readData(long position, int size) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(size);
         if (position == -1) {
-            ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
+            ReadWriteIoUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer);
         } else {
-            ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer, position, size);
+            ReadWriteIoUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), buffer, position, size);
         }
         buffer.flip();
         return buffer;
@@ -351,6 +333,7 @@ public class TsFileSequenceReader {
      * notice, the target bytebuffer are not flipped.
      */
     public int readRaw(long position, int length, ByteBuffer target) throws IOException {
-        return ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), target, position, length);
+        return ReadWriteIoUtils
+            .readAsPossible(tsFileInput.wrapAsFileChannel(), target, position, length);
     }
 }

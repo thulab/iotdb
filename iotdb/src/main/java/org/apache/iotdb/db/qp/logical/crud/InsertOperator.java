@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * this class extends {@code RootOperator} and process insert statement
  */
-public class InsertOperator extends SFWOperator {
+public class InsertOperator extends SfwOperator {
     private long time;
     private List<String> measurementList;
     private List<String> valueList;

@@ -16,7 +16,7 @@
 package org.apache.iotdb.db.qp.strategy;
 
 import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
-import org.apache.iotdb.db.qp.constant.SQLConstant;
+import org.apache.iotdb.db.qp.constant.SqlConstant;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class LogicalGeneratorTest {
 
     @Test
     public void testParseTimeFormatNow() throws LogicalOperatorException {
-        long now = generator.parseTimeFormat(SQLConstant.NOW_FUNC);
+        long now = generator.parseTimeFormat(SqlConstant.NOW_FUNC);
         for (int i = 0; i <= 12; i++) {
             ZoneOffset offset1, offset2;
             if (i < 10) {

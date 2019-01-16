@@ -17,9 +17,8 @@ package org.apache.iotdb.tsfile.encoding.decoder;
 
 import org.apache.iotdb.tsfile.exception.encoding.TSFileDecodingException;
 import org.apache.iotdb.tsfile.utils.Binary;
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class PlainDecoder extends Decoder {
 
     @Override
     public boolean readBoolean(ByteBuffer buffer) {
-        int ch1 = ReadWriteIOUtils.read(buffer);
+        int ch1 = ReadWriteIoUtils.read(buffer);
         if (ch1 == 0) {
             return false;
         } else {
@@ -53,8 +52,8 @@ public class PlainDecoder extends Decoder {
 
     @Override
     public short readShort(ByteBuffer buffer) {
-        int ch1 = ReadWriteIOUtils.read(buffer);
-        int ch2 = ReadWriteIOUtils.read(buffer);
+        int ch1 = ReadWriteIoUtils.read(buffer);
+        int ch2 = ReadWriteIoUtils.read(buffer);
         if (this.endianType == EndianType.LITTLE_ENDIAN) {
             return (short) ((ch2 << 8) + ch1);
         } else {
@@ -65,10 +64,10 @@ public class PlainDecoder extends Decoder {
 
     @Override
     public int readInt(ByteBuffer buffer) {
-        int ch1 = ReadWriteIOUtils.read(buffer);
-        int ch2 = ReadWriteIOUtils.read(buffer);
-        int ch3 = ReadWriteIOUtils.read(buffer);
-        int ch4 = ReadWriteIOUtils.read(buffer);
+        int ch1 = ReadWriteIoUtils.read(buffer);
+        int ch2 = ReadWriteIoUtils.read(buffer);
+        int ch3 = ReadWriteIoUtils.read(buffer);
+        int ch4 = ReadWriteIoUtils.read(buffer);
         if (this.endianType == EndianType.LITTLE_ENDIAN) {
             return ch1 + (ch2 << 8) + (ch3 << 16) + (ch4 << 24);
         } else {
@@ -81,7 +80,7 @@ public class PlainDecoder extends Decoder {
     public long readLong(ByteBuffer buffer) {
         int[] buf = new int[8];
         for (int i = 0; i < 8; i++)
-            buf[i] = ReadWriteIOUtils.read(buffer);
+            buf[i] = ReadWriteIoUtils.read(buffer);
 
         Long res = 0L;
         for (int i = 0; i < 8; i++) {

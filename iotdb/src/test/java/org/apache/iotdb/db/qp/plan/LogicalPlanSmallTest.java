@@ -24,7 +24,7 @@ import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
 import org.apache.iotdb.db.exception.qp.QueryProcessorException;
 import org.apache.iotdb.db.qp.logical.RootOperator;
 import org.apache.iotdb.db.qp.logical.crud.QueryOperator;
-import org.apache.iotdb.db.qp.logical.crud.SFWOperator;
+import org.apache.iotdb.db.qp.logical.crud.SfwOperator;
 import org.apache.iotdb.db.qp.strategy.LogicalGenerator;
 import org.apache.iotdb.db.qp.strategy.optimizer.ConcatPathOptimizer;
 import org.apache.iotdb.db.qp.utils.MemIntQpExecutor;
@@ -35,11 +35,6 @@ import org.apache.iotdb.db.sql.parse.ParseUtils;
 import org.apache.iotdb.tsfile.common.constant.SystemConstant;
 import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.utils.StringContainer;
-import org.apache.iotdb.db.exception.ArgsErrorException;
-import org.apache.iotdb.db.qp.logical.RootOperator;
-import org.apache.iotdb.db.qp.logical.crud.QueryOperator;
-import org.apache.iotdb.db.qp.logical.crud.SFWOperator;
-import org.apache.iotdb.db.qp.utils.MemIntQpExecutor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -144,7 +139,7 @@ public class LogicalPlanSmallTest {
         executor.insert(path3, 10, "10");
         executor.insert(path4, 10, "10");
         ConcatPathOptimizer concatPathOptimizer = new ConcatPathOptimizer(executor);
-        operator = (SFWOperator) concatPathOptimizer.transform(operator);
+        operator = (SfwOperator) concatPathOptimizer.transform(operator);
         // expected to throw LogicalOptimizeException: Wrong use of SLIMIT: SLIMIT is not allowed to be used with
         // complete paths.
     }

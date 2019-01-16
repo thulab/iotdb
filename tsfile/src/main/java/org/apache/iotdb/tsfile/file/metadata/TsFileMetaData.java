@@ -15,10 +15,9 @@
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
-import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,23 +131,23 @@ public class TsFileMetaData {
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIOUtils.write(deviceIndexMap.size(), outputStream);
+        byteLen += ReadWriteIoUtils.write(deviceIndexMap.size(), outputStream);
         for (Map.Entry<String, TsDeviceMetadataIndex> entry : deviceIndexMap.entrySet()) {
-            byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream);
+            byteLen += ReadWriteIoUtils.write(entry.getKey(), outputStream);
             byteLen += entry.getValue().serializeTo(outputStream);
         }
 
-        byteLen += ReadWriteIOUtils.write(measurementSchema.size(), outputStream);
+        byteLen += ReadWriteIoUtils.write(measurementSchema.size(), outputStream);
         for (Map.Entry<String, MeasurementSchema> entry : measurementSchema.entrySet()) {
-            byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream);
+            byteLen += ReadWriteIoUtils.write(entry.getKey(), outputStream);
             byteLen += entry.getValue().serializeTo(outputStream);
         }
 
-        byteLen += ReadWriteIOUtils.write(currentVersion, outputStream);
+        byteLen += ReadWriteIoUtils.write(currentVersion, outputStream);
 
-        byteLen += ReadWriteIOUtils.writeIsNull(createdBy, outputStream);
+        byteLen += ReadWriteIoUtils.writeIsNull(createdBy, outputStream);
         if (createdBy != null)
-            byteLen += ReadWriteIOUtils.write(createdBy, outputStream);
+            byteLen += ReadWriteIoUtils.write(createdBy, outputStream);
 
         return byteLen;
     }
@@ -156,23 +155,23 @@ public class TsFileMetaData {
     public int serializeTo(ByteBuffer buffer) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIOUtils.write(deviceIndexMap.size(), buffer);
+        byteLen += ReadWriteIoUtils.write(deviceIndexMap.size(), buffer);
         for (Map.Entry<String, TsDeviceMetadataIndex> entry : deviceIndexMap.entrySet()) {
-            byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);
+            byteLen += ReadWriteIoUtils.write(entry.getKey(), buffer);
             byteLen += entry.getValue().serializeTo(buffer);
         }
 
-        byteLen += ReadWriteIOUtils.write(measurementSchema.size(), buffer);
+        byteLen += ReadWriteIoUtils.write(measurementSchema.size(), buffer);
         for (Map.Entry<String, MeasurementSchema> entry : measurementSchema.entrySet()) {
-            byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);
+            byteLen += ReadWriteIoUtils.write(entry.getKey(), buffer);
             byteLen += entry.getValue().serializeTo(buffer);
         }
 
-        byteLen += ReadWriteIOUtils.write(currentVersion, buffer);
+        byteLen += ReadWriteIoUtils.write(currentVersion, buffer);
 
-        byteLen += ReadWriteIOUtils.writeIsNull(createdBy, buffer);
+        byteLen += ReadWriteIoUtils.writeIsNull(createdBy, buffer);
         if (createdBy != null)
-            byteLen += ReadWriteIOUtils.write(createdBy, buffer);
+            byteLen += ReadWriteIoUtils.write(createdBy, buffer);
 
         return byteLen;
     }
@@ -180,35 +179,35 @@ public class TsFileMetaData {
     public static TsFileMetaData deserializeFrom(InputStream inputStream) throws IOException {
         TsFileMetaData fileMetaData = new TsFileMetaData();
 
-        int size = ReadWriteIOUtils.readInt(inputStream);
+        int size = ReadWriteIoUtils.readInt(inputStream);
         if (size > 0) {
             Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
             String key;
             TsDeviceMetadataIndex value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIOUtils.readString(inputStream);
+                key = ReadWriteIoUtils.readString(inputStream);
                 value = TsDeviceMetadataIndex.deserializeFrom(inputStream);
                 deviceMap.put(key, value);
             }
             fileMetaData.deviceIndexMap = deviceMap;
         }
 
-        size = ReadWriteIOUtils.readInt(inputStream);
+        size = ReadWriteIoUtils.readInt(inputStream);
         if (size > 0) {
             fileMetaData.measurementSchema = new HashMap<>();
             String key;
             MeasurementSchema value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIOUtils.readString(inputStream);
+                key = ReadWriteIoUtils.readString(inputStream);
                 value = MeasurementSchema.deserializeFrom(inputStream);
                 fileMetaData.measurementSchema.put(key, value);
             }
         }
 
-        fileMetaData.currentVersion = ReadWriteIOUtils.readInt(inputStream);
+        fileMetaData.currentVersion = ReadWriteIoUtils.readInt(inputStream);
 
-        if (ReadWriteIOUtils.readIsNull(inputStream))
-            fileMetaData.createdBy = ReadWriteIOUtils.readString(inputStream);
+        if (ReadWriteIoUtils.readIsNull(inputStream))
+            fileMetaData.createdBy = ReadWriteIoUtils.readString(inputStream);
 
         return fileMetaData;
     }
@@ -216,35 +215,35 @@ public class TsFileMetaData {
     public static TsFileMetaData deserializeFrom(ByteBuffer buffer) throws IOException {
         TsFileMetaData fileMetaData = new TsFileMetaData();
 
-        int size = ReadWriteIOUtils.readInt(buffer);
+        int size = ReadWriteIoUtils.readInt(buffer);
         if (size > 0) {
             Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
             String key;
             TsDeviceMetadataIndex value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIOUtils.readString(buffer);
+                key = ReadWriteIoUtils.readString(buffer);
                 value = TsDeviceMetadataIndex.deserializeFrom(buffer);
                 deviceMap.put(key, value);
             }
             fileMetaData.deviceIndexMap = deviceMap;
         }
 
-        size = ReadWriteIOUtils.readInt(buffer);
+        size = ReadWriteIoUtils.readInt(buffer);
         if (size > 0) {
             fileMetaData.measurementSchema = new HashMap<>();
             String key;
             MeasurementSchema value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIOUtils.readString(buffer);
+                key = ReadWriteIoUtils.readString(buffer);
                 value = MeasurementSchema.deserializeFrom(buffer);
                 fileMetaData.measurementSchema.put(key, value);
             }
         }
 
-        fileMetaData.currentVersion = ReadWriteIOUtils.readInt(buffer);
+        fileMetaData.currentVersion = ReadWriteIoUtils.readInt(buffer);
 
-        if (ReadWriteIOUtils.readIsNull(buffer))
-            fileMetaData.createdBy = ReadWriteIOUtils.readString(buffer);
+        if (ReadWriteIoUtils.readIsNull(buffer))
+            fileMetaData.createdBy = ReadWriteIoUtils.readString(buffer);
 
         return fileMetaData;
     }

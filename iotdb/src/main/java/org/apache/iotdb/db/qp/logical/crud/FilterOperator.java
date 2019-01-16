@@ -15,13 +15,13 @@
  */
 package org.apache.iotdb.db.qp.logical.crud;
 
-import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_AND;
-import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_OR;
+import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_AND;
+import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_OR;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.iotdb.db.qp.constant.SQLConstant;
+import org.apache.iotdb.db.qp.constant.SqlConstant;
 import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
 import org.apache.iotdb.db.exception.qp.QueryProcessorException;
 import org.apache.iotdb.db.qp.executor.QueryProcessExecutor;
@@ -58,13 +58,13 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
         childOperators = new ArrayList<>();
         this.tokenIntType = tokenType;
         isLeaf = false;
-        tokenSymbol = SQLConstant.tokenSymbol.get(tokenType);
+        tokenSymbol = SqlConstant.tokenSymbol.get(tokenType);
     }
 
     public void setTokenIntType(int intType) {
         this.tokenIntType = intType;
-        this.tokenName = SQLConstant.tokenNames.get(tokenIntType);
-        this.tokenSymbol = SQLConstant.tokenSymbol.get(tokenIntType);
+        this.tokenName = SqlConstant.tokenNames.get(tokenIntType);
+        this.tokenSymbol = SqlConstant.tokenSymbol.get(tokenIntType);
     }
 
     public FilterOperator(int tokenType, boolean isSingle) {
@@ -129,7 +129,7 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
                     break;
                 default:
                     throw new LogicalOperatorException("unknown binary tokenIntType:" + tokenIntType
-                            + ",maybe it means " + SQLConstant.tokenNames.get(tokenIntType));
+                            + ",maybe it means " + SqlConstant.tokenNames.get(tokenIntType));
                 }
             }
             return retFilter;
@@ -170,7 +170,7 @@ public class FilterOperator extends Operator implements Comparable<FilterOperato
                 break;
             default:
                 throw new LogicalOperatorException("unknown binary tokenIntType:" + tokenIntType + ",maybe it means "
-                        + SQLConstant.tokenNames.get(tokenIntType));
+                        + SqlConstant.tokenNames.get(tokenIntType));
             }
         }
         return new Pair<>(retFilter, path);

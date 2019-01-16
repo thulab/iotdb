@@ -31,7 +31,7 @@ import org.apache.iotdb.db.metadata.ColumnSchema;
 import org.apache.iotdb.db.metadata.MManager;
 import org.apache.iotdb.db.metadata.MNode;
 import org.apache.iotdb.db.monitor.MonitorConstants;
-import org.apache.iotdb.db.qp.constant.SQLConstant;
+import org.apache.iotdb.db.qp.constant.SqlConstant;
 import org.apache.iotdb.db.qp.logical.sys.AuthorOperator;
 import org.apache.iotdb.db.qp.logical.sys.MetadataOperator;
 import org.apache.iotdb.db.qp.logical.sys.PropertyOperator;
@@ -127,10 +127,10 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     public TSDataType getSeriesType(Path path) throws PathErrorException {
-        if (path.equals(SQLConstant.RESERVED_TIME)) {
+        if (path.equals(SqlConstant.RESERVED_TIME)) {
             return TSDataType.INT64;
         }
-        if (path.equals(SQLConstant.RESERVED_FREQ)) {
+        if (path.equals(SqlConstant.RESERVED_FREQ)) {
             return TSDataType.FLOAT;
         }
         return MManager.getInstance().getSeriesType(path.getFullPath());
@@ -138,7 +138,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
 
     @Override
     public boolean judgePathExists(Path path) {
-        if (SQLConstant.isReservedPath(path)) {
+        if (SqlConstant.isReservedPath(path)) {
             return true;
         }
         return MManager.getInstance().pathExist(path.getFullPath());
@@ -264,16 +264,16 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
     public static String checkValue(TSDataType dataType, String value) throws ProcessorException {
         if (dataType == TSDataType.BOOLEAN) {
             value = value.toLowerCase();
-            if (SQLConstant.BOOLEAN_FALSE_NUM.equals(value)) {
+            if (SqlConstant.BOOLEAN_FALSE_NUM.equals(value)) {
                 value = "false";
-            } else if (SQLConstant.BOOLEAN_TRUE_NUM.equals(value)) {
+            } else if (SqlConstant.BOOLEAN_TRUE_NUM.equals(value)) {
                 value = "true";
-            } else if (!SQLConstant.BOOLEN_TRUE.equals(value) && !SQLConstant.BOOLEN_FALSE.equals(value)) {
+            } else if (!SqlConstant.BOOLEN_TRUE.equals(value) && !SqlConstant.BOOLEN_FALSE.equals(value)) {
                 throw new ProcessorException("The BOOLEAN data type should be true/TRUE or false/FALSE");
             }
         } else if (dataType == TSDataType.TEXT) {
-            if ((value.startsWith(SQLConstant.QUOTE) && value.endsWith(SQLConstant.QUOTE))
-                    || (value.startsWith(SQLConstant.DQUOTE) && value.endsWith(SQLConstant.DQUOTE))) {
+            if ((value.startsWith(SqlConstant.QUOTE) && value.endsWith(SqlConstant.QUOTE))
+                    || (value.startsWith(SqlConstant.DQUOTE) && value.endsWith(SqlConstant.DQUOTE))) {
                 value = value.substring(1, value.length() - 1);
             } else {
                 throw new ProcessorException("The TEXT data type should be covered by \" or '");

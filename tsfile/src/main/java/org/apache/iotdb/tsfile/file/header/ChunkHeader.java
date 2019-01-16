@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.header;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.file.MetaMarker;
 import org.apache.iotdb.tsfile.file.metadata.enums.CompressionType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
@@ -86,28 +86,28 @@ public class ChunkHeader {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int length = 0;
-        length += ReadWriteIOUtils.write(MetaMarker.ChunkHeader, outputStream);
-        length += ReadWriteIOUtils.write(measurementID, outputStream);
-        length += ReadWriteIOUtils.write(dataSize, outputStream);
-        length += ReadWriteIOUtils.write(dataType, outputStream);
-        length += ReadWriteIOUtils.write(numOfPages, outputStream);
-        length += ReadWriteIOUtils.write(compressionType, outputStream);
-        length += ReadWriteIOUtils.write(encodingType, outputStream);
-        length += ReadWriteIOUtils.write(maxTombstoneTime, outputStream);
+        length += ReadWriteIoUtils.write(MetaMarker.ChunkHeader, outputStream);
+        length += ReadWriteIoUtils.write(measurementID, outputStream);
+        length += ReadWriteIoUtils.write(dataSize, outputStream);
+        length += ReadWriteIoUtils.write(dataType, outputStream);
+        length += ReadWriteIoUtils.write(numOfPages, outputStream);
+        length += ReadWriteIoUtils.write(compressionType, outputStream);
+        length += ReadWriteIoUtils.write(encodingType, outputStream);
+        length += ReadWriteIoUtils.write(maxTombstoneTime, outputStream);
         assert length == getSerializedSize();
         return length;
     }
 
     public int serializeTo(ByteBuffer buffer) {
         int length = 0;
-        length += ReadWriteIOUtils.write(MetaMarker.ChunkHeader, buffer);
-        length += ReadWriteIOUtils.write(measurementID, buffer);
-        length += ReadWriteIOUtils.write(dataSize, buffer);
-        length += ReadWriteIOUtils.write(dataType, buffer);
-        length += ReadWriteIOUtils.write(numOfPages, buffer);
-        length += ReadWriteIOUtils.write(compressionType, buffer);
-        length += ReadWriteIOUtils.write(encodingType, buffer);
-        length += ReadWriteIOUtils.write(maxTombstoneTime, buffer);
+        length += ReadWriteIoUtils.write(MetaMarker.ChunkHeader, buffer);
+        length += ReadWriteIoUtils.write(measurementID, buffer);
+        length += ReadWriteIoUtils.write(dataSize, buffer);
+        length += ReadWriteIoUtils.write(dataType, buffer);
+        length += ReadWriteIoUtils.write(numOfPages, buffer);
+        length += ReadWriteIoUtils.write(compressionType, buffer);
+        length += ReadWriteIoUtils.write(encodingType, buffer);
+        length += ReadWriteIoUtils.write(maxTombstoneTime, buffer);
         assert length == getSerializedSize();
         return length;
     }
@@ -126,13 +126,13 @@ public class ChunkHeader {
                 MetaMarker.handleUnexpectedMarker(marker);
         }
 
-        String measurementID = ReadWriteIOUtils.readString(inputStream);
-        int dataSize = ReadWriteIOUtils.readInt(inputStream);
-        TSDataType dataType = TSDataType.deserialize(ReadWriteIOUtils.readShort(inputStream));
-        int numOfPages = ReadWriteIOUtils.readInt(inputStream);
-        CompressionType type = ReadWriteIOUtils.readCompressionType(inputStream);
-        TSEncoding encoding = ReadWriteIOUtils.readEncoding(inputStream);
-        long maxTombstoneTime = ReadWriteIOUtils.readLong(inputStream);
+        String measurementID = ReadWriteIoUtils.readString(inputStream);
+        int dataSize = ReadWriteIoUtils.readInt(inputStream);
+        TSDataType dataType = TSDataType.deserialize(ReadWriteIoUtils.readShort(inputStream));
+        int numOfPages = ReadWriteIoUtils.readInt(inputStream);
+        CompressionType type = ReadWriteIoUtils.readCompressionType(inputStream);
+        TSEncoding encoding = ReadWriteIoUtils.readEncoding(inputStream);
+        long maxTombstoneTime = ReadWriteIoUtils.readLong(inputStream);
         return new ChunkHeader(measurementID, dataSize, dataType, type, encoding, numOfPages, maxTombstoneTime);
     }
 
@@ -143,7 +143,7 @@ public class ChunkHeader {
                 MetaMarker.handleUnexpectedMarker(marker);
         }
 
-        String measurementID = ReadWriteIOUtils.readString(byteBuffer);
+        String measurementID = ReadWriteIoUtils.readString(byteBuffer);
         return deserializePartFrom(measurementID, byteBuffer);
     }
 
@@ -157,19 +157,19 @@ public class ChunkHeader {
         int size = buffer.getInt();
         offset += Integer.BYTES;
         buffer = ByteBuffer.allocate(getSerializedSize(size));
-        ReadWriteIOUtils.readAsPossible(channel, offset, buffer);
+        ReadWriteIoUtils.readAsPossible(channel, offset, buffer);
         buffer.flip();
-        String measurementID = ReadWriteIOUtils.readStringWithoutLength(buffer, size);
+        String measurementID = ReadWriteIoUtils.readStringWithoutLength(buffer, size);
         return deserializePartFrom(measurementID, buffer);
     }
 
     private static ChunkHeader deserializePartFrom(String measurementID, ByteBuffer buffer) {
-        int dataSize = ReadWriteIOUtils.readInt(buffer);
-        TSDataType dataType = TSDataType.deserialize(ReadWriteIOUtils.readShort(buffer));
-        int numOfPages = ReadWriteIOUtils.readInt(buffer);
-        CompressionType type = ReadWriteIOUtils.readCompressionType(buffer);
-        TSEncoding encoding = ReadWriteIOUtils.readEncoding(buffer);
-        long maxTombstoneTime = ReadWriteIOUtils.readLong(buffer);
+        int dataSize = ReadWriteIoUtils.readInt(buffer);
+        TSDataType dataType = TSDataType.deserialize(ReadWriteIoUtils.readShort(buffer));
+        int numOfPages = ReadWriteIoUtils.readInt(buffer);
+        CompressionType type = ReadWriteIoUtils.readCompressionType(buffer);
+        TSEncoding encoding = ReadWriteIoUtils.readEncoding(buffer);
+        long maxTombstoneTime = ReadWriteIoUtils.readLong(buffer);
         return new ChunkHeader(measurementID, dataSize, dataType, type, encoding, numOfPages, maxTombstoneTime);
     }
 

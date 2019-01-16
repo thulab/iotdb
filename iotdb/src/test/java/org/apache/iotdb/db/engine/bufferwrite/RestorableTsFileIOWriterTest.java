@@ -32,9 +32,6 @@ import org.apache.iotdb.tsfile.utils.Pair;
 import org.apache.iotdb.tsfile.write.schema.FileSchema;
 import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
 import org.apache.iotdb.tsfile.write.writer.TsFileIOWriter;
-import org.apache.iotdb.db.engine.memtable.IMemTable;
-import org.apache.iotdb.db.engine.memtable.MemTableFlushUtil;
-import org.apache.iotdb.db.engine.memtable.PrimitiveMemTable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +51,7 @@ import static org.junit.Assert.fail;
 
 public class RestorableTsFileIOWriterTest {
 
-    private RestorableTsFileIOWriter writer;
+    private RestorableTsFileIoWriter writer;
     private String processorName = "processor";
     private String insertPath = "insertfile";
     private String restorePath = insertPath + ".restore";
@@ -72,7 +69,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testInitResource() throws IOException {
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
 
         Pair<Long, List<ChunkGroupMetaData>> pair = writer.readRestoreInfo();
         assertEquals(true, new File(restorePath).exists());
@@ -86,7 +83,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testAbnormalRecover() throws IOException {
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
         File insertFile = new File(insertPath);
         File restoreFile = new File(restorePath);
         FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
@@ -105,7 +102,7 @@ public class RestorableTsFileIOWriterTest {
         byte[] lastPositionBytes = BytesUtils.longToBytes(200);
         out.write(lastPositionBytes);
         out.close();
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
 
         assertEquals(true, insertFile.exists());
         assertEquals(200, insertFile.length());
@@ -131,13 +128,13 @@ public class RestorableTsFileIOWriterTest {
         out.write(lastPositionBytes);
         out.close();
 
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
         // writer.endFile(new FileSchema());
 
         assertEquals(true, insertFile.exists());
         assertEquals(true, restoreFile.exists());
 
-        RestorableTsFileIOWriter tempbufferwriteResource = new RestorableTsFileIOWriter(processorName, insertPath);
+        RestorableTsFileIoWriter tempbufferwriteResource = new RestorableTsFileIoWriter(processorName, insertPath);
 
         assertEquals(true, insertFile.exists());
         assertEquals(200, insertFile.length());
@@ -151,7 +148,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testWriteAndRecover() throws IOException {
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
         FileSchema schema = new FileSchema();
         schema.registerMeasurement(new MeasurementSchema("s1", TSDataType.INT32, TSEncoding.RLE));
         schema.registerMeasurement(new MeasurementSchema("s2", TSDataType.INT32, TSEncoding.RLE));
@@ -170,7 +167,7 @@ public class RestorableTsFileIOWriterTest {
         writer.getOutput().close();
 
         // recover
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
         writer.endFile(schema);
 
         TsFileSequenceReader reader = new TsFileSequenceReader(insertPath);
@@ -205,7 +202,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testFlushAndGetMetadata() throws IOException {
-        writer = new RestorableTsFileIOWriter(processorName, insertPath);
+        writer = new RestorableTsFileIoWriter(processorName, insertPath);
 
         assertEquals(0, writer.getMetadatas(MemTableTestUtils.deviceId0, MemTableTestUtils.measurementId0,
                 MemTableTestUtils.dataType0).size());

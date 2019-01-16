@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -70,9 +70,9 @@ public class OFRowGroupListMetadata {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIOUtils.write(deviceId, outputStream);
+        byteLen += ReadWriteIoUtils.write(deviceId, outputStream);
         int size = seriesList.size();
-        byteLen += ReadWriteIOUtils.write(size, outputStream);
+        byteLen += ReadWriteIoUtils.write(size, outputStream);
         for (OFSeriesListMetadata ofSeriesListMetadata : seriesList) {
             byteLen += ofSeriesListMetadata.serializeTo(outputStream);
         }
@@ -85,8 +85,8 @@ public class OFRowGroupListMetadata {
 
     public static OFRowGroupListMetadata deserializeFrom(InputStream inputStream) throws IOException {
         OFRowGroupListMetadata ofRowGroupListMetadata = new OFRowGroupListMetadata();
-        ofRowGroupListMetadata.deviceId = ReadWriteIOUtils.readString(inputStream);
-        int size = ReadWriteIOUtils.readInt(inputStream);
+        ofRowGroupListMetadata.deviceId = ReadWriteIoUtils.readString(inputStream);
+        int size = ReadWriteIoUtils.readInt(inputStream);
         List<OFSeriesListMetadata> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             list.add(OFSeriesListMetadata.deserializeFrom(inputStream));

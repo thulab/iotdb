@@ -117,7 +117,7 @@ public class FileNodeManager implements IStatistic, IService {
     @Override
     public HashMap<String, TSRecord> getAllStatisticsValue() {
         long curTime = System.currentTimeMillis();
-        TSRecord tsRecord = StatMonitor.convertToTSRecord(getStatParamsHashMap(), statStorageDeltaName, curTime);
+        TSRecord tsRecord = StatMonitor.convertToTsRecord(getStatParamsHashMap(), statStorageDeltaName, curTime);
         return new HashMap<String, TSRecord>() {
             {
                 put(statStorageDeltaName, tsRecord);

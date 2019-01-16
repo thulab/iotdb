@@ -18,12 +18,10 @@ package org.apache.iotdb.tsfile.encoding.decoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 
 public abstract class GorillaDecoder extends Decoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(GorillaDecoder.class);
@@ -82,7 +80,7 @@ public abstract class GorillaDecoder extends Decoder {
      */
     protected void fillBuffer(ByteBuffer buffer) {
         if (buffer.remaining() >= 1) {
-            this.buffer = ReadWriteIOUtils.read(buffer);
+            this.buffer = ReadWriteIoUtils.read(buffer);
             numberLeftInBuffer = 8;
         } else {
             LOGGER.error("Failed to fill a new buffer, because there is no byte to read");

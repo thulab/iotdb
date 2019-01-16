@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.footer;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import org.apache.iotdb.tsfile.file.MetaMarker;
 
 import java.io.IOException;
@@ -67,10 +67,10 @@ public class ChunkGroupFooter {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int length = 0;
-        length += ReadWriteIOUtils.write(MARKER, outputStream);
-        length += ReadWriteIOUtils.write(deviceID, outputStream);
-        length += ReadWriteIOUtils.write(dataSize, outputStream);
-        length += ReadWriteIOUtils.write(numberOfChunks, outputStream);
+        length += ReadWriteIoUtils.write(MARKER, outputStream);
+        length += ReadWriteIoUtils.write(deviceID, outputStream);
+        length += ReadWriteIoUtils.write(dataSize, outputStream);
+        length += ReadWriteIoUtils.write(numberOfChunks, outputStream);
         assert length == getSerializedSize();
         return length;
     }
@@ -93,9 +93,9 @@ public class ChunkGroupFooter {
                 MetaMarker.handleUnexpectedMarker(marker);
         }
 
-        String deviceID = ReadWriteIOUtils.readString(inputStream);
-        long dataSize = ReadWriteIOUtils.readLong(inputStream);
-        int numOfChunks = ReadWriteIOUtils.readInt(inputStream);
+        String deviceID = ReadWriteIoUtils.readString(inputStream);
+        long dataSize = ReadWriteIoUtils.readLong(inputStream);
+        int numOfChunks = ReadWriteIoUtils.readInt(inputStream);
         return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
     }
 
@@ -117,11 +117,11 @@ public class ChunkGroupFooter {
         int size = buffer.getInt();
         offset += Integer.BYTES;
         buffer = ByteBuffer.allocate(getSerializedSize(size));
-        ReadWriteIOUtils.readAsPossible(channel, offset, buffer);
+        ReadWriteIoUtils.readAsPossible(channel, offset, buffer);
         buffer.flip();
-        String deviceID = ReadWriteIOUtils.readStringWithoutLength(buffer, size);
-        long dataSize = ReadWriteIOUtils.readLong(buffer);
-        int numOfChunks = ReadWriteIOUtils.readInt(buffer);
+        String deviceID = ReadWriteIoUtils.readStringWithoutLength(buffer, size);
+        long dataSize = ReadWriteIoUtils.readLong(buffer);
+        int numOfChunks = ReadWriteIoUtils.readInt(buffer);
         return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
     }
 

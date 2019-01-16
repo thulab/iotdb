@@ -22,19 +22,14 @@ import java.util.List;
 
 import org.apache.iotdb.db.exception.PathErrorException;
 import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
+import org.apache.iotdb.db.qp.constant.SqlConstant;
 import org.apache.iotdb.db.qp.executor.QueryProcessExecutor;
 import org.apache.iotdb.db.qp.logical.Operator;
 import org.apache.iotdb.db.qp.logical.crud.*;
-import org.apache.iotdb.db.exception.PathErrorException;
-import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
 import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
-import org.apache.iotdb.db.qp.logical.Operator;
-import org.apache.iotdb.db.qp.logical.crud.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.iotdb.db.qp.constant.SQLConstant;
-import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
 import org.apache.iotdb.tsfile.read.common.Path;
 
 /**
@@ -50,21 +45,21 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
 
     @Override
     public Operator transform(Operator operator) throws LogicalOptimizeException {
-        if (!(operator instanceof SFWOperator)) {
-            LOG.warn("given operator isn't SFWOperator, cannot concat seriesPath");
+        if (!(operator instanceof SfwOperator)) {
+            LOG.warn("given operator isn't SfwOperator, cannot concat seriesPath");
             return operator;
         }
-        SFWOperator sfwOperator = (SFWOperator) operator;
+        SfwOperator sfwOperator = (SfwOperator) operator;
         FromOperator from = sfwOperator.getFromOperator();
         List<Path> prefixPaths;
         if (from == null || (prefixPaths = from.getPrefixPaths()).isEmpty()) {
-            LOG.warn("given SFWOperator doesn't have prefix paths, cannot concat seriesPath");
+            LOG.warn("given SfwOperator doesn't have prefix paths, cannot concat seriesPath");
             return operator;
         }
         SelectOperator select = sfwOperator.getSelectOperator();
         List<Path> initialSuffixPaths;
         if (select == null || (initialSuffixPaths = select.getSuffixPaths()).isEmpty()) {
-            LOG.warn("given SFWOperator doesn't have suffix paths, cannot concat seriesPath");
+            LOG.warn("given SfwOperator doesn't have suffix paths, cannot concat seriesPath");
             return operator;
         }
 
@@ -101,7 +96,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
     private void concatSelect(List<Path> fromPaths, SelectOperator selectOperator) throws LogicalOptimizeException {
         List<Path> suffixPaths;
         if (selectOperator == null || (suffixPaths = selectOperator.getSuffixPaths()).isEmpty()) {
-            throw new LogicalOptimizeException("given SFWOperator doesn't have suffix paths, cannot concat seriesPath");
+            throw new LogicalOptimizeException("given SfwOperator doesn't have suffix paths, cannot concat seriesPath");
         }
         if (selectOperator.getAggregations().size() != 0
                 && selectOperator.getSuffixPaths().size() != selectOperator.getAggregations().size()) {
@@ -115,14 +110,14 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
 
         for (int i = 0; i < suffixPaths.size(); i++) {
             Path selectPath = suffixPaths.get(i);
-            if (selectPath.startWith(SQLConstant.ROOT)) {
+            if (selectPath.startWith(SqlConstant.ROOT)) {
                 allPaths.add(selectPath);
                 if (originAggregations != null && !originAggregations.isEmpty()) {
                     afterConcatAggregations.add(originAggregations.get(i));
                 }
             } else {
                 for (Path fromPath : fromPaths) {
-                    if (!fromPath.startWith(SQLConstant.ROOT)) {
+                    if (!fromPath.startWith(SqlConstant.ROOT)) {
                         throw new LogicalOptimizeException("illegal from clause : " + fromPath.getFullPath());
                     }
                     allPaths.add(Path.addPrefixPath(selectPath, fromPath));
@@ -233,7 +228,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
         BasicFunctionOperator basicOperator = (BasicFunctionOperator) operator;
         Path filterPath = basicOperator.getSinglePath();
         // do nothing in the cases of "where time > 5" or "where root.d1.s1 > 5"
-        if (SQLConstant.isReservedPath(filterPath) || filterPath.startWith(SQLConstant.ROOT)) {
+        if (SqlConstant.isReservedPath(filterPath) || filterPath.startWith(SqlConstant.ROOT)) {
             return operator;
         }
         List<Path> concatPaths = new ArrayList<>();
@@ -255,11 +250,11 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
 
     private FilterOperator constructTwoForkFilterTreeWithAND(List<Path> noStarPaths, FilterOperator operator)
             throws LogicalOptimizeException {
-        FilterOperator filterTwoFolkTree = new FilterOperator(SQLConstant.KW_AND);
+        FilterOperator filterTwoFolkTree = new FilterOperator(SqlConstant.KW_AND);
         FilterOperator currentNode = filterTwoFolkTree;
         for (int i = 0; i < noStarPaths.size(); i++) {
             if (i > 0 && i < noStarPaths.size() - 1) {
-                FilterOperator newInnerNode = new FilterOperator(SQLConstant.KW_AND);
+                FilterOperator newInnerNode = new FilterOperator(SqlConstant.KW_AND);
                 currentNode.addChildOperator(newInnerNode);
                 currentNode = newInnerNode;
             }

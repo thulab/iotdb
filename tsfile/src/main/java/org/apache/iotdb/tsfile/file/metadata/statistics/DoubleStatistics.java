@@ -16,7 +16,7 @@
 package org.apache.iotdb.tsfile.file.metadata.statistics;
 
 import org.apache.iotdb.tsfile.utils.BytesUtils;
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -135,27 +135,27 @@ public class DoubleStatistics extends Statistics<Double> {
 
     @Override
     public ByteBuffer getMaxBytebuffer() {
-        return ReadWriteIOUtils.getByteBuffer(max);
+        return ReadWriteIoUtils.getByteBuffer(max);
     }
 
     @Override
     public ByteBuffer getMinBytebuffer() {
-        return ReadWriteIOUtils.getByteBuffer(min);
+        return ReadWriteIoUtils.getByteBuffer(min);
     }
 
     @Override
     public ByteBuffer getFirstBytebuffer() {
-        return ReadWriteIOUtils.getByteBuffer(first);
+        return ReadWriteIoUtils.getByteBuffer(first);
     }
 
     @Override
     public ByteBuffer getSumBytebuffer() {
-        return ReadWriteIOUtils.getByteBuffer(sum);
+        return ReadWriteIoUtils.getByteBuffer(sum);
     }
 
     @Override
     public ByteBuffer getLastBytebuffer() {
-        return ReadWriteIOUtils.getByteBuffer(last);
+        return ReadWriteIoUtils.getByteBuffer(last);
     }
 
     @Override
@@ -170,19 +170,19 @@ public class DoubleStatistics extends Statistics<Double> {
 
     @Override
     void fill(InputStream inputStream) throws IOException {
-        this.min = ReadWriteIOUtils.readDouble(inputStream);
-        this.max = ReadWriteIOUtils.readDouble(inputStream);
-        this.first = ReadWriteIOUtils.readDouble(inputStream);
-        this.last = ReadWriteIOUtils.readDouble(inputStream);
-        this.sum = ReadWriteIOUtils.readDouble(inputStream);
+        this.min = ReadWriteIoUtils.readDouble(inputStream);
+        this.max = ReadWriteIoUtils.readDouble(inputStream);
+        this.first = ReadWriteIoUtils.readDouble(inputStream);
+        this.last = ReadWriteIoUtils.readDouble(inputStream);
+        this.sum = ReadWriteIoUtils.readDouble(inputStream);
     }
 
     @Override
     void fill(ByteBuffer byteBuffer) throws IOException {
-        this.min = ReadWriteIOUtils.readDouble(byteBuffer);
-        this.max = ReadWriteIOUtils.readDouble(byteBuffer);
-        this.first = ReadWriteIOUtils.readDouble(byteBuffer);
-        this.last = ReadWriteIOUtils.readDouble(byteBuffer);
-        this.sum = ReadWriteIOUtils.readDouble(byteBuffer);
+        this.min = ReadWriteIoUtils.readDouble(byteBuffer);
+        this.max = ReadWriteIoUtils.readDouble(byteBuffer);
+        this.first = ReadWriteIoUtils.readDouble(byteBuffer);
+        this.last = ReadWriteIoUtils.readDouble(byteBuffer);
+        this.sum = ReadWriteIoUtils.readDouble(byteBuffer);
     }
 }

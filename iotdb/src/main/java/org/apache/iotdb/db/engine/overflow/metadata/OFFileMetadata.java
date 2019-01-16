@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.db.engine.overflow.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
@@ -72,9 +72,9 @@ public class OFFileMetadata {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIOUtils.write(lastFooterOffset, outputStream);
+        byteLen += ReadWriteIoUtils.write(lastFooterOffset, outputStream);
         int size = rowGroupLists.size();
-        byteLen += ReadWriteIOUtils.write(size, outputStream);
+        byteLen += ReadWriteIoUtils.write(size, outputStream);
         for (OFRowGroupListMetadata ofRowGroupListMetadata : rowGroupLists) {
             byteLen += ofRowGroupListMetadata.serializeTo(outputStream);
         }
@@ -86,8 +86,8 @@ public class OFFileMetadata {
     }
 
     public static OFFileMetadata deserializeFrom(InputStream inputStream) throws IOException {
-        long lastFooterOffset = ReadWriteIOUtils.readLong(inputStream);
-        int size = ReadWriteIOUtils.readInt(inputStream);
+        long lastFooterOffset = ReadWriteIoUtils.readLong(inputStream);
+        int size = ReadWriteIoUtils.readInt(inputStream);
         List<OFRowGroupListMetadata> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             list.add(OFRowGroupListMetadata.deserializeFrom(inputStream));
