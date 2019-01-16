@@ -219,7 +219,7 @@ public class ReadWriteForEncodingUtils {
     int result = 0;
     int offset = 0;
     while (paddedByteNum > 0) {
-      int ch = ReadWriteIoUtils.read(buffer);
+      int ch = ReadWriteIOUtils.read(buffer);
       result += ch << offset;
       offset += 8;
       paddedByteNum--;
@@ -245,7 +245,7 @@ public class ReadWriteForEncodingUtils {
     }
     long result = 0;
     for (int i = 0; i < paddedByteNum; i++) {
-      int ch = ReadWriteIoUtils.read(buffer);
+      int ch = ReadWriteIOUtils.read(buffer);
       result <<= 8;
       result |= (ch & 0xff);
     }

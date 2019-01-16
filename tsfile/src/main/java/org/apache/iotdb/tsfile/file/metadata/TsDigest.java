@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,12 +82,12 @@ public class TsDigest {
             reCalculateSerializedSize();
         int byteLen = 0;
         if (statistics == null || statistics.size() == 0) {
-            byteLen += ReadWriteIoUtils.write(0, outputStream);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(0, outputStream);// Integer.BYTES;
         } else {
-            byteLen += ReadWriteIoUtils.write(statistics.size(), outputStream);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(statistics.size(), outputStream);// Integer.BYTES;
             for (Map.Entry<String, ByteBuffer> entry : statistics.entrySet()) {
-                byteLen += ReadWriteIoUtils.write(entry.getKey(), outputStream);// Integer.BYTES+key.length()
-                byteLen += ReadWriteIoUtils.write(entry.getValue(), outputStream);// Integer.BYTES+value.remaining();
+                byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream);// Integer.BYTES+key.length()
+                byteLen += ReadWriteIOUtils.write(entry.getValue(), outputStream);// Integer.BYTES+value.remaining();
             }
         }
         assert byteLen == getSerializedSize();
@@ -100,12 +100,12 @@ public class TsDigest {
         int byteLen = 0;
 
         if (statistics == null || statistics.size() == 0) {
-            byteLen += ReadWriteIoUtils.write(0, buffer);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(0, buffer);// Integer.BYTES;
         } else {
-            byteLen += ReadWriteIoUtils.write(statistics.size(), buffer);// Integer.BYTES;
+            byteLen += ReadWriteIOUtils.write(statistics.size(), buffer);// Integer.BYTES;
             for (Map.Entry<String, ByteBuffer> entry : statistics.entrySet()) {
-                byteLen += ReadWriteIoUtils.write(entry.getKey(), buffer);// Integer.BYTES+key.length()
-                byteLen += ReadWriteIoUtils.write(entry.getValue(), buffer);// Integer.BYTES+value.remaining();
+                byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);// Integer.BYTES+key.length()
+                byteLen += ReadWriteIOUtils.write(entry.getValue(), buffer);// Integer.BYTES+value.remaining();
             }
         }
         assert byteLen == getSerializedSize();
@@ -117,24 +117,24 @@ public class TsDigest {
     }
 
     public static int serializeNullTo(OutputStream outputStream) throws IOException {
-        return ReadWriteIoUtils.write(0, outputStream);// Integer.BYTES;
+        return ReadWriteIOUtils.write(0, outputStream);// Integer.BYTES;
     }
 
     public static int serializeNullTo(ByteBuffer buffer) {
-        return ReadWriteIoUtils.write(0, buffer);// Integer.BYTES;
+        return ReadWriteIOUtils.write(0, buffer);// Integer.BYTES;
     }
 
     public static TsDigest deserializeFrom(InputStream inputStream) throws IOException {
         TsDigest digest = new TsDigest();
 
-        int size = ReadWriteIoUtils.readInt(inputStream);
+        int size = ReadWriteIOUtils.readInt(inputStream);
         if (size > 0) {
             Map<String, ByteBuffer> statistics = new HashMap<>();
             String key;
             ByteBuffer value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIoUtils.readString(inputStream);
-                value = ReadWriteIoUtils.readByteBufferWithSelfDescriptionLength(inputStream);
+                key = ReadWriteIOUtils.readString(inputStream);
+                value = ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(inputStream);
                 statistics.put(key, value);
             }
             digest.statistics = statistics;
@@ -146,14 +146,14 @@ public class TsDigest {
     public static TsDigest deserializeFrom(ByteBuffer buffer) {
         TsDigest digest = new TsDigest();
 
-        int size = ReadWriteIoUtils.readInt(buffer);
+        int size = ReadWriteIOUtils.readInt(buffer);
         if (size > 0) {
             Map<String, ByteBuffer> statistics = new HashMap<>();
             String key;
             ByteBuffer value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIoUtils.readString(buffer);
-                value = ReadWriteIoUtils.readByteBufferWithSelfDescriptionLength(buffer);
+                key = ReadWriteIOUtils.readString(buffer);
+                value = ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(buffer);
                 statistics.put(key, value);
             }
             digest.statistics = statistics;

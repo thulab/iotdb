@@ -20,7 +20,7 @@ import org.apache.iotdb.db.qp.logical.Operator;
 /**
  * this class extends {@code RootOperator} and process delete statement
  */
-public class DeleteOperator extends SfwOperator {
+public class DeleteOperator extends SFWOperator {
 
     private long time;
 

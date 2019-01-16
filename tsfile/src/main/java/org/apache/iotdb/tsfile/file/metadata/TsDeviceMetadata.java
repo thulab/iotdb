@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,13 +111,13 @@ public class TsDeviceMetadata {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIoUtils.write(startTime, outputStream);
-        byteLen += ReadWriteIoUtils.write(endTime, outputStream);
+        byteLen += ReadWriteIOUtils.write(startTime, outputStream);
+        byteLen += ReadWriteIOUtils.write(endTime, outputStream);
 
         if (chunkGroupMetadataList == null) {
-            byteLen += ReadWriteIoUtils.write(0, outputStream);
+            byteLen += ReadWriteIOUtils.write(0, outputStream);
         } else {
-            byteLen += ReadWriteIoUtils.write(chunkGroupMetadataList.size(), outputStream);
+            byteLen += ReadWriteIOUtils.write(chunkGroupMetadataList.size(), outputStream);
             for (ChunkGroupMetaData chunkGroupMetaData : chunkGroupMetadataList)
                 byteLen += chunkGroupMetaData.serializeTo(outputStream);
         }
@@ -128,13 +128,13 @@ public class TsDeviceMetadata {
     public int serializeTo(ByteBuffer buffer) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIoUtils.write(startTime, buffer);
-        byteLen += ReadWriteIoUtils.write(endTime, buffer);
+        byteLen += ReadWriteIOUtils.write(startTime, buffer);
+        byteLen += ReadWriteIOUtils.write(endTime, buffer);
 
         if (chunkGroupMetadataList == null) {
-            byteLen += ReadWriteIoUtils.write(0, buffer);
+            byteLen += ReadWriteIOUtils.write(0, buffer);
         } else {
-            byteLen += ReadWriteIoUtils.write(chunkGroupMetadataList.size(), buffer);
+            byteLen += ReadWriteIOUtils.write(chunkGroupMetadataList.size(), buffer);
             for (ChunkGroupMetaData chunkGroupMetaData : chunkGroupMetadataList)
                 byteLen += chunkGroupMetaData.serializeTo(buffer);
         }
@@ -145,10 +145,10 @@ public class TsDeviceMetadata {
     public static TsDeviceMetadata deserializeFrom(InputStream inputStream) throws IOException {
         TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
 
-        deviceMetadata.startTime = ReadWriteIoUtils.readLong(inputStream);
-        deviceMetadata.endTime = ReadWriteIoUtils.readLong(inputStream);
+        deviceMetadata.startTime = ReadWriteIOUtils.readLong(inputStream);
+        deviceMetadata.endTime = ReadWriteIOUtils.readLong(inputStream);
 
-        int size = ReadWriteIoUtils.readInt(inputStream);
+        int size = ReadWriteIOUtils.readInt(inputStream);
         if (size > 0) {
             List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
             for (int i = 0; i < size; i++) {
@@ -164,10 +164,10 @@ public class TsDeviceMetadata {
     public static TsDeviceMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
         TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
 
-        deviceMetadata.startTime = ReadWriteIoUtils.readLong(buffer);
-        deviceMetadata.endTime = ReadWriteIoUtils.readLong(buffer);
+        deviceMetadata.startTime = ReadWriteIOUtils.readLong(buffer);
+        deviceMetadata.endTime = ReadWriteIOUtils.readLong(buffer);
 
-        int size = ReadWriteIoUtils.readInt(buffer);
+        int size = ReadWriteIOUtils.readInt(buffer);
         if (size > 0) {
             List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
             for (int i = 0; i < size; i++) {

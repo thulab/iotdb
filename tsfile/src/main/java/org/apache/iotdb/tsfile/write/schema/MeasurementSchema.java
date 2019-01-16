@@ -18,7 +18,7 @@ package org.apache.iotdb.tsfile.write.schema;
 import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor;
 import org.apache.iotdb.tsfile.exception.write.UnSupportedDataTypeException;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.apache.iotdb.tsfile.compress.Compressor;
 import org.apache.iotdb.tsfile.encoding.encoder.Encoder;
 import org.apache.iotdb.tsfile.encoding.encoder.TSEncodingBuilder;
@@ -163,21 +163,21 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIoUtils.write(measurementId, outputStream);
+        byteLen += ReadWriteIOUtils.write(measurementId, outputStream);
 
-        byteLen += ReadWriteIoUtils.write(type, outputStream);
+        byteLen += ReadWriteIOUtils.write(type, outputStream);
 
-        byteLen += ReadWriteIoUtils.write(encoding, outputStream);
+        byteLen += ReadWriteIOUtils.write(encoding, outputStream);
 
-        byteLen += ReadWriteIoUtils.write(compressor.getType(), outputStream);
+        byteLen += ReadWriteIOUtils.write(compressor.getType(), outputStream);
 
         if (props == null) {
-            byteLen += ReadWriteIoUtils.write(0, outputStream);
+            byteLen += ReadWriteIOUtils.write(0, outputStream);
         } else {
-            byteLen += ReadWriteIoUtils.write(props.size(), outputStream);
+            byteLen += ReadWriteIOUtils.write(props.size(), outputStream);
             for (Map.Entry<String, String> entry : props.entrySet()) {
-                byteLen += ReadWriteIoUtils.write(entry.getKey(), outputStream);
-                byteLen += ReadWriteIoUtils.write(entry.getValue(), outputStream);
+                byteLen += ReadWriteIOUtils.write(entry.getKey(), outputStream);
+                byteLen += ReadWriteIOUtils.write(entry.getValue(), outputStream);
             }
         }
 
@@ -187,21 +187,21 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     public int serializeTo(ByteBuffer buffer) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIoUtils.write(measurementId, buffer);
+        byteLen += ReadWriteIOUtils.write(measurementId, buffer);
 
-        byteLen += ReadWriteIoUtils.write(type, buffer);
+        byteLen += ReadWriteIOUtils.write(type, buffer);
 
-        byteLen += ReadWriteIoUtils.write(encoding, buffer);
+        byteLen += ReadWriteIOUtils.write(encoding, buffer);
 
-        byteLen += ReadWriteIoUtils.write(compressor.getType(), buffer);
+        byteLen += ReadWriteIOUtils.write(compressor.getType(), buffer);
 
         if (props == null) {
-            byteLen += ReadWriteIoUtils.write(0, buffer);
+            byteLen += ReadWriteIOUtils.write(0, buffer);
         } else {
-            byteLen += ReadWriteIoUtils.write(props.size(), buffer);
+            byteLen += ReadWriteIOUtils.write(props.size(), buffer);
             for (Map.Entry<String, String> entry : props.entrySet()) {
-                byteLen += ReadWriteIoUtils.write(entry.getKey(), buffer);
-                byteLen += ReadWriteIoUtils.write(entry.getValue(), buffer);
+                byteLen += ReadWriteIOUtils.write(entry.getKey(), buffer);
+                byteLen += ReadWriteIOUtils.write(entry.getValue(), buffer);
             }
         }
 
@@ -211,23 +211,23 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     public static MeasurementSchema deserializeFrom(InputStream inputStream) throws IOException {
         MeasurementSchema measurementSchema = new MeasurementSchema();
 
-        measurementSchema.measurementId = ReadWriteIoUtils.readString(inputStream);
+        measurementSchema.measurementId = ReadWriteIOUtils.readString(inputStream);
 
-        measurementSchema.type = ReadWriteIoUtils.readDataType(inputStream);
+        measurementSchema.type = ReadWriteIOUtils.readDataType(inputStream);
 
-        measurementSchema.encoding = ReadWriteIoUtils.readEncoding(inputStream);
+        measurementSchema.encoding = ReadWriteIOUtils.readEncoding(inputStream);
 
-        CompressionType compressionType = ReadWriteIoUtils.readCompressionType(inputStream);
+        CompressionType compressionType = ReadWriteIOUtils.readCompressionType(inputStream);
         measurementSchema.compressor = Compressor.getCompressor(compressionType);
 
-        int size = ReadWriteIoUtils.readInt(inputStream);
+        int size = ReadWriteIOUtils.readInt(inputStream);
         if (size > 0) {
             measurementSchema.props = new HashMap<>();
             String key;
             String value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIoUtils.readString(inputStream);
-                value = ReadWriteIoUtils.readString(inputStream);
+                key = ReadWriteIOUtils.readString(inputStream);
+                value = ReadWriteIOUtils.readString(inputStream);
                 measurementSchema.props.put(key, value);
             }
         }
@@ -238,23 +238,23 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     public static MeasurementSchema deserializeFrom(ByteBuffer buffer) throws IOException {
         MeasurementSchema measurementSchema = new MeasurementSchema();
 
-        measurementSchema.measurementId = ReadWriteIoUtils.readString(buffer);
+        measurementSchema.measurementId = ReadWriteIOUtils.readString(buffer);
 
-        measurementSchema.type = ReadWriteIoUtils.readDataType(buffer);
+        measurementSchema.type = ReadWriteIOUtils.readDataType(buffer);
 
-        measurementSchema.encoding = ReadWriteIoUtils.readEncoding(buffer);
+        measurementSchema.encoding = ReadWriteIOUtils.readEncoding(buffer);
 
-        CompressionType compressionType = ReadWriteIoUtils.readCompressionType(buffer);
+        CompressionType compressionType = ReadWriteIOUtils.readCompressionType(buffer);
         measurementSchema.compressor = Compressor.getCompressor(compressionType);
 
-        int size = ReadWriteIoUtils.readInt(buffer);
+        int size = ReadWriteIOUtils.readInt(buffer);
         if (size > 0) {
             measurementSchema.props = new HashMap<>();
             String key;
             String value;
             for (int i = 0; i < size; i++) {
-                key = ReadWriteIoUtils.readString(buffer);
-                value = ReadWriteIoUtils.readString(buffer);
+                key = ReadWriteIOUtils.readString(buffer);
+                value = ReadWriteIOUtils.readString(buffer);
                 measurementSchema.props.put(key, value);
             }
         }

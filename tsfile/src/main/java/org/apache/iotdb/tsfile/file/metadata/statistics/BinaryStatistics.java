@@ -17,7 +17,7 @@ package org.apache.iotdb.tsfile.file.metadata.statistics;
 
 import org.apache.iotdb.tsfile.utils.Binary;
 import org.apache.iotdb.tsfile.utils.BytesUtils;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -150,7 +150,7 @@ public class BinaryStatistics extends Statistics<Binary> {
 
     @Override
     public ByteBuffer getSumBytebuffer() {
-        return ReadWriteIoUtils.getByteBuffer(sum);
+        return ReadWriteIOUtils.getByteBuffer(sum);
     }
 
     @Override
@@ -170,19 +170,19 @@ public class BinaryStatistics extends Statistics<Binary> {
 
     @Override
     void fill(InputStream inputStream) throws IOException {
-        this.min = new Binary(ReadWriteIoUtils.readBytesWithSelfDescriptionLength(inputStream));
-        this.max = new Binary(ReadWriteIoUtils.readBytesWithSelfDescriptionLength(inputStream));
-        this.first = new Binary(ReadWriteIoUtils.readBytesWithSelfDescriptionLength(inputStream));
-        this.last = new Binary(ReadWriteIoUtils.readBytesWithSelfDescriptionLength(inputStream));
-        this.sum = ReadWriteIoUtils.readDouble(inputStream);
+        this.min = new Binary(ReadWriteIOUtils.readBytesWithSelfDescriptionLength(inputStream));
+        this.max = new Binary(ReadWriteIOUtils.readBytesWithSelfDescriptionLength(inputStream));
+        this.first = new Binary(ReadWriteIOUtils.readBytesWithSelfDescriptionLength(inputStream));
+        this.last = new Binary(ReadWriteIOUtils.readBytesWithSelfDescriptionLength(inputStream));
+        this.sum = ReadWriteIOUtils.readDouble(inputStream);
     }
 
     @Override
     void fill(ByteBuffer byteBuffer) throws IOException {
-        this.min = new Binary(ReadWriteIoUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
-        this.max = new Binary(ReadWriteIoUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
-        this.first = new Binary(ReadWriteIoUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
-        this.last = new Binary(ReadWriteIoUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
-        this.sum = ReadWriteIoUtils.readDouble(byteBuffer);
+        this.min = new Binary(ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
+        this.max = new Binary(ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
+        this.first = new Binary(ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
+        this.last = new Binary(ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(byteBuffer).array());
+        this.sum = ReadWriteIOUtils.readDouble(byteBuffer);
     }
 }

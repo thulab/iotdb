@@ -14,14 +14,14 @@
 
 package org.apache.iotdb.db.qp.strategy.optimizer;
 
-import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_AND;
-import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_NOT;
-import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_OR;
+import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_AND;
+import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_NOT;
+import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_OR;
 
 import java.util.List;
 import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
 import org.apache.iotdb.db.exception.qp.LogicalOptimizeException;
-import org.apache.iotdb.db.qp.constant.SqlConstant;
+import org.apache.iotdb.db.qp.constant.SQLConstant;
 import org.apache.iotdb.db.qp.logical.crud.BasicFunctionOperator;
 import org.apache.iotdb.db.qp.logical.crud.FilterOperator;
 
@@ -56,7 +56,7 @@ public class RemoveNotOptimizer implements IFilterOptimizer {
         return reverseFilter(filter.getChildren().get(0));
       default:
         throw new LogicalOptimizeException(
-            "Unknown token in removeNot: " + tokenInt + "," + SqlConstant.tokenNames.get(tokenInt));
+            "Unknown token in removeNot: " + tokenInt + "," + SQLConstant.tokenNames.get(tokenInt));
     }
   }
 
@@ -75,7 +75,7 @@ public class RemoveNotOptimizer implements IFilterOptimizer {
       } catch (LogicalOperatorException e) {
         throw new LogicalOperatorException(
             "convert BasicFuntion to reserved meet failed: previous token:"
-                + tokenInt + "tokenName:" + SqlConstant.tokenNames.get(tokenInt));
+                + tokenInt + "tokenName:" + SQLConstant.tokenNames.get(tokenInt));
       }
       return filter;
     }
@@ -85,13 +85,13 @@ public class RemoveNotOptimizer implements IFilterOptimizer {
         List<FilterOperator> children = filter.getChildren();
         children.set(0, reverseFilter(children.get(0)));
         children.set(1, reverseFilter(children.get(1)));
-        filter.setTokenIntType(SqlConstant.reverseWords.get(tokenInt));
+        filter.setTokenIntType(SQLConstant.reverseWords.get(tokenInt));
         return filter;
       case KW_NOT:
         return removeNot(filter.getChildren().get(0));
       default:
         throw new LogicalOptimizeException(
-            "Unknown token in reverseFilter: " + tokenInt + "," + SqlConstant.tokenNames
+            "Unknown token in reverseFilter: " + tokenInt + "," + SQLConstant.tokenNames
                 .get(tokenInt));
     }
   }

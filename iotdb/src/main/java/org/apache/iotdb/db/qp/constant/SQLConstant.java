@@ -21,7 +21,7 @@ import org.apache.iotdb.tsfile.read.common.Path;
 /**
  * this class contains several constants used in SQL.
  */
-public class SqlConstant {
+public class SQLConstant {
 
   public static final String RESERVED_TIME = "time";
   public static final String RESERVED_FREQ = "freq";
@@ -149,7 +149,7 @@ public class SqlConstant {
   }
 
   public static boolean isReservedPath(Path pathStr) {
-    return pathStr.equals(SqlConstant.RESERVED_TIME) || pathStr.equals(SqlConstant.RESERVED_FREQ);
+    return pathStr.equals(SQLConstant.RESERVED_TIME) || pathStr.equals(SQLConstant.RESERVED_FREQ);
 
   }
 }

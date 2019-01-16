@@ -16,7 +16,7 @@
 package org.apache.iotdb.tsfile.encoding.decoder;
 
 import org.apache.iotdb.tsfile.utils.BytesUtils;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.apache.iotdb.tsfile.encoding.encoder.DeltaBinaryEncoder;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
@@ -121,8 +121,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          * @return int
          */
         protected int loadIntBatch(ByteBuffer buffer) {
-            packNum = ReadWriteIoUtils.readInt(buffer);
-            packWidth = ReadWriteIoUtils.readInt(buffer);
+            packNum = ReadWriteIOUtils.readInt(buffer);
+            packWidth = ReadWriteIOUtils.readInt(buffer);
             count++;
             readHeader(buffer);
 
@@ -147,8 +147,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
 
         @Override
         protected void readHeader(ByteBuffer buffer) {
-            minDeltaBase = ReadWriteIoUtils.readInt(buffer);
-            firstValue = ReadWriteIoUtils.readInt(buffer);
+            minDeltaBase = ReadWriteIOUtils.readInt(buffer);
+            firstValue = ReadWriteIOUtils.readInt(buffer);
         }
 
         @Override
@@ -201,8 +201,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
          * @return long value
          */
         protected long loadIntBatch(ByteBuffer buffer) {
-            packNum = ReadWriteIoUtils.readInt(buffer);
-            packWidth = ReadWriteIoUtils.readInt(buffer);
+            packNum = ReadWriteIOUtils.readInt(buffer);
+            packWidth = ReadWriteIOUtils.readInt(buffer);
             count++;
             readHeader(buffer);
 
@@ -232,8 +232,8 @@ public abstract class DeltaBinaryDecoder extends Decoder {
 
         @Override
         protected void readHeader(ByteBuffer buffer) {
-            minDeltaBase = ReadWriteIoUtils.readLong(buffer);
-            firstValue = ReadWriteIoUtils.readLong(buffer);
+            minDeltaBase = ReadWriteIOUtils.readLong(buffer);
+            firstValue = ReadWriteIOUtils.readLong(buffer);
         }
 
         @Override

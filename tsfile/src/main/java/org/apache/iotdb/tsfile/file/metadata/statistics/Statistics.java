@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import org.apache.iotdb.tsfile.exception.write.UnknownColumnTypeException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.utils.Binary;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,19 +212,19 @@ public abstract class Statistics<T> {
     } else {
       byte[] tmp = getMinBytes();
       length += tmp.length;
-      length += ReadWriteIoUtils.write(tmp.length, outputStream);
+      length += ReadWriteIOUtils.write(tmp.length, outputStream);
       outputStream.write(tmp);
       tmp = getMaxBytes();
       length += tmp.length;
-      length += ReadWriteIoUtils.write(tmp.length, outputStream);
+      length += ReadWriteIOUtils.write(tmp.length, outputStream);
       outputStream.write(tmp);
       tmp = getFirstBytes();
       length += tmp.length;
-      length += ReadWriteIoUtils.write(tmp.length, outputStream);
+      length += ReadWriteIOUtils.write(tmp.length, outputStream);
       outputStream.write(tmp);
       tmp = getLastBytes();
       length += tmp.length;
-      length += ReadWriteIoUtils.write(tmp.length, outputStream);
+      length += ReadWriteIOUtils.write(tmp.length, outputStream);
       outputStream.write(tmp);
       outputStream.write(getSumBytes());
       length += 8;

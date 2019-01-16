@@ -18,7 +18,7 @@ package org.apache.iotdb.db.qp.logical.crud;
 /**
  * this class extends {@code RootOperator} and process update statement
  */
-public final class UpdateOperator extends SfwOperator {
+public final class UpdateOperator extends SFWOperator {
 
     private String value;
 

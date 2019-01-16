@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,9 +108,9 @@ public class ChunkGroupMetaData {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIoUtils.write(deviceID, outputStream);
+        byteLen += ReadWriteIOUtils.write(deviceID, outputStream);
 
-        byteLen += ReadWriteIoUtils.write(chunkMetaDataList.size(), outputStream);
+        byteLen += ReadWriteIOUtils.write(chunkMetaDataList.size(), outputStream);
         for (ChunkMetaData chunkMetaData : chunkMetaDataList)
             byteLen += chunkMetaData.serializeTo(outputStream);
         assert byteLen == getSerializedSize();
@@ -120,9 +120,9 @@ public class ChunkGroupMetaData {
     public int serializeTo(ByteBuffer buffer) throws IOException {
         int byteLen = 0;
 
-        byteLen += ReadWriteIoUtils.write(deviceID, buffer);
+        byteLen += ReadWriteIOUtils.write(deviceID, buffer);
 
-        byteLen += ReadWriteIoUtils.write(chunkMetaDataList.size(), buffer);
+        byteLen += ReadWriteIOUtils.write(chunkMetaDataList.size(), buffer);
         for (ChunkMetaData chunkMetaData : chunkMetaDataList)
             byteLen += chunkMetaData.serializeTo(buffer);
         assert byteLen == getSerializedSize();
@@ -133,9 +133,9 @@ public class ChunkGroupMetaData {
     public static ChunkGroupMetaData deserializeFrom(InputStream inputStream) throws IOException {
         ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
 
-        chunkGroupMetaData.deviceID = ReadWriteIoUtils.readString(inputStream);
+        chunkGroupMetaData.deviceID = ReadWriteIOUtils.readString(inputStream);
 
-        int size = ReadWriteIoUtils.readInt(inputStream);
+        int size = ReadWriteIOUtils.readInt(inputStream);
         chunkGroupMetaData.serializedSize = Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
 
         List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
@@ -153,9 +153,9 @@ public class ChunkGroupMetaData {
     public static ChunkGroupMetaData deserializeFrom(ByteBuffer buffer) throws IOException {
         ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
 
-        chunkGroupMetaData.deviceID = (ReadWriteIoUtils.readString(buffer));
+        chunkGroupMetaData.deviceID = (ReadWriteIOUtils.readString(buffer));
 
-        int size = ReadWriteIoUtils.readInt(buffer);
+        int size = ReadWriteIOUtils.readInt(buffer);
 
         chunkGroupMetaData.serializedSize = Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
 

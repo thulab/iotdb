@@ -16,7 +16,7 @@
 package org.apache.iotdb.db.qp.logical.crud;
 
 import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
-import org.apache.iotdb.db.qp.constant.SqlConstant;
+import org.apache.iotdb.db.qp.constant.SQLConstant;
 import org.apache.iotdb.db.qp.executor.QueryProcessExecutor;
 import org.apache.iotdb.db.qp.logical.Operator;
 import org.apache.iotdb.tsfile.read.expression.IUnaryExpression;
@@ -60,7 +60,7 @@ public class BasicFunctionOperator extends FunctionOperator {
     }
 
     public void setReversedTokenIntType() throws LogicalOperatorException {
-        int intType = SqlConstant.reverseWords.get(tokenIntType);
+        int intType = SQLConstant.reverseWords.get(tokenIntType);
         setTokenIntType(intType);
         funcToken = BasicOperatorType.getBasicOpBySymbol(intType);
     }

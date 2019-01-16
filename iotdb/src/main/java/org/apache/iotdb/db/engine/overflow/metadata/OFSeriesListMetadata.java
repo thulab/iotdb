@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -71,8 +71,8 @@ public class OFSeriesListMetadata {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIoUtils.write(measurementId, outputStream);
-        byteLen += ReadWriteIoUtils.write(timeSeriesList.size(), outputStream);
+        byteLen += ReadWriteIOUtils.write(measurementId, outputStream);
+        byteLen += ReadWriteIOUtils.write(timeSeriesList.size(), outputStream);
         for (ChunkMetaData chunkMetaData : timeSeriesList) {
             byteLen += chunkMetaData.serializeTo(outputStream);
         }
@@ -85,8 +85,8 @@ public class OFSeriesListMetadata {
 
     public static OFSeriesListMetadata deserializeFrom(InputStream inputStream) throws IOException {
         OFSeriesListMetadata ofSeriesListMetadata = new OFSeriesListMetadata();
-        ofSeriesListMetadata.measurementId = ReadWriteIoUtils.readString(inputStream);
-        int size = ReadWriteIoUtils.readInt(inputStream);
+        ofSeriesListMetadata.measurementId = ReadWriteIOUtils.readString(inputStream);
+        int size = ReadWriteIOUtils.readInt(inputStream);
         List<ChunkMetaData> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             ChunkMetaData chunkMetaData = ChunkMetaData.deserializeFrom(inputStream);

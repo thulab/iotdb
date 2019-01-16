@@ -51,7 +51,7 @@ import static org.junit.Assert.fail;
 
 public class RestorableTsFileIOWriterTest {
 
-    private RestorableTsFileIoWriter writer;
+    private RestorableTsFileIOWriter writer;
     private String processorName = "processor";
     private String insertPath = "insertfile";
     private String restorePath = insertPath + ".restore";
@@ -69,7 +69,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testInitResource() throws IOException {
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
 
         Pair<Long, List<ChunkGroupMetaData>> pair = writer.readRestoreInfo();
         assertEquals(true, new File(restorePath).exists());
@@ -83,7 +83,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testAbnormalRecover() throws IOException {
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
         File insertFile = new File(insertPath);
         File restoreFile = new File(restorePath);
         FileOutputStream fileOutputStream = new FileOutputStream(insertFile);
@@ -102,7 +102,7 @@ public class RestorableTsFileIOWriterTest {
         byte[] lastPositionBytes = BytesUtils.longToBytes(200);
         out.write(lastPositionBytes);
         out.close();
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
 
         assertEquals(true, insertFile.exists());
         assertEquals(200, insertFile.length());
@@ -128,13 +128,13 @@ public class RestorableTsFileIOWriterTest {
         out.write(lastPositionBytes);
         out.close();
 
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
         // writer.endFile(new FileSchema());
 
         assertEquals(true, insertFile.exists());
         assertEquals(true, restoreFile.exists());
 
-        RestorableTsFileIoWriter tempbufferwriteResource = new RestorableTsFileIoWriter(processorName, insertPath);
+        RestorableTsFileIOWriter tempbufferwriteResource = new RestorableTsFileIOWriter(processorName, insertPath);
 
         assertEquals(true, insertFile.exists());
         assertEquals(200, insertFile.length());
@@ -148,7 +148,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testWriteAndRecover() throws IOException {
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
         FileSchema schema = new FileSchema();
         schema.registerMeasurement(new MeasurementSchema("s1", TSDataType.INT32, TSEncoding.RLE));
         schema.registerMeasurement(new MeasurementSchema("s2", TSDataType.INT32, TSEncoding.RLE));
@@ -167,7 +167,7 @@ public class RestorableTsFileIOWriterTest {
         writer.getOutput().close();
 
         // recover
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
         writer.endFile(schema);
 
         TsFileSequenceReader reader = new TsFileSequenceReader(insertPath);
@@ -202,7 +202,7 @@ public class RestorableTsFileIOWriterTest {
 
     @Test
     public void testFlushAndGetMetadata() throws IOException {
-        writer = new RestorableTsFileIoWriter(processorName, insertPath);
+        writer = new RestorableTsFileIOWriter(processorName, insertPath);
 
         assertEquals(0, writer.getMetadatas(MemTableTestUtils.deviceId0, MemTableTestUtils.measurementId0,
                 MemTableTestUtils.dataType0).size());

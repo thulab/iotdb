@@ -28,11 +28,11 @@ public class ReadWriteToBytesUtilsTest {
     public void testShort() throws IOException {
         for (short i : new short[] { 1, 2, 3, 4, 5 }) {
             ByteArrayOutputStream outputstream = new ByteArrayOutputStream();
-            ReadWriteIoUtils.write(i, outputstream);
+            ReadWriteIOUtils.write(i, outputstream);
             int size = outputstream.size();
             byte[] bytes = outputstream.toByteArray();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-            short k = ReadWriteIoUtils.readShort(inputStream);
+            short k = ReadWriteIOUtils.readShort(inputStream);
             assert i == k;
         }
     }
@@ -41,9 +41,9 @@ public class ReadWriteToBytesUtilsTest {
     public void testShort2() throws IOException {
         for (short i : new short[] { 1, 2, 3, 4, 5 }) {
             ByteBuffer output = ByteBuffer.allocate(2);
-            ReadWriteIoUtils.write(i, output);
+            ReadWriteIOUtils.write(i, output);
             output.flip();
-            short k = ReadWriteIoUtils.readShort(output);
+            short k = ReadWriteIOUtils.readShort(output);
             assert i == k;
         }
     }
@@ -52,11 +52,11 @@ public class ReadWriteToBytesUtilsTest {
     public void testShort3() throws IOException {
         for (short i : new short[] { 1, 2, 3, 4, 5 }) {
             ByteArrayOutputStream outputstream = new ByteArrayOutputStream();
-            ReadWriteIoUtils.write(i, outputstream);
+            ReadWriteIOUtils.write(i, outputstream);
             int size = outputstream.size();
             byte[] bytes = outputstream.toByteArray();
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            short k = ReadWriteIoUtils.readShort(buffer);
+            short k = ReadWriteIOUtils.readShort(buffer);
             assert i == k;
         }
     }

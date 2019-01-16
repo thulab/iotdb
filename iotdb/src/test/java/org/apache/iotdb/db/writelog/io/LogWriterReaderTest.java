@@ -61,7 +61,7 @@ public class LogWriterReaderTest {
         writer.write(logs);
         try {
             writer.close();
-            RafLogReader reader = new RafLogReader(new File(filePath));
+            RAFLogReader reader = new RAFLogReader(new File(filePath));
             List<byte[]> res = new ArrayList<>();
             while (reader.hasNext()) {
                 res.add(PhysicalPlanLogTransfer.operatorToLog(reader.next()));

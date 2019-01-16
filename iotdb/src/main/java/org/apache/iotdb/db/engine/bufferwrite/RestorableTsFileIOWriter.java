@@ -47,9 +47,9 @@ import org.slf4j.LoggerFactory;
  * the tsfile loses the tsfile metadata in the end, a corresponding. restore file exists. (2) no
  * .restore file, and then the class has to traverse all the data for fixing the file.
  */
-public class RestorableTsFileIoWriter extends TsFileIOWriter {
+public class RestorableTsFileIOWriter extends TsFileIOWriter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RestorableTsFileIoWriter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RestorableTsFileIOWriter.class);
 
   private static final int TS_METADATA_BYTE_SIZE = 4;
   private static final int TS_POSITION_BYTE_SIZE = 8;
@@ -79,7 +79,7 @@ public class RestorableTsFileIoWriter extends TsFileIOWriter {
 
   private boolean isNewResource = false;
 
-  RestorableTsFileIoWriter(String processorName, String insertFilePath) throws IOException {
+  RestorableTsFileIOWriter(String processorName, String insertFilePath) throws IOException {
     super();
     this.insertFilePath = insertFilePath;
     this.restoreFilePath = insertFilePath + RESTORE_SUFFIX;

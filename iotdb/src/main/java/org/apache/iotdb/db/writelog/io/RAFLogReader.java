@@ -24,9 +24,9 @@ import org.apache.iotdb.db.writelog.transfer.PhysicalPlanLogTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RafLogReader implements ILogReader {
+public class RAFLogReader implements ILogReader {
 
-  private static final Logger logger = LoggerFactory.getLogger(RafLogReader.class);
+  private static final Logger logger = LoggerFactory.getLogger(RAFLogReader.class);
   private RandomAccessFile logRaf;
   private String filepath;
   private int bufferSize = 4 * 1024 * 1024;
@@ -34,11 +34,11 @@ public class RafLogReader implements ILogReader {
   private CRC32 checkSummer = new CRC32();
   private PhysicalPlan planBuffer = null;
 
-  public RafLogReader() {
+  public RAFLogReader() {
 
   }
 
-  public RafLogReader(File logFile) throws FileNotFoundException {
+  public RAFLogReader(File logFile) throws FileNotFoundException {
     open(logFile);
   }
 

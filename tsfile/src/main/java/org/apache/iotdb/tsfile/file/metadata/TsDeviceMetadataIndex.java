@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,37 +85,37 @@ public class TsDeviceMetadataIndex {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIoUtils.write(offset, outputStream);
-        byteLen += ReadWriteIoUtils.write(len, outputStream);
-        byteLen += ReadWriteIoUtils.write(startTime, outputStream);
-        byteLen += ReadWriteIoUtils.write(endTime, outputStream);
+        byteLen += ReadWriteIOUtils.write(offset, outputStream);
+        byteLen += ReadWriteIOUtils.write(len, outputStream);
+        byteLen += ReadWriteIOUtils.write(startTime, outputStream);
+        byteLen += ReadWriteIOUtils.write(endTime, outputStream);
         return byteLen;
     }
 
     public int serializeTo(ByteBuffer buffer) throws IOException {
         int byteLen = 0;
-        byteLen += ReadWriteIoUtils.write(offset, buffer);
-        byteLen += ReadWriteIoUtils.write(len, buffer);
-        byteLen += ReadWriteIoUtils.write(startTime, buffer);
-        byteLen += ReadWriteIoUtils.write(endTime, buffer);
+        byteLen += ReadWriteIOUtils.write(offset, buffer);
+        byteLen += ReadWriteIOUtils.write(len, buffer);
+        byteLen += ReadWriteIOUtils.write(startTime, buffer);
+        byteLen += ReadWriteIOUtils.write(endTime, buffer);
         return byteLen;
     }
 
     public static TsDeviceMetadataIndex deserializeFrom(InputStream inputStream) throws IOException {
         TsDeviceMetadataIndex index = new TsDeviceMetadataIndex();
-        index.offset = ReadWriteIoUtils.readLong(inputStream);
-        index.len = ReadWriteIoUtils.readInt(inputStream);
-        index.startTime = ReadWriteIoUtils.readLong(inputStream);
-        index.endTime = ReadWriteIoUtils.readLong(inputStream);
+        index.offset = ReadWriteIOUtils.readLong(inputStream);
+        index.len = ReadWriteIOUtils.readInt(inputStream);
+        index.startTime = ReadWriteIOUtils.readLong(inputStream);
+        index.endTime = ReadWriteIOUtils.readLong(inputStream);
         return index;
     }
 
     public static TsDeviceMetadataIndex deserializeFrom(ByteBuffer buffer) throws IOException {
         TsDeviceMetadataIndex index = new TsDeviceMetadataIndex();
-        index.offset = ReadWriteIoUtils.readLong(buffer);
-        index.len = ReadWriteIoUtils.readInt(buffer);
-        index.startTime = ReadWriteIoUtils.readLong(buffer);
-        index.endTime = ReadWriteIoUtils.readLong(buffer);
+        index.offset = ReadWriteIOUtils.readLong(buffer);
+        index.len = ReadWriteIOUtils.readInt(buffer);
+        index.startTime = ReadWriteIOUtils.readLong(buffer);
+        index.endTime = ReadWriteIOUtils.readLong(buffer);
         return index;
     }
 

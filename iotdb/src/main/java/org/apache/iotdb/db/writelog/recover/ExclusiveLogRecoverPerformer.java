@@ -22,7 +22,7 @@ import org.apache.iotdb.db.exception.RecoverException;
 import org.apache.iotdb.db.qp.physical.PhysicalPlan;
 import org.apache.iotdb.db.writelog.RecoverStage;
 import org.apache.iotdb.db.writelog.replay.ConcreteLogReplayer;
-import org.apache.iotdb.db.writelog.io.RafLogReader;
+import org.apache.iotdb.db.writelog.io.RAFLogReader;
 import org.apache.iotdb.db.writelog.replay.LogReplayer;
 import org.apache.iotdb.db.writelog.node.ExclusiveWriteLogNode;
 import org.apache.commons.io.FileUtils;
@@ -60,7 +60,7 @@ public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
     private LogReplayer replayer = new ConcreteLogReplayer();
 
     // The two fields can be made static only because the recovery is a serial process.
-    private static RafLogReader RAFLogReader = new RafLogReader();
+    private static org.apache.iotdb.db.writelog.io.RAFLogReader RAFLogReader = new RAFLogReader();
 
     private RecoverPerformer fileNodeRecoverPerformer;
 

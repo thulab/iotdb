@@ -32,7 +32,7 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.file.metadata.statistics.Statistics;
 import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.PublicBAOS;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.apache.iotdb.tsfile.write.schema.FileSchema;
 import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
 import org.slf4j.Logger;
@@ -207,7 +207,7 @@ public class TsFileIOWriter {
     public void endFile(FileSchema schema) throws IOException {
 
         // serialize the Separator of MetaData and ChunkGroups
-        ReadWriteIoUtils.write(MetaMarker.Separator, out.wrapAsStream());
+        ReadWriteIOUtils.write(MetaMarker.Separator, out.wrapAsStream());
 
         // get all measurementSchema of this TsFile
         Map<String, MeasurementSchema> schemaDescriptors = schema.getAllMeasurementSchema();
@@ -227,7 +227,7 @@ public class TsFileIOWriter {
         LOG.debug("finish flushing the footer {}, file pos:{}", tsFileMetaData, out.getPosition());
 
         // write TsFileMetaData size
-        ReadWriteIoUtils.write(size, out.wrapAsStream());// write the size of the file metadata.
+        ReadWriteIOUtils.write(size, out.wrapAsStream());// write the size of the file metadata.
 
         // write magic string
         out.write(magicStringBytes);

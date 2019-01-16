@@ -16,7 +16,7 @@
 package org.apache.iotdb.tsfile.file.metadata.statistics;
 
 import org.apache.iotdb.tsfile.utils.Binary;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -114,27 +114,27 @@ public class NoStatistics extends Statistics<Long> {
 
     @Override
     public ByteBuffer getMaxBytebuffer() {
-        return ReadWriteIoUtils.getByteBuffer(0);
+        return ReadWriteIOUtils.getByteBuffer(0);
     }
 
     @Override
     public ByteBuffer getMinBytebuffer() {
-        return ReadWriteIoUtils.getByteBuffer(0);
+        return ReadWriteIOUtils.getByteBuffer(0);
     }
 
     @Override
     public ByteBuffer getFirstBytebuffer() {
-        return ReadWriteIoUtils.getByteBuffer(0);
+        return ReadWriteIOUtils.getByteBuffer(0);
     }
 
     @Override
     public ByteBuffer getSumBytebuffer() {
-        return ReadWriteIoUtils.getByteBuffer(0);
+        return ReadWriteIOUtils.getByteBuffer(0);
     }
 
     @Override
     public ByteBuffer getLastBytebuffer() {
-        return ReadWriteIoUtils.getByteBuffer(0);
+        return ReadWriteIOUtils.getByteBuffer(0);
     }
 
     @Override

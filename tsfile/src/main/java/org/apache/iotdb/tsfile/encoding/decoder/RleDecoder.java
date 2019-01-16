@@ -24,7 +24,7 @@ import org.apache.iotdb.tsfile.exception.encoding.TSFileDecodingException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.utils.Binary;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 /**
  * Abstract class for all rle decoder. Decoding values according to following grammar: {@code
@@ -110,7 +110,7 @@ public abstract class RleDecoder extends Decoder {
         int bitPackedGroupCount = header >> 1;
         // in last bit-packing group, there may be some useless value,
         // lastBitPackedNum indicates how many values is useful
-        int lastBitPackedNum = ReadWriteIoUtils.read(byteCache);
+        int lastBitPackedNum = ReadWriteIOUtils.read(byteCache);
         if (bitPackedGroupCount > 0) {
 
           currentCount = (bitPackedGroupCount - 1) * config.RLE_MIN_REPEATED_NUM + lastBitPackedNum;
@@ -140,7 +140,7 @@ public abstract class RleDecoder extends Decoder {
     buffer.get(tmp, 0, length);
     byteCache = ByteBuffer.wrap(tmp);
     isLengthAndBitWidthReaded = true;
-    bitWidth = ReadWriteIoUtils.read(byteCache);
+    bitWidth = ReadWriteIOUtils.read(byteCache);
     initPacker();
   }
 

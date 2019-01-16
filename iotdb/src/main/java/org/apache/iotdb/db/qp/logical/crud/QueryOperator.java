@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * this class extends {@code RootOperator} and process getIndex statement
  */
-public class QueryOperator extends SfwOperator {
+public class QueryOperator extends SFWOperator {
 
     public QueryOperator(int tokenIntType) {
         super(tokenIntType);

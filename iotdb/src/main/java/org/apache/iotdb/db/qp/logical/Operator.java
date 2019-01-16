@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.db.qp.logical;
 
-import org.apache.iotdb.db.qp.constant.SqlConstant;
+import org.apache.iotdb.db.qp.constant.SQLConstant;
 
 /**
  * This class is a superclass of all operator.
@@ -31,7 +31,7 @@ public abstract class Operator {
 
     public Operator(int tokenIntType) {
         this.tokenIntType = tokenIntType;
-        this.tokenName = SqlConstant.tokenNames.get(tokenIntType);
+        this.tokenName = SQLConstant.tokenNames.get(tokenIntType);
     }
 
     public OperatorType getType() {

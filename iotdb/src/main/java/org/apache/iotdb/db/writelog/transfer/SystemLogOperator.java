@@ -16,7 +16,7 @@
 package org.apache.iotdb.db.writelog.transfer;
 
 /**
- * To avoid conflict with org.apache.iotdb.tsfiledb.qp.constant.SqlConstant.Operator.
+ * To avoid conflict with org.apache.iotdb.tsfiledb.qp.constant.SQLConstant.Operator.
  */
 public class SystemLogOperator {
     public static final int INSERT = 0;

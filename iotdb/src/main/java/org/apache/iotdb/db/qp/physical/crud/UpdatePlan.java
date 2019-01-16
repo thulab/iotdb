@@ -25,7 +25,7 @@ import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.utils.Pair;
 import org.apache.iotdb.tsfile.utils.StringContainer;
 
-import static org.apache.iotdb.db.qp.constant.SqlConstant.lineFeedSignal;
+import static org.apache.iotdb.db.qp.constant.SQLConstant.lineFeedSignal;
 
 public class UpdatePlan extends PhysicalPlan {
     private List<Pair<Long, Long>> intervals = new ArrayList<>();

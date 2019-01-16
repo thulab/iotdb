@@ -32,7 +32,7 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSFreqType;
  *
  * @author East
  */
-public class ReadWriteIoUtils {
+public class ReadWriteIOUtils {
 
   private static int SHORT_LEN = 2;
   private static int INT_LEN = 4;

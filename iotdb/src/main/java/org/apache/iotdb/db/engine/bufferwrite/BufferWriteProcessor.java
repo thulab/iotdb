@@ -56,7 +56,7 @@ public class BufferWriteProcessor extends Processor {
     private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
 
     private FileSchema fileSchema;
-    // private RestorableTsFileIoWriter bufferWriteRestoreManager;
+    // private RestorableTsFileIOWriter bufferWriteRestoreManager;
 
     private volatile FlushStatus flushStatus = new FlushStatus();
     private volatile boolean isFlush;
@@ -66,7 +66,7 @@ public class BufferWriteProcessor extends Processor {
 
     private IMemTable workMemTable;
     private IMemTable flushMemTable;
-    RestorableTsFileIoWriter writer;
+    RestorableTsFileIOWriter writer;
 
     private Action bufferwriteFlushAction;
     private Action bufferwriteCloseAction;
@@ -101,7 +101,7 @@ public class BufferWriteProcessor extends Processor {
         this.insertFilePath = new File(dataDir, fileName).getPath();
         bufferWriteRelativePath = processorName + File.separatorChar + fileName;
         try {
-            writer = new RestorableTsFileIoWriter(processorName, insertFilePath);
+            writer = new RestorableTsFileIOWriter(processorName, insertFilePath);
         } catch (IOException e) {
             throw new BufferWriteProcessorException(e);
         }

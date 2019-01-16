@@ -27,7 +27,7 @@ import org.apache.iotdb.db.qp.executor.QueryProcessExecutor;
 import org.apache.iotdb.db.qp.logical.Operator;
 import org.apache.iotdb.db.qp.logical.RootOperator;
 import org.apache.iotdb.db.qp.logical.crud.FilterOperator;
-import org.apache.iotdb.db.qp.logical.crud.SfwOperator;
+import org.apache.iotdb.db.qp.logical.crud.SFWOperator;
 import org.apache.iotdb.db.qp.physical.PhysicalPlan;
 import org.apache.iotdb.db.qp.strategy.LogicalGenerator;
 import org.apache.iotdb.db.qp.strategy.PhysicalGenerator;
@@ -73,7 +73,7 @@ public class QueryProcessor {
     }
 
     /**
-     * Convert ast tree to Operator which type maybe {@code SfwOperator} or {@code AuthorOperator}
+     * Convert ast tree to Operator which type maybe {@code SFWOperator} or {@code AuthorOperator}
      *
      * @param astNode
      *            - input ast tree
@@ -134,7 +134,7 @@ public class QueryProcessor {
         case QUERY:
         case UPDATE:
         case DELETE:
-            SfwOperator root = (SfwOperator) operator;
+            SFWOperator root = (SFWOperator) operator;
             return optimizeSFWOperator(root, executor);
         default:
             throw new LogicalOperatorException("unknown operator type:" + operator.getType());
@@ -151,10 +151,10 @@ public class QueryProcessor {
      * @throws LogicalOptimizeException
      *             exception in SFW optimizing
      */
-    private SfwOperator optimizeSFWOperator(SfwOperator root, QueryProcessExecutor executor)
+    private SFWOperator optimizeSFWOperator(SFWOperator root, QueryProcessExecutor executor)
             throws LogicalOperatorException {
         ConcatPathOptimizer concatPathOptimizer = new ConcatPathOptimizer(executor);
-        root = (SfwOperator) concatPathOptimizer.transform(root);
+        root = (SFWOperator) concatPathOptimizer.transform(root);
         FilterOperator filter = root.getFilterOperator();
         if (filter == null) {
             return root;

@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.db.qp.logical.crud;
 
-import org.apache.iotdb.db.qp.constant.SqlConstant;
+import org.apache.iotdb.db.qp.constant.SQLConstant;
 import org.apache.iotdb.db.exception.qp.LogicalOperatorException;
 import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.read.expression.IUnaryExpression;
@@ -152,20 +152,20 @@ public enum BasicOperatorType {
 
     public static BasicOperatorType getBasicOpBySymbol(int tokenIntType) throws LogicalOperatorException {
         switch (tokenIntType) {
-        case SqlConstant.EQUAL:
+        case SQLConstant.EQUAL:
             return EQ;
-        case SqlConstant.LESSTHANOREQUALTO:
+        case SQLConstant.LESSTHANOREQUALTO:
             return LTEQ;
-        case SqlConstant.LESSTHAN:
+        case SQLConstant.LESSTHAN:
             return LT;
-        case SqlConstant.GREATERTHANOREQUALTO:
+        case SQLConstant.GREATERTHANOREQUALTO:
             return GTEQ;
-        case SqlConstant.GREATERTHAN:
+        case SQLConstant.GREATERTHAN:
             return GT;
-        case SqlConstant.NOTEQUAL:
+        case SQLConstant.NOTEQUAL:
             return NOTEQUAL;
         default:
-            throw new LogicalOperatorException("unsupported type:{}" + SqlConstant.tokenNames.get(tokenIntType));
+            throw new LogicalOperatorException("unsupported type:{}" + SQLConstant.tokenNames.get(tokenIntType));
         }
     }
 

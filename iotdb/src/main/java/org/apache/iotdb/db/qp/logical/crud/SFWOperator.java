@@ -19,17 +19,17 @@ import org.apache.iotdb.db.qp.logical.RootOperator;
 import org.apache.iotdb.tsfile.read.common.Path;
 
 /**
- * SfwOperator(select-from-where) includes four subclass: INSERT,DELETE,UPDATE,QUERY. All of these
+ * SFWOperator(select-from-where) includes four subclass: INSERT,DELETE,UPDATE,QUERY. All of these
  * four statements has three partition: select clause, from clause and filter clause(where clause).
  */
-public abstract class SfwOperator extends RootOperator {
+public abstract class SFWOperator extends RootOperator {
 
   private SelectOperator selectOperator;
   private FromOperator fromOperator;
   private FilterOperator filterOperator;
   private boolean hasAggregation = false;
 
-  public SfwOperator(int tokenIntType) {
+  public SFWOperator(int tokenIntType) {
     super(tokenIntType);
     operatorType = OperatorType.SFW;
   }

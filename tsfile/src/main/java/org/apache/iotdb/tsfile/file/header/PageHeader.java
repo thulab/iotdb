@@ -16,7 +16,7 @@
 package org.apache.iotdb.tsfile.file.header;
 
 import org.apache.iotdb.tsfile.file.metadata.statistics.NoStatistics;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.statistics.Statistics;
 
@@ -113,32 +113,32 @@ public class PageHeader {
 
     public int serializeTo(OutputStream outputStream) throws IOException {
         int length = 0;
-        length += ReadWriteIoUtils.write(uncompressedSize, outputStream);
-        length += ReadWriteIoUtils.write(compressedSize, outputStream);
-        length += ReadWriteIoUtils.write(numOfValues, outputStream);
-        length += ReadWriteIoUtils.write(max_timestamp, outputStream);
-        length += ReadWriteIoUtils.write(min_timestamp, outputStream);
+        length += ReadWriteIOUtils.write(uncompressedSize, outputStream);
+        length += ReadWriteIOUtils.write(compressedSize, outputStream);
+        length += ReadWriteIOUtils.write(numOfValues, outputStream);
+        length += ReadWriteIOUtils.write(max_timestamp, outputStream);
+        length += ReadWriteIOUtils.write(min_timestamp, outputStream);
         length += statistics.serialize(outputStream);
         assert length == getSerializedSize();
         return length;
     }
 
     public static PageHeader deserializeFrom(InputStream inputStream, TSDataType dataType) throws IOException {
-        int uncompressedSize = ReadWriteIoUtils.readInt(inputStream);
-        int compressedSize = ReadWriteIoUtils.readInt(inputStream);
-        int numOfValues = ReadWriteIoUtils.readInt(inputStream);
-        long max_timestamp = ReadWriteIoUtils.readLong(inputStream);
-        long min_timestamp = ReadWriteIoUtils.readLong(inputStream);
+        int uncompressedSize = ReadWriteIOUtils.readInt(inputStream);
+        int compressedSize = ReadWriteIOUtils.readInt(inputStream);
+        int numOfValues = ReadWriteIOUtils.readInt(inputStream);
+        long max_timestamp = ReadWriteIOUtils.readLong(inputStream);
+        long min_timestamp = ReadWriteIOUtils.readLong(inputStream);
         Statistics statistics = Statistics.deserialize(inputStream, dataType);
         return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, max_timestamp, min_timestamp);
     }
 
     public static PageHeader deserializeFrom(ByteBuffer buffer, TSDataType dataType) throws IOException {
-        int uncompressedSize = ReadWriteIoUtils.readInt(buffer);
-        int compressedSize = ReadWriteIoUtils.readInt(buffer);
-        int numOfValues = ReadWriteIoUtils.readInt(buffer);
-        long max_timestamp = ReadWriteIoUtils.readLong(buffer);
-        long min_timestamp = ReadWriteIoUtils.readLong(buffer);
+        int uncompressedSize = ReadWriteIOUtils.readInt(buffer);
+        int compressedSize = ReadWriteIOUtils.readInt(buffer);
+        int numOfValues = ReadWriteIOUtils.readInt(buffer);
+        long max_timestamp = ReadWriteIOUtils.readLong(buffer);
+        long min_timestamp = ReadWriteIOUtils.readLong(buffer);
         Statistics statistics = Statistics.deserialize(buffer, dataType);
         return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, max_timestamp, min_timestamp);
     }

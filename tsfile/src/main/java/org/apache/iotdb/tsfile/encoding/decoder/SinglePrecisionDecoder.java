@@ -17,7 +17,7 @@ package org.apache.iotdb.tsfile.encoding.decoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
-import org.apache.iotdb.tsfile.utils.ReadWriteIoUtils;
+import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +37,10 @@ public class SinglePrecisionDecoder extends GorillaDecoder {
     if (!flag) {
       flag = true;
       try {
-        int ch1 = ReadWriteIoUtils.read(buffer);
-        int ch2 = ReadWriteIoUtils.read(buffer);
-        int ch3 = ReadWriteIoUtils.read(buffer);
-        int ch4 = ReadWriteIoUtils.read(buffer);
+        int ch1 = ReadWriteIOUtils.read(buffer);
+        int ch2 = ReadWriteIOUtils.read(buffer);
+        int ch3 = ReadWriteIOUtils.read(buffer);
+        int ch4 = ReadWriteIOUtils.read(buffer);
         preValue = ch1 + (ch2 << 8) + (ch3 << 16) + (ch4 << 24);
         leadingZeroNum = Integer.numberOfLeadingZeros(preValue);
         tailingZeroNum = Integer.numberOfTrailingZeros(preValue);

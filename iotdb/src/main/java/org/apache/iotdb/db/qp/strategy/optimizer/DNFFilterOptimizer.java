@@ -15,8 +15,8 @@
  */
 package org.apache.iotdb.db.qp.strategy.optimizer;
 
-import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_AND;
-import static org.apache.iotdb.db.qp.constant.SqlConstant.KW_OR;
+import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_AND;
+import static org.apache.iotdb.db.qp.constant.SQLConstant.KW_OR;
 
 import java.util.ArrayList;
 import java.util.List;
