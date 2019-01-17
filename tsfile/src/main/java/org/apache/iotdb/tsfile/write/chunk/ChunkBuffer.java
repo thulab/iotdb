@@ -39,7 +39,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * Store current pages in this chunk
+ * Store current pages in this chunk.
  *
  * @author kangrong
  */
