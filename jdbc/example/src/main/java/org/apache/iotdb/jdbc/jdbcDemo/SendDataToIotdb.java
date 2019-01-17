@@ -33,7 +33,7 @@ public class SendDataToIotdb {
 
 	public void connectToIotdb() throws Exception {
 		// 1. load JDBC driver of IoTDB
-		Class.forName("org.apache.iotdb.jdbc.TsfileDriver");
+		Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
 		// 2. DriverManager connect to IoTDB
 		connection = DriverManager.getConnection(Config.IOTDB_URL_PREFIX+"127.0.0.1:6667/", "root", "root");
 

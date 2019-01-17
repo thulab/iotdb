@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @author lta
  */
 public class FileSenderImpl implements FileSender {
-  private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.TsfileDriver";
+  private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.IoTDBDriver";
 
   private TTransport transport;
   private ServerService.Client clientOfServer;

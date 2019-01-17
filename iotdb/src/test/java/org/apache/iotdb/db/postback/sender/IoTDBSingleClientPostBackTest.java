@@ -264,7 +264,7 @@ public class IoTDBSingleClientPostBackTest {
                 Class.forName(Config.JDBC_DRIVER_NAME);
                 Connection connection = null;
                 try {
-                    connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
+                    connection = DriverManager.getConnection("jdbc:iotdb://192.168.130.17:6667/", "root", "root");
                     Statement statement = connection.createStatement();
                     boolean hasResultSet = statement.execute("select * from root.vehicle");
                     if (hasResultSet) {
@@ -387,7 +387,7 @@ public class IoTDBSingleClientPostBackTest {
                 Class.forName(Config.JDBC_DRIVER_NAME);
                 Connection connection = null;
                 try {
-                    connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
+                    connection = DriverManager.getConnection("jdbc:iotdb://192.168.130.17:6667/", "root", "root");
                     Statement statement = connection.createStatement();
                     boolean hasResultSet = statement.execute("select * from root.vehicle");
                     if (hasResultSet) {
@@ -531,7 +531,7 @@ public class IoTDBSingleClientPostBackTest {
                 Class.forName(Config.JDBC_DRIVER_NAME);
                 Connection connection = null;
                 try {
-                    connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.17:6667/", "root", "root");
+                    connection = DriverManager.getConnection("jdbc:iotdb://192.168.130.17:6667/", "root", "root");
                     Statement statement = connection.createStatement();
                     boolean hasResultSet = statement.execute("select * from root.vehicle");
                     if (hasResultSet) {
