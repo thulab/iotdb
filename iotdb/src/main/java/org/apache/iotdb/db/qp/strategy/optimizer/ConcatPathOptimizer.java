@@ -184,7 +184,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
   }
 
   /**
-   * Make 'SLIMIT&SOFFSET' take effect by trimming the suffixList and aggregations of the
+   * Make 'SLIMIT&SOFFSET' take effect by trimming the suffix List and aggregations of the
    * selectOperator.
    *
    * @param seriesLimit is ensured to be positive integer
