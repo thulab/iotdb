@@ -136,6 +136,7 @@ public class DatabaseConnectController {
   private void setJsonTable(JSONObject obj, String target,
       Pair<ZonedDateTime, ZonedDateTime> timeRange)
       throws JSONException {
+    List<TimeValues> timeValues = databaseConnectService.querySeries(target, timeRange);
     JSONArray columns = new JSONArray();
     JSONObject column = new JSONObject();
     column.put("text", "Time");
@@ -147,7 +148,6 @@ public class DatabaseConnectController {
     columns.put(column);
     obj.put("columns", columns);
     JSONArray values = new JSONArray();
-    List<TimeValues> timeValues = databaseConnectService.querySeries(target, timeRange);
     for (TimeValues tv : timeValues) {
       JSONArray value = new JSONArray();
       value.put(tv.getTime());

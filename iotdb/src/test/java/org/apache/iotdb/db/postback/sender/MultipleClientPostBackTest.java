@@ -97,8 +97,8 @@ public class MultipleClientPostBackTest {
         // Connection connection = null;
         // Connection connection1 = null;
         // try {
-        // connection = DriverManager.getConnection("jdbc:tsfile://166.111.7.249:6667/", "root", "root");
-        // connection1 = DriverManager.getConnection("jdbc:tsfile://166.111.7.250:6667/", "root", "root");
+        // connection = DriverManager.getConnection("jdbc:iotdb://166.111.7.249:6667/", "root", "root");
+        // connection1 = DriverManager.getConnection("jdbc:iotdb://166.111.7.250:6667/", "root", "root");
         // Statement statement = connection.createStatement();
         // Statement statement1 = connection1.createStatement();
         // String SQL = String.format(sqlFormat, timesery, storageGroup);
@@ -158,8 +158,8 @@ public class MultipleClientPostBackTest {
                     Connection connection = null;
                     Connection connection1 = null;
                     try {
-                        connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.14:6667/", "root", "root");
-                        connection1 = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
+                        connection = DriverManager.getConnection("jdbc:iotdb://192.168.130.14:6667/", "root", "root");
+                        connection1 = DriverManager.getConnection("jdbc:iotdb://192.168.130.16:6667/", "root", "root");
                         Statement statement = connection.createStatement();
                         Statement statement1 = connection1.createStatement();
                         String SQL = String.format(sqlFormat, timesery, storageGroup);
@@ -219,8 +219,8 @@ public class MultipleClientPostBackTest {
                     Connection connection = null;
                     Connection connection1 = null;
                     try {
-                        connection = DriverManager.getConnection("jdbc:tsfile://192.168.130.15:6667/", "root", "root");
-                        connection1 = DriverManager.getConnection("jdbc:tsfile://192.168.130.16:6667/", "root", "root");
+                        connection = DriverManager.getConnection("jdbc:iotdb://192.168.130.15:6667/", "root", "root");
+                        connection1 = DriverManager.getConnection("jdbc:iotdb://192.168.130.16:6667/", "root", "root");
                         Statement statement = connection.createStatement();
                         Statement statement1 = connection1.createStatement();
                         String SQL = String.format(sqlFormat, timesery, storageGroup);

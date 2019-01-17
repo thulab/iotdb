@@ -15,7 +15,7 @@
  */
 package org.apache.iotdb.tsfile.encoding.decoder;
 
-import org.apache.iotdb.tsfile.exception.encoding.TSFileDecodingException;
+import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
 import org.apache.iotdb.tsfile.utils.Binary;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
@@ -114,7 +114,7 @@ public class PlainDecoder extends Decoder {
 
     @Override
     public BigDecimal readBigDecimal(ByteBuffer buffer) {
-        throw new TSFileDecodingException("Method readBigDecimal is not supproted by PlainDecoder");
+        throw new TsFileDecodingException("Method readBigDecimal is not supproted by PlainDecoder");
     }
 
     @Override

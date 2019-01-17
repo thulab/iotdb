@@ -181,11 +181,11 @@ public class ChunkBuffer {
     }
 
     // start to write this column chunk
-    final int headerSize = writer.startFlushChunk(schema, compressor.getType(), schema.getType(),
+    int headerSize = writer.startFlushChunk(schema, compressor.getType(), schema.getType(),
         schema.getEncodingType(), statistics, maxTimestamp, minTimestamp, pageBuffer.size(),
         numOfPages);
 
-    final long totalByteSize = writer.getPos();
+    long totalByteSize = writer.getPos();
     LOG.debug("start writing pages of {} into file, position {}", schema.getMeasurementId(),
         writer.getPos());
 

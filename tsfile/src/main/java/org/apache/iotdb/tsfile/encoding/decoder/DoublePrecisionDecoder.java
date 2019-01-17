@@ -46,7 +46,7 @@ public class DoublePrecisionDecoder extends GorillaDecoder {
           res += ((long) buf[i] << (i * 8));
         }
         preValue = res;
-        final double tmp = Double.longBitsToDouble(preValue);
+        double tmp = Double.longBitsToDouble(preValue);
         leadingZeroNum = Long.numberOfLeadingZeros(preValue);
         tailingZeroNum = Long.numberOfTrailingZeros(preValue);
         fillBuffer(buffer);

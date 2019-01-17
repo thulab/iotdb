@@ -373,7 +373,7 @@ public class BufferWriteProcessor extends Processor {
   @Override
   public void close() throws BufferWriteProcessorException {
     try {
-      final long closeStartTime = System.currentTimeMillis();
+      long closeStartTime = System.currentTimeMillis();
       // flush data
       flush(true);
       // end file

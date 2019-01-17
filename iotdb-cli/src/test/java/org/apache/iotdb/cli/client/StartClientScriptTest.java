@@ -50,7 +50,7 @@ public class StartClientScriptTest {
 
     private void testStartClientOnWindows() throws IOException {
         final String[] output = { "````````````````````````", "Starting IoTDB Client", "````````````````````````",
-                "IoTDB> Connection Error, please check whether the network is avaliable or the server has started.. Host is 127.0.0.1, port is 6668." };
+                "IoTDB> Connection Error, please check whether the network is available or the server has started.. Host is 127.0.0.1, port is 6668." };
         String dir = getCurrentPath("cmd.exe", "/c", "echo %cd%");
         ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c",
                 dir + File.separator + "cli" + File.separator + "bin" + File.separator + "start-client.bat", "-h",
@@ -60,7 +60,7 @@ public class StartClientScriptTest {
 
     private void testStartClientOnUnix() throws IOException {
         final String[] output = { "---------------------", "Starting IoTDB Client", "---------------------",
-                "IoTDB> Connection Error, please check whether the network is avaliable or the server has started.. Host is 127.0.0.1, port is 6668." };
+                "IoTDB> Connection Error, please check whether the network is available or the server has started.. Host is 127.0.0.1, port is 6668." };
         String dir = getCurrentPath("pwd");
         System.out.println(dir);
         ProcessBuilder builder = new ProcessBuilder("sh",
