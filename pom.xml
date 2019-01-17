@@ -264,7 +264,7 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <version>3.0</version>
                 <configuration>
-                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+                    <header>asf.header</header>
                     <properties>
                         <owner>Apache IoTDB(incubating)</owner>
                         <email>dev@iotdb.apache.org</email>
@@ -284,6 +284,8 @@
                         <exclude>NOTICE*</exclude>
                         <exclude>LICENSE*</exclude>
                         <exclude>License</exclude>
+                        <exclude>asf.header</exclude>
+                        <exclude>**/iotdb/data/</exclude>
                     </excludes>
                 </configuration>
                 <executions>
