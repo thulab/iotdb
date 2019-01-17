@@ -29,14 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <p>
- * JsonConverter is used to convert JsonObject to TSFile Schema which is a java class defined in
+ * <p> JsonConverter is used to convert JsonObject to TSFile Schema which is a java class defined in
  * tsfile project. the main function of this converter is to receive a json object of schema and
- * register all measurements.
- * </p>
+ * register all measurements. </p>
  *
- * <p>
- * The format of JSON schema is as follow:
+ * <p> The format of JSON schema is as follow:
  *
  * <pre>
  *  {
@@ -73,11 +70,9 @@ public class JsonConverter {
   /**
    * input a FileSchema and a jsonObject to be converted.
    *
-   * @param jsonSchema
-   *            the whole schema in type of JSONObject
+   * @param jsonSchema the whole schema in type of JSONObject
    * @return converted measurement descriptors
-   * @throws InvalidJsonSchemaException
-   *             throw exception when json schema is not valid
+   * @throws InvalidJsonSchemaException throw exception when json schema is not valid
    */
 
   public static Map<String, MeasurementSchema> converterJsonToMeasurementSchemas(
@@ -105,18 +100,13 @@ public class JsonConverter {
   /**
    * convert the input JSONObject to MeasurementSchema.
    *
-   * @param measurementObj
-   *            properties of one measurement
+   * @param measurementObj properties of one measurement
    *
-   *            an example:
-   *
-   *            { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
-   *
-   *            // some measurement may have some properties
-   *
-   *            "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"], "max_error":12,
-   *            "max_point_number":3 }
-   *
+   *     an example:
+   *     { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
+   *     // some measurement may have some properties
+   *     "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"],
+   *     "max_error":12, "max_point_number":3 }
    * @return converted MeasurementSchema
    */
   public static MeasurementSchema convertJsonToMeasurementSchema(JSONObject measurementObj) {
@@ -154,6 +144,9 @@ public class JsonConverter {
     return new MeasurementSchema(measurementId, type, encoding, compressionType, props);
   }
 
+  /**
+   * function for converting chunk group size from jsonSchema.
+   */
   public static long convertJsonToChunkGroupSize(JSONObject jsonSchema) {
     if (jsonSchema.has(JsonFormatConstant.ROW_GROUP_SIZE)) {
       return jsonSchema.getLong(JsonFormatConstant.ROW_GROUP_SIZE);
@@ -164,8 +157,7 @@ public class JsonConverter {
   /**
    * given a FileSchema and convert it into a JSONObject.
    *
-   * @param fileSchema
-   *            the given schema in type of {@linkplain FileSchema FileSchema}
+   * @param fileSchema the given schema in type of {@linkplain FileSchema FileSchema}
    * @return converted File Schema in type of JSONObject
    */
   public static JSONObject converterFileSchemaToJson(FileSchema fileSchema) {
@@ -185,18 +177,15 @@ public class JsonConverter {
   /**
    * given a MeasurementSchema and convert it to a JSONObject.
    *
-   * @param measurementSchema
-   *            the given descriptor in type of {@linkplain MeasurementSchema MeasurementSchema}
+   * @param measurementSchema the given descriptor in type of {@linkplain MeasurementSchema
+   * MeasurementSchema}
    * @return converted MeasurementSchema in form of JSONObject
    *
-   *         an example:
-   *
-   *         { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
-   *
-   *         // some measurement may have some properties
-   *
-   *         "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"], "max_error":12,
-   *         "max_point_number":3 }
+   *     an example:
+   *     { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
+   *     // some measurement may have some properties
+   *     "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"], "max_error":12,
+   *     "max_point_number":3 }
    */
   private static JSONObject convertMeasurementSchemaToJson(MeasurementSchema measurementSchema) {
     JSONObject measurementObj = new JSONObject();

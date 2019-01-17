@@ -24,24 +24,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Decoder for long value using rle or bit-packing
+ * Decoder for long value using rle or bit-packing.
  */
 public class LongRleDecoder extends RleDecoder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LongRleDecoder.class);
 
   /**
-   * current value for rle repeated value
+   * current value for rle repeated value.
    */
   private long currentValue;
 
   /**
-   * buffer to save all values in group using bit-packing
+   * buffer to save all values in group using bit-packing.
    */
   private long[] currentBuffer;
 
   /**
-   * packer for unpacking long value
+   * packer for unpacking long value.
    */
   private LongPacker packer;
 
@@ -51,7 +51,7 @@ public class LongRleDecoder extends RleDecoder {
   }
 
   /**
-   * read a long value from InputStream
+   * read a long value from InputStream.
    *
    * @param buffer - InputStream
    * @return value - current valid value
@@ -68,7 +68,8 @@ public class LongRleDecoder extends RleDecoder {
         readNext();
       } catch (IOException e) {
         LOGGER.error(
-            "tsfile-encoding IntRleDecoder: error occurs when reading all encoding number, length is {}, bit width is {}",
+            "tsfile-encoding IntRleDecoder: error occurs when reading all encoding number, length "
+                + "is {}, bit width is {}",
             length, bitWidth, e);
       }
     }

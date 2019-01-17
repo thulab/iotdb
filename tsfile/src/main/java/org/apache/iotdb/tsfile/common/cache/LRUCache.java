@@ -67,6 +67,9 @@ public abstract class LRUCache<K, T> implements Cache<K, T> {
     cache.remove(key);
   }
 
+  /**
+   * function for putting a key-value pair.
+   */
   public void put(K key, T value) {
     cache.remove(key);
     removeFirstObjectIfCacheIsFull();

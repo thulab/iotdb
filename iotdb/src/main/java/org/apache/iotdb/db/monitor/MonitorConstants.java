@@ -30,9 +30,10 @@ public class MonitorConstants {
   public static final String fileNodePath = "write";
 
   /**
-   * @param constantsType:
-   *            produce initialization values for Statistics Params
-   * @return : HashMap contains all the Statistics Params
+   * function for initing values.
+   *
+   * @param constantsType produce initialization values for Statistics Params
+   * @return HashMap contains all the Statistics Params
    */
   public static HashMap<String, AtomicLong> initValues(String constantsType) {
     HashMap<String, AtomicLong> hashMap = new HashMap<>();

@@ -39,8 +39,6 @@ public class OFFileMetadata {
 
   /**
    * add OFRowGroupListMetadata to list.
-   *
-   * @return void
    */
   public void addRowGroupListMetaData(OFRowGroupListMetadata rowGroupListMetadata) {
     if (rowGroupLists == null) {
@@ -67,6 +65,9 @@ public class OFFileMetadata {
         rowGroupLists.toString());
   }
 
+  /**
+   * function for serializing data to output stream.
+   */
   public int serializeTo(OutputStream outputStream) throws IOException {
     int byteLen = 0;
     byteLen += ReadWriteIOUtils.write(lastFooterOffset, outputStream);
@@ -82,6 +83,9 @@ public class OFFileMetadata {
     throw new NotImplementedException();
   }
 
+  /**
+   * function for deserializing data from input stream.
+   */
   public static OFFileMetadata deserializeFrom(InputStream inputStream) throws IOException {
     long lastFooterOffset = ReadWriteIOUtils.readLong(inputStream);
     int size = ReadWriteIOUtils.readInt(inputStream);

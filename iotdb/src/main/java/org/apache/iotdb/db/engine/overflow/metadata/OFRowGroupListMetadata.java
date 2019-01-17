@@ -64,6 +64,9 @@ public class OFRowGroupListMetadata {
     return deviceId;
   }
 
+  /**
+   * function for serialing data to output stream.
+   */
   public int serializeTo(OutputStream outputStream) throws IOException {
     int byteLen = 0;
     byteLen += ReadWriteIOUtils.write(deviceId, outputStream);
@@ -75,10 +78,16 @@ public class OFRowGroupListMetadata {
     return byteLen;
   }
 
+  /**
+   * function for serializing data to byte buffer.
+   */
   public int serializeTo(ByteBuffer buffer) throws IOException {
     throw new NotImplementedException();
   }
 
+  /**
+   * function for deserializing data from input stream.
+   */
   public static OFRowGroupListMetadata deserializeFrom(InputStream inputStream) throws IOException {
     OFRowGroupListMetadata ofRowGroupListMetadata = new OFRowGroupListMetadata();
     ofRowGroupListMetadata.deviceId = ReadWriteIOUtils.readString(inputStream);

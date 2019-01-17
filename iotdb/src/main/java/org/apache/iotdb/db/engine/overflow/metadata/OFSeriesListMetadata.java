@@ -43,8 +43,6 @@ public class OFSeriesListMetadata {
 
   /**
    * add TimeSeriesChunkMetaData to timeSeriesList.
-   *
-   * @param timeSeries
    */
   public void addSeriesMetaData(ChunkMetaData timeSeries) {
     if (timeSeriesList == null) {
@@ -67,6 +65,9 @@ public class OFSeriesListMetadata {
     return measurementId;
   }
 
+  /**
+   * function for serializing data to output stream.
+   */
   public int serializeTo(OutputStream outputStream) throws IOException {
     int byteLen = 0;
     byteLen += ReadWriteIOUtils.write(measurementId, outputStream);
@@ -81,6 +82,9 @@ public class OFSeriesListMetadata {
     throw new NotImplementedException();
   }
 
+  /**
+   * function for deserializing data from input stream.
+   */
   public static OFSeriesListMetadata deserializeFrom(InputStream inputStream) throws IOException {
     OFSeriesListMetadata ofSeriesListMetadata = new OFSeriesListMetadata();
     ofSeriesListMetadata.measurementId = ReadWriteIOUtils.readString(inputStream);

@@ -56,6 +56,12 @@ public class LeafNode implements Node {
     return time;
   }
 
+  /**
+   * Check whether the current time equals the given time.
+   *
+   * @param time the given time
+   * @return True if the current time equals the given time. False if not.
+   */
   public boolean currentTimeIs(long time) {
     if (!reader.currentBatch().hasNext()) {
       return false;
@@ -63,6 +69,9 @@ public class LeafNode implements Node {
     return reader.currentBatch().currentTime() == time;
   }
 
+  /**
+   * Function for getting the value at the given time.
+   */
   public Object currentValue(long time) {
     if (data.currentTime() == time) {
       return data.currentValue();

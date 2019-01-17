@@ -156,6 +156,9 @@ public class MGraph implements Serializable {
     throw new PathErrorException("Timeseries's root is not Correct. RootName: " + rootName);
   }
 
+  /**
+   * function for getting all timeseries paths under the given seriesPath.
+   */
   public List<List<String>> getShowTimeseriesPath(String path) throws PathErrorException {
     String rootName = path.trim().split(separator)[0];
     if (mtree.getRoot().getName().equals(rootName)) {
@@ -231,7 +234,7 @@ public class MGraph implements Serializable {
    * Get all ColumnSchemas for the filenode seriesPath.
    *
    * @param path the filenode seriesPath
-   * @return ArrayList<'ColumnSchema'> The list of the schema
+   * @return ArrayList<' ColumnSchema '> The list of the schema
    */
   public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path) {
     return mtree.getSchemaForOneFileNode(path);
@@ -323,6 +326,9 @@ public class MGraph implements Serializable {
     return mtree.getSchemaForOnePathWithCheck(path);
   }
 
+  /**
+   * functions for converting the mTree to a readable string in json format.
+   */
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("===  Timeseries Tree  ===\n\n");

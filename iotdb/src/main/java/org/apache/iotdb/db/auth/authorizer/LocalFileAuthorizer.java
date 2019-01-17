@@ -47,6 +47,9 @@ public class LocalFileAuthorizer extends BasicAuthorizer {
     }
   }
 
+  /**
+   * function for getting the instance of the local file authorizer.
+   */
   public static LocalFileAuthorizer getInstance() throws AuthException {
     if (InstanceHolder.instance == null) {
       throw new AuthException("Authorizer uninitialized");

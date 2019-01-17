@@ -22,8 +22,8 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 
 /**
- * This class is the implementation of Metadata Node where "MNode" is the shorthand of "Metadata Node". One MNode
- * instance represents one node in the Metadata Tree
+ * This class is the implementation of Metadata Node where "MNode" is the shorthand of "Metadata
+ * Node". One MNode instance represents one node in the Metadata Tree
  */
 public class MNode implements Serializable {
 
@@ -46,6 +46,9 @@ public class MNode implements Serializable {
   private MNode parent;
   private LinkedHashMap<String, MNode> children;
 
+  /**
+   * Constructor of MNode.
+   */
   public MNode(String name, MNode parent, boolean isLeaf) {
     this.setName(name);
     this.parent = parent;
@@ -65,6 +68,9 @@ public class MNode implements Serializable {
     return isStorageLevel;
   }
 
+  /**
+   * function for setting storage level.
+   */
   public void setStorageLevel(boolean b) {
     this.isStorageLevel = b;
     if (b) {
@@ -92,6 +98,9 @@ public class MNode implements Serializable {
     this.isLeaf = isLeaf;
   }
 
+  /**
+   * function for checking whether mnode's children contain the given key.
+   */
   public boolean hasChild(String key) {
     if (!isLeaf) {
       return this.children.containsKey(key);
@@ -99,6 +108,9 @@ public class MNode implements Serializable {
     return false;
   }
 
+  /**
+   * function for adding the given key to the given child mnode.
+   */
   public void addChild(String key, MNode child) {
     if (!isLeaf) {
       this.children.put(key, child);
@@ -109,6 +121,9 @@ public class MNode implements Serializable {
     children.remove(key);
   }
 
+  /**
+   * function for getting the child mnode under the given key.
+   */
   public MNode getChild(String key) {
     if (!isLeaf) {
       return children.get(key);
@@ -117,7 +132,7 @@ public class MNode implements Serializable {
   }
 
   /**
-   * @return the count of all leaves whose ancestor is current node
+   * function for getting the count of all leaves whose ancestor is current node.
    */
   public int getLeafCount() {
     if (isLeaf) {

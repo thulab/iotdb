@@ -32,6 +32,9 @@ public class Metadata {
     this.deviceIdMap = deviceIdMap;
   }
 
+  /**
+   * function for getting series for one type.
+   */
   public List<ColumnSchema> getSeriesForOneType(String type) throws PathErrorException {
     if (this.seriesMap.containsKey(type)) {
       return seriesMap.get(type);
@@ -40,6 +43,9 @@ public class Metadata {
     }
   }
 
+  /**
+   * function for getting devices for one type.
+   */
   public List<String> getDevicesForOneType(String type) throws PathErrorException {
     if (this.seriesMap.containsKey(type)) {
       return deviceIdMap.get(type);

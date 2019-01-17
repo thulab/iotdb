@@ -39,9 +39,9 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.read.common.Path;
 
 /**
- * This class takes the responsibility of serialization of all the metadata info and persistent it into files. This
- * class contains all the interfaces to modify the metadata for delta system. All the operations will be write into the
- * logs temporary in case the downtime of the delta system.
+ * This class takes the responsibility of serialization of all the metadata info and persistent it
+ * into files. This class contains all the interfaces to modify the metadata for delta system. All
+ * the operations will be write into the logs temporary in case the downtime of the delta system.
  *
  * @author Jinrui Zhang
  */
@@ -55,13 +55,13 @@ public class MManager {
   private String datafilePath;
   // the log file seriesPath
   private String logFilePath;
-  private MGraph mGraph;
+  private MGraph mgraph;
   private BufferedWriter logWriter;
   private boolean writeToLog;
   private String metadataDirPath;
 
   private RandomDeleteCache<String, PathCheckRet> checkAndGetDataTypeCache;
-  private RandomDeleteCache<String, MNode> mNodeCache;
+  private RandomDeleteCache<String, MNode> mnodecache;
 
   private static class MManagerHolder {
 
@@ -99,7 +99,7 @@ public class MManager {
       }
     };
 
-    mNodeCache = new RandomDeleteCache<String, MNode>(cacheSize) {
+    mnodecache = new RandomDeleteCache<String, MNode>(cacheSize) {
       @Override
       public void beforeRemove(MNode object) throws CacheException {
       }
@@ -128,13 +128,13 @@ public class MManager {
           // init the metadata from the serialized file
           FileInputStream fis = new FileInputStream(dataFile);
           ObjectInputStream ois = new ObjectInputStream(fis);
-          mGraph = (MGraph) ois.readObject();
+          mgraph = (MGraph) ois.readObject();
           ois.close();
           fis.close();
           dataFile.delete();
         } else {
           // init the metadata from the operation log
-          mGraph = new MGraph(ROOT_NAME);
+          mgraph = new MGraph(ROOT_NAME);
           if (logFile.exists()) {
             FileReader fr = new FileReader(logFile);
             BufferedReader br = new BufferedReader(fr);
@@ -157,10 +157,13 @@ public class MManager {
     }
   }
 
+  /**
+   * function for clearing mgraph.
+   */
   public void clear() {
     lock.writeLock().lock();
     try {
-      this.mGraph = new MGraph(ROOT_NAME);
+      this.mgraph = new MGraph(ROOT_NAME);
     } finally {
       lock.writeLock().unlock();
     }
@@ -169,7 +172,7 @@ public class MManager {
   private void operation(String cmd)
       throws PathErrorException, IOException, MetadataArgsErrorException {
 
-    String args[] = cmd.trim().split(",");
+    String[] args = cmd.trim().split(",");
     if (args[0].equals(MetadataOperationType.ADD_PATH_TO_MTREE)) {
       String[] leftArgs;
       if (args.length > 4) {
@@ -218,28 +221,19 @@ public class MManager {
   }
 
   /**
-   * <p>
-   * Add one timeseries to metadata. Must invoke the<code>pathExist</code> and <code>getFileNameByPath</code> method
-   * first to check timeseries.
-   * </p>
+   * <p> Add one timeseries to metadata. Must invoke the<code>pathExist</code> and
+   * <code>getFileNameByPath</code> method first to check timeseries. </p>
    *
-   * @param path
-   *            the timeseries seriesPath
-   * @param dataType
-   *            the datetype {@code DataType} for the timeseries
-   * @param encoding
-   *            the encoding function {@code Encoding} for the timeseries
-   * @param args
-   * @throws PathErrorException
-   * @throws IOException
-   * @throws MetadataArgsErrorException
+   * @param path the timeseries seriesPath
+   * @param dataType the datetype {@code DataType} for the timeseries
+   * @param encoding the encoding function {@code Encoding} for the timeseries
    */
   public void addPathToMTree(String path, String dataType, String encoding, String[] args)
       throws PathErrorException, IOException, MetadataArgsErrorException {
 
     lock.writeLock().lock();
     try {
-      mGraph.addPathToMTree(path, dataType, encoding, args);
+      mgraph.addPathToMTree(path, dataType, encoding, args);
       if (writeToLog) {
         initLogStream();
         logWriter.write(
@@ -255,12 +249,15 @@ public class MManager {
     }
   }
 
+  /**
+   * function for deleting a given path from mTree.
+   */
   public String deletePathFromMTree(String path) throws PathErrorException, IOException {
     lock.writeLock().lock();
     try {
       checkAndGetDataTypeCache.clear();
-      mNodeCache.clear();
-      String dataFileName = mGraph.deletePath(path);
+      mnodecache.clear();
+      String dataFileName = mgraph.deletePath(path);
       if (writeToLog) {
         initLogStream();
         logWriter.write(MetadataOperationType.DELETE_PATH_FROM_MTREE + "," + path);
@@ -273,13 +270,16 @@ public class MManager {
     }
   }
 
+  /**
+   * function for setting storage level of the given path to mTree.
+   */
   public void setStorageLevelToMTree(String path) throws PathErrorException, IOException {
 
     lock.writeLock().lock();
     try {
       checkAndGetDataTypeCache.clear();
-      mNodeCache.clear();
-      mGraph.setStorageLevel(path);
+      mnodecache.clear();
+      mgraph.setStorageLevel(path);
       if (writeToLog) {
         initLogStream();
         logWriter.write(MetadataOperationType.SET_STORAGE_LEVEL_TO_MTREE + "," + path);
@@ -291,14 +291,17 @@ public class MManager {
     }
   }
 
-  public void addAPTree(String pTreeRootName) throws IOException, MetadataArgsErrorException {
+  /**
+   * function for adding a pTree.
+   */
+  public void addAPTree(String ptreeRootName) throws IOException, MetadataArgsErrorException {
 
     lock.writeLock().lock();
     try {
-      mGraph.addAPTree(pTreeRootName);
+      mgraph.addAPTree(ptreeRootName);
       if (writeToLog) {
         initLogStream();
-        logWriter.write(MetadataOperationType.ADD_A_PTREE + "," + pTreeRootName);
+        logWriter.write(MetadataOperationType.ADD_A_PTREE + "," + ptreeRootName);
         logWriter.newLine();
         logWriter.flush();
       }
@@ -307,12 +310,15 @@ public class MManager {
     }
   }
 
+  /**
+   * function for adding a given path to pTree.
+   */
   public void addPathToPTree(String path)
       throws PathErrorException, IOException, MetadataArgsErrorException {
 
     lock.writeLock().lock();
     try {
-      mGraph.addPathToPTree(path);
+      mgraph.addPathToPTree(path);
       if (writeToLog) {
         initLogStream();
         logWriter.write(MetadataOperationType.ADD_A_PATH_TO_PTREE + "," + path);
@@ -324,11 +330,14 @@ public class MManager {
     }
   }
 
+  /**
+   * function for deleting a given path from pTree.
+   */
   public void deletePathFromPTree(String path) throws PathErrorException, IOException {
 
     lock.writeLock().lock();
     try {
-      mGraph.deletePath(path);
+      mgraph.deletePath(path);
       if (writeToLog) {
         initLogStream();
         logWriter.write(MetadataOperationType.DELETE_PATH_FROM_PTREE + "," + path);
@@ -340,31 +349,17 @@ public class MManager {
     }
   }
 
-  public void linkMNodeToPTree(String path, String mPath) throws PathErrorException, IOException {
+  /**
+   * function for linking MNode to pTree.
+   */
+  public void linkMNodeToPTree(String path, String mpath) throws PathErrorException, IOException {
 
     lock.writeLock().lock();
     try {
-      mGraph.linkMNodeToPTree(path, mPath);
+      mgraph.linkMNodeToPTree(path, mpath);
       if (writeToLog) {
         initLogStream();
-        logWriter.write(MetadataOperationType.LINK_MNODE_TO_PTREE + "," + path + "," + mPath);
-        logWriter.newLine();
-        logWriter.flush();
-      }
-    } finally {
-      lock.writeLock().unlock();
-    }
-  }
-
-  public void unlinkMNodeFromPTree(String path, String mPath)
-      throws PathErrorException, IOException {
-
-    lock.writeLock().lock();
-    try {
-      mGraph.unlinkMNodeFromPTree(path, mPath);
-      if (writeToLog) {
-        initLogStream();
-        logWriter.write(MetadataOperationType.UNLINK_MNODE_FROM_PTREE + "," + path + "," + mPath);
+        logWriter.write(MetadataOperationType.LINK_MNODE_TO_PTREE + "," + path + "," + mpath);
         logWriter.newLine();
         logWriter.flush();
       }
@@ -374,27 +369,44 @@ public class MManager {
   }
 
   /**
-   * Extract the deviceId from given seriesPath
+   * function for unlinking MNode from pTree.
+   */
+  public void unlinkMNodeFromPTree(String path, String mpath)
+      throws PathErrorException, IOException {
+
+    lock.writeLock().lock();
+    try {
+      mgraph.unlinkMNodeFromPTree(path, mpath);
+      if (writeToLog) {
+        initLogStream();
+        logWriter.write(MetadataOperationType.UNLINK_MNODE_FROM_PTREE + "," + path + "," + mpath);
+        logWriter.newLine();
+        logWriter.flush();
+      }
+    } finally {
+      lock.writeLock().unlock();
+    }
+  }
+
+  /**
+   * Extract the deviceId from given seriesPath.
    *
-   * @param path
    * @return String represents the deviceId
    */
   public String getDeviceTypeByPath(String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getDeviceTypeByPath(path);
+      return mgraph.getDeviceTypeByPath(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Get series type for given seriesPath
+   * Get series type for given seriesPath.
    *
-   * @param fullPath
    * @return TSDataType
-   * @throws PathErrorException
    */
   public TSDataType getSeriesType(String fullPath) throws PathErrorException {
 
@@ -406,6 +418,9 @@ public class MManager {
     }
   }
 
+  /**
+   * function for getting series type.
+   */
   public TSDataType getSeriesType(MNode node, String fullPath) throws PathErrorException {
 
     lock.readLock().lock();
@@ -416,6 +431,9 @@ public class MManager {
     }
   }
 
+  /**
+   * function for getting series type with check.
+   */
   public TSDataType getSeriesTypeWithCheck(MNode node, String fullPath) throws PathErrorException {
 
     lock.readLock().lock();
@@ -426,6 +444,9 @@ public class MManager {
     }
   }
 
+  /**
+   * unction for getting series type with check.
+   */
   public TSDataType getSeriesTypeWithCheck(String fullPath) throws PathErrorException {
 
     lock.readLock().lock();
@@ -437,16 +458,15 @@ public class MManager {
   }
 
   /**
-   * Get all device type in current Metadata Tree
+   * Get all device type in current Metadata Tree.
    *
    * @return a HashMap contains all distinct device type separated by device Type
-   * @throws PathErrorException
    */
   public Map<String, List<ColumnSchema>> getSchemaForAllType() throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getSchemaForAllType();
+      return mgraph.getSchemaForAllType();
     } finally {
       lock.readLock().unlock();
     }
@@ -456,13 +476,12 @@ public class MManager {
    * Get the full Metadata info.
    *
    * @return A {@code Metadata} instance which stores all metadata info
-   * @throws PathErrorException
    */
   public Metadata getMetadata() throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getMetadata();
+      return mgraph.getMetadata();
     } finally {
       lock.readLock().unlock();
     }
@@ -472,105 +491,99 @@ public class MManager {
    * Get the full storage group info.
    *
    * @return A HashSet instance which stores all storage group info
-   * @throws PathErrorException
    */
   public HashSet<String> getAllStorageGroup() throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getAllStorageGroup();
+      return mgraph.getAllStorageGroup();
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Get all ColumnSchemas for given delta object type
+   * Get all ColumnSchemas for given delta object type.
    *
-   * @param path
-   *            A seriesPath represented one Delta object
+   * @param path A seriesPath represented one Delta object
    * @return a list contains all column schema
-   * @throws PathErrorException
    */
   @Deprecated
   public ArrayList<ColumnSchema> getSchemaForOneType(String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getSchemaForOneType(path);
+      return mgraph.getSchemaForOneType(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * <p>
-   * Get all ColumnSchemas for the filenode seriesPath
-   * </p>
-   *
-   * @param path
-   * @return ArrayList<ColumnSchema> The list of the schema
+   * Get all ColumnSchemas for the filenode seriesPath.
    */
   public ArrayList<ColumnSchema> getSchemaForFileName(String path) {
 
     lock.readLock().lock();
     try {
-      return mGraph.getSchemaForOneFileNode(path);
-    } finally {
-      lock.readLock().unlock();
-    }
-  }
-
-  public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path) {
-
-    lock.readLock().lock();
-    try {
-      return mGraph.getSchemaMapForOneFileNode(path);
-    } finally {
-      lock.readLock().unlock();
-    }
-  }
-
-  public Map<String, Integer> getNumSchemaMapForOneFileNode(String path) {
-
-    lock.readLock().lock();
-    try {
-      return mGraph.getNumSchemaMapForOneFileNode(path);
+      return mgraph.getSchemaForOneFileNode(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Calculate the count of storage-level nodes included in given seriesPath
+   * function for getting schema map for one file node.
+   */
+  public Map<String, ColumnSchema> getSchemaMapForOneFileNode(String path) {
+
+    lock.readLock().lock();
+    try {
+      return mgraph.getSchemaMapForOneFileNode(path);
+    } finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * function for getting num schema map for one file node.
+   */
+  public Map<String, Integer> getNumSchemaMapForOneFileNode(String path) {
+
+    lock.readLock().lock();
+    try {
+      return mgraph.getNumSchemaMapForOneFileNode(path);
+    } finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Calculate the count of storage-level nodes included in given seriesPath.
    *
-   * @param path
    * @return The total count of storage-level nodes.
-   * @throws PathErrorException
    */
   public int getFileCountForOneType(String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getFileCountForOneType(path);
+      return mgraph.getFileCountForOneType(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Get the file name for given seriesPath Notice: This method could be called if and only if the seriesPath includes
-   * one node whose {@code isStorageLevel} is true
+   * Get the file name for given seriesPath Notice: This method could be called if and only if the
+   * seriesPath includes one node whose {@code isStorageLevel} is true.
    *
-   * @param path
    * @return A String represented the file name
-   * @throws PathErrorException
    */
   public String getFileNameByPath(String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getFileNameByPath(path);
+      return mgraph.getFileNameByPath(path);
     } catch (PathErrorException e) {
       throw new PathErrorException(String.format(e.getMessage()));
     } finally {
@@ -578,11 +591,14 @@ public class MManager {
     }
   }
 
+  /**
+   * function for getting file name by path.
+   */
   public String getFileNameByPath(MNode node, String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getFileNameByPath(node, path);
+      return mgraph.getFileNameByPath(node, path);
     } catch (PathErrorException e) {
       throw new PathErrorException(String.format(e.getMessage()));
     } finally {
@@ -590,11 +606,14 @@ public class MManager {
     }
   }
 
+  /**
+   * function for getting file name by path with check.
+   */
   public String getFileNameByPathWithCheck(MNode node, String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getFileNameByPath(node, path);
+      return mgraph.getFileNameByPath(node, path);
     } catch (PathErrorException e) {
       throw new PathErrorException(String.format(e.getMessage()));
     } finally {
@@ -602,16 +621,22 @@ public class MManager {
     }
   }
 
+  /**
+   * function for checking file name by path.
+   */
   public boolean checkFileNameByPath(String path) {
 
     lock.readLock().lock();
     try {
-      return mGraph.checkFileNameByPath(path);
+      return mgraph.checkFileNameByPath(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
+  /**
+   * function for getting all file names.
+   */
   public List<String> getAllFileNames() throws PathErrorException {
 
     lock.readLock().lock();
@@ -628,20 +653,21 @@ public class MManager {
   }
 
   /**
-   * return a HashMap contains all the paths separated by File Name
+   * return a HashMap contains all the paths separated by File Name.
    */
   public HashMap<String, ArrayList<String>> getAllPathGroupByFileName(String path)
       throws PathErrorException {
     lock.readLock().lock();
     try {
-      return mGraph.getAllPathGroupByFilename(path);
+      return mgraph.getAllPathGroupByFilename(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Return all paths for given seriesPath if the seriesPath is abstract. Or return the seriesPath itself.
+   * Return all paths for given seriesPath if the seriesPath is abstract. Or return the seriesPath
+   * itself.
    */
   public ArrayList<String> getPaths(String path) throws PathErrorException {
 
@@ -659,69 +685,74 @@ public class MManager {
   }
 
   /**
-   *
-   * @param path
-   * @return metadata info of all timeseries under the given seriesPath
-   * @throws PathErrorException
+   * function for getting all timeseries paths under the given seriesPath.
    */
   public List<List<String>> getShowTimeseriesPath(String path) throws PathErrorException {
     lock.readLock().lock();
     try {
-      return mGraph.getShowTimeseriesPath(path);
+      return mgraph.getShowTimeseriesPath(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * @param path
-   * @return All leaf nodes' seriesPath(s) of given seriesPath.
+   * function for getting leaf node path in the next level of given seriesPath.
    */
   public List<String> getLeafNodePathInNextLevel(String path) throws PathErrorException {
     lock.readLock().lock();
     try {
-      return mGraph.getLeafNodePathInNextLevel(path);
+      return mgraph.getLeafNodePathInNextLevel(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Check whether the seriesPath given exists
+   * Check whether the seriesPath given exists.
    */
   public boolean pathExist(String path) {
 
     lock.readLock().lock();
     try {
-      return mGraph.pathExist(path);
+      return mgraph.pathExist(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
+  /**
+   * function for checking whether the path exists.
+   */
   public boolean pathExist(MNode node, String path) {
 
     lock.readLock().lock();
     try {
-      return mGraph.pathExist(node, path);
+      return mgraph.pathExist(node, path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
+  /**
+   * function for getting node by path.
+   */
   public MNode getNodeByPath(String path) throws PathErrorException {
     lock.readLock().lock();
     try {
-      return mGraph.getNodeByPath(path);
+      return mgraph.getNodeByPath(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
+  /**
+   * function for getting node by deviceId from cache.
+   */
   public MNode getNodeByDeviceIdFromCache(String deviceId) throws PathErrorException {
     lock.readLock().lock();
     try {
-      return mNodeCache.get(deviceId);
+      return mnodecache.get(deviceId);
     } catch (CacheException e) {
       throw new PathErrorException(e);
     } finally {
@@ -729,61 +760,74 @@ public class MManager {
     }
   }
 
+  /**
+   * function for getting node by path with check.
+   */
   public MNode getNodeByPathWithCheck(String path) throws PathErrorException {
     lock.readLock().lock();
     try {
-      return mGraph.getNodeByPathWithCheck(path);
+      return mgraph.getNodeByPathWithCheck(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Get ColumnSchema for given seriesPath. Notice: Path must be a complete Path from root to leaf node.
+   * Get ColumnSchema for given seriesPath. Notice: Path must be a complete Path from root to leaf
+   * node.
    */
   public ColumnSchema getSchemaForOnePath(String path) throws PathErrorException {
 
     lock.readLock().lock();
     try {
-      return mGraph.getSchemaForOnePath(path);
-    } finally {
-      lock.readLock().unlock();
-    }
-  }
-
-  public ColumnSchema getSchemaForOnePath(MNode node, String path) throws PathErrorException {
-
-    lock.readLock().lock();
-    try {
-      return mGraph.getSchemaForOnePath(node, path);
-    } finally {
-      lock.readLock().unlock();
-    }
-  }
-
-  public ColumnSchema getSchemaForOnePathWithCheck(MNode node, String path)
-      throws PathErrorException {
-
-    lock.readLock().lock();
-    try {
-      return mGraph.getSchemaForOnePathWithCheck(node, path);
-    } finally {
-      lock.readLock().unlock();
-    }
-  }
-
-  public ColumnSchema getSchemaForOnePathWithCheck(String path) throws PathErrorException {
-
-    lock.readLock().lock();
-    try {
-      return mGraph.getSchemaForOnePathWithCheck(path);
+      return mgraph.getSchemaForOnePath(path);
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Check whether given seriesPath contains a MNode whose {@code MNode.isStorageLevel} is true
+   * function for getting schema for one path.
+   */
+  public ColumnSchema getSchemaForOnePath(MNode node, String path) throws PathErrorException {
+
+    lock.readLock().lock();
+    try {
+      return mgraph.getSchemaForOnePath(node, path);
+    } finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * function for getting schema for one path with check.
+   */
+  public ColumnSchema getSchemaForOnePathWithCheck(MNode node, String path)
+      throws PathErrorException {
+
+    lock.readLock().lock();
+    try {
+      return mgraph.getSchemaForOnePathWithCheck(node, path);
+    } finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * function for getting schema for one path with check.
+   */
+  public ColumnSchema getSchemaForOnePathWithCheck(String path) throws PathErrorException {
+
+    lock.readLock().lock();
+    try {
+      return mgraph.getSchemaForOnePathWithCheck(path);
+    } finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Check whether given seriesPath contains a MNode whose {@code MNode.isStorageLevel} is true.
    */
   public boolean checkFileLevel(List<Path> path) throws PathErrorException {
 
@@ -798,6 +842,9 @@ public class MManager {
     }
   }
 
+  /**
+   * function for checking file level.
+   */
   public boolean checkFileLevel(MNode node, List<Path> path) throws PathErrorException {
 
     lock.readLock().lock();
@@ -811,6 +858,9 @@ public class MManager {
     }
   }
 
+  /**
+   * function for checking file level.
+   */
   public boolean checkFileLevel(String path) throws PathErrorException {
 
     lock.readLock().lock();
@@ -822,6 +872,9 @@ public class MManager {
     }
   }
 
+  /**
+   * function for checking file level with check.
+   */
   public boolean checkFileLevelWithCheck(MNode node, String path) throws PathErrorException {
 
     lock.readLock().lock();
@@ -833,6 +886,9 @@ public class MManager {
     }
   }
 
+  /**
+   * function for flushing object to file.
+   */
   public void flushObjectToFile() throws IOException {
 
     lock.writeLock().lock();
@@ -849,7 +905,7 @@ public class MManager {
       File tempFile = new File(datafilePath + MetadataConstant.METADATA_TEMP);
       FileOutputStream fos = new FileOutputStream(tempFile);
       ObjectOutputStream oos = new ObjectOutputStream(fos);
-      oos.writeObject(mGraph);
+      oos.writeObject(mgraph);
       oos.close();
       // close the logFile stream
       if (logWriter != null) {
@@ -863,20 +919,23 @@ public class MManager {
     }
   }
 
+  /**
+   * function for getting metadata in string.
+   */
   public String getMetadataInString() {
 
     lock.readLock().lock();
     try {
-      return mGraph.toString();
+      return mgraph.toString();
     } finally {
       lock.readLock().unlock();
     }
   }
 
   /**
-   * Check whether {@code seriesPath} exists and whether {@code seriesPath} has been set storage level.
+   * Check whether {@code seriesPath} exists and whether {@code seriesPath} has been set storage
+   * level.
    *
-   * @param path
    * @return {@link PathCheckRet}
    */
   public PathCheckRet checkPathStorageLevelAndGetDataType(String path) throws PathErrorException {

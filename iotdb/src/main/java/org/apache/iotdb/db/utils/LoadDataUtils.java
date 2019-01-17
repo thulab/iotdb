@@ -39,7 +39,7 @@ import org.apache.iotdb.tsfile.write.schema.FileSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/*
  * @author kangrong
  */
 public class LoadDataUtils {
@@ -56,6 +56,9 @@ public class LoadDataUtils {
   private FileNodeManager fileNodeManager;
   private IoTDBConfig conf = IoTDBDescriptor.getInstance().getConfig();
 
+  /**
+   * Constructor of LoadDataUtils.
+   */
   public LoadDataUtils() {
     writeInstanceMap = new HashSet<>();
     fileNodeManager = FileNodeManager.getInstance();
@@ -63,8 +66,10 @@ public class LoadDataUtils {
   }
 
   /**
-   * @param inputCsvDataPath - seriesPath
-   * @return - return extra data file in this circle as input csv seriesPath in next circle
+   * function for loading local data in one pass.
+   *
+   * @param inputCsvDataPath seriesPath
+   * @return extra data file in this circle as input csv seriesPath in next circle
    */
   private String loadLocalDataOnePass(String inputCsvDataPath) {
     hasExtra = false;
@@ -187,11 +192,14 @@ public class LoadDataUtils {
     writeInstanceMap.clear();
   }
 
+  /**
+   * Constructor for loading local data in multiple pass.
+   */
   public void loadLocalDataMultiPass(String inputCsvDataPath, String measureType, MManager mmanager)
       throws ProcessorException {
     checkIfFileExist(inputCsvDataPath);
     LOG.info("start loading data...");
-    final long startTime = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     this.mmanager = mmanager;
     // get measurement schema
     try {

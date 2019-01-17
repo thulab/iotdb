@@ -37,9 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class describes a measurement's information registered in {@linkplain FileSchema FilSchema}, including
- * measurement id, data type, encoding and compressor type. For each TSEncoding, MeasurementSchema maintains respective
- * TSEncodingBuilder; For TSDataType, only ENUM has TSDataTypeConverter up to now.
+ * This class describes a measurement's information registered in {@linkplain FileSchema FilSchema},
+ * including measurement id, data type, encoding and compressor type. For each TSEncoding,
+ * MeasurementSchema maintains respective TSEncodingBuilder; For TSDataType, only ENUM has
+ * TSDataTypeConverter up to now.
  *
  * @author kangrong
  * @since version 0.1.0
@@ -59,7 +60,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
   }
 
   /**
-   * set properties as an empty Map
+   * set properties as an empty Map.
    */
   public MeasurementSchema(String measurementId, TSDataType type, TSEncoding encoding) {
     this(measurementId, type, encoding,
@@ -73,12 +74,10 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
   }
 
   /**
+   * Constructor of MeasurementSchema.
    *
-   * @param measurementId
-   * @param type
-   * @param encoding
-   * @param props
-   *            information in encoding method. For RLE, Encoder.MAX_POINT_NUMBER For PLAIN, Encoder.MAX_STRING_LENGTH
+   * <p>props - information in encoding method. For RLE, Encoder.MAX_POINT_NUMBER For PLAIN,
+   * Encoder.MAX_STRING_LENGTH
    */
   public MeasurementSchema(String measurementId, TSDataType type, TSEncoding encoding,
       CompressionType compressionType, Map<String, String> props) {
@@ -140,6 +139,9 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     }
   }
 
+  /**
+   * function for getting time encoder.
+   */
   public Encoder getTimeEncoder() {
     TSFileConfig conf = TSFileDescriptor.getInstance().getConfig();
     TSEncoding timeSeriesEncoder = TSEncoding.valueOf(conf.timeSeriesEncoder);
@@ -148,7 +150,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
   }
 
   /**
-   * get Encoder of value from encodingConverter by measurementID and data type
+   * get Encoder of value from encodingConverter by measurementID and data type.
    *
    * @return Encoder for value
    */
@@ -160,6 +162,9 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     return compressor;
   }
 
+  /**
+   * function for serializing data to output stream.
+   */
   public int serializeTo(OutputStream outputStream) throws IOException {
     int byteLen = 0;
 
@@ -184,6 +189,9 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     return byteLen;
   }
 
+  /**
+   * function for serializing data to byte buffer.
+   */
   public int serializeTo(ByteBuffer buffer) throws IOException {
     int byteLen = 0;
 
@@ -208,6 +216,9 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     return byteLen;
   }
 
+  /**
+   * function for deserializing data from input stream.
+   */
   public static MeasurementSchema deserializeFrom(InputStream inputStream) throws IOException {
     MeasurementSchema measurementSchema = new MeasurementSchema();
 
@@ -235,6 +246,9 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     return measurementSchema;
   }
 
+  /**
+   * function for deserializing data from byte buffer.
+   */
   public static MeasurementSchema deserializeFrom(ByteBuffer buffer) throws IOException {
     MeasurementSchema measurementSchema = new MeasurementSchema();
 
@@ -284,7 +298,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
   }
 
   /**
-   * compare by measurementID
+   * compare by measurementID.
    */
   @Override
   public int compareTo(MeasurementSchema o) {

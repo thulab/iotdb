@@ -84,6 +84,9 @@ public class JMXService implements IService {
     }
   }
 
+  /**
+   * function for deregistering MBean.
+   */
   public static void deregisterMBean(String name) {
     try {
       MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -91,7 +94,8 @@ public class JMXService implements IService {
       if (mbs.isRegistered(objectName)) {
         mbs.unregisterMBean(objectName);
       }
-    } catch (MalformedObjectNameException | MBeanRegistrationException | InstanceNotFoundException e) {
+    } catch (MalformedObjectNameException | MBeanRegistrationException
+        | InstanceNotFoundException e) {
       LOGGER.error("Failed to unregisterMBean {}", name, e);
     }
   }
@@ -105,7 +109,8 @@ public class JMXService implements IService {
   public void start() throws StartupException {
     if (System.getProperty(IoTDBConstant.REMOTE_JMX_PORT_NAME) != null) {
       LOGGER.warn(
-          "JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have been bypassed as the JMX connector server is "
+          "JMX settings in conf/{}.sh(Unix or OS X, if you use Windows, check conf/{}.bat) have "
+              + "been bypassed as the JMX connector server is "
               + "already initialized. Please refer to {}.sh/bat for JMX configuration info",
           IoTDBConstant.ENV_FILE_NAME, IoTDBConstant.ENV_FILE_NAME, IoTDBConstant.ENV_FILE_NAME);
       return;

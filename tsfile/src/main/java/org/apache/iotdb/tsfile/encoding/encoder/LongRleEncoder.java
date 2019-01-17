@@ -31,6 +31,9 @@ public class LongRleEncoder extends RleEncoder<Long> {
    */
   private LongPacker packer;
 
+  /**
+   * Constructor of LongRleEncoder.
+   */
   public LongRleEncoder(EndianType endianType) {
     super(endianType);
     bufferedValues = new Long[config.RLE_MIN_REPEATED_NUM];
@@ -46,10 +49,8 @@ public class LongRleEncoder extends RleEncoder<Long> {
   /**
    * write all values buffered in cache to OutputStream.
    *
-   * @param out
-   *            - byteArrayOutputStream
-   * @throws IOException
-   *             cannot flush to OutputStream
+   * @param out - byteArrayOutputStream
+   * @throws IOException cannot flush to OutputStream
    */
   @Override
   public void flush(ByteArrayOutputStream out) throws IOException {
@@ -71,8 +72,7 @@ public class LongRleEncoder extends RleEncoder<Long> {
   /**
    * write bytes to OutputStream using rle rle format: [header][value].
    *
-   * @throws IOException
-   *             cannot write rle run
+   * @throws IOException cannot write rle run
    */
   @Override
   protected void writeRleRun() throws IOException {

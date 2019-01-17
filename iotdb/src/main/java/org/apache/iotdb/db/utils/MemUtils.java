@@ -32,6 +32,9 @@ public class MemUtils {
 
   private static Logger logger = LoggerFactory.getLogger(MemUtils.class);
 
+  /**
+   * function for getting the record size.
+   */
   public static long getRecordSize(TSRecord record) {
     long memSize = 0;
     for (DataPoint dataPoint : record.dataPointList) {
@@ -63,9 +66,6 @@ public class MemUtils {
 
   /**
    * Calculate how much memory will be used if the given record is written to Bufferwrite.
-   *
-   * @param record
-   * @return
    */
   public static long getTsRecordMemBufferwrite(TSRecord record) {
     long memUsed = 8; // time
@@ -80,19 +80,22 @@ public class MemUtils {
 
   /**
    * Calculate how much memory will be used if the given record is written to Bufferwrite.
-   *
-   * @param record
-   * @return
    */
   public static long getTsRecordMemOverflow(TSRecord record) {
     return getTsRecordMemBufferwrite(record);
   }
 
+  /**
+   * function for getting the memory size of the given string.
+   */
   public static long getStringMem(String str) {
     // wide char (2 bytes each) and 64B String overhead
     return str.length() * 2 + 64;
   }
 
+  /**
+   * function for getting the memory size of the given data point.
+   */
   // TODO : move this down to TsFile
   public static long getDataPointMem(DataPoint dataPoint) {
     // type reference
@@ -125,13 +128,16 @@ public class MemUtils {
     return memUsed;
   }
 
+  /**
+   * function for converting the byte count result to readable string.
+   */
   public static String bytesCntToStr(long cnt) {
-    long GBs = cnt / IoTDBConstant.GB;
+    long gbs = cnt / IoTDBConstant.GB;
     cnt = cnt % IoTDBConstant.GB;
-    long MBs = cnt / IoTDBConstant.MB;
+    long mbs = cnt / IoTDBConstant.MB;
     cnt = cnt % IoTDBConstant.MB;
-    long KBs = cnt / IoTDBConstant.KB;
+    long kbs = cnt / IoTDBConstant.KB;
     cnt = cnt % IoTDBConstant.KB;
-    return GBs + " GB " + MBs + " MB " + KBs + " KB " + cnt + " B";
+    return gbs + " GB " + mbs + " MB " + kbs + " KB " + cnt + " B";
   }
 }
