@@ -62,7 +62,7 @@ public class RecordUtils {
         for (int i = 2; i < items.length - 1; i += 2) {
             // get measurementId and value
             measurementId = items[i].trim();
-            type = schema.getMeasurementDataTypes(measurementId);
+            type = schema.getMeasurementDataType(measurementId);
             if (type == null) {
                 LOG.warn("measurementId:{},type not found, pass", measurementId);
                 continue;
