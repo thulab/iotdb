@@ -28,6 +28,7 @@ public interface ModificationReader {
 
   /**
    * Read all modifications from a persistent medium.
+   *
    * @return a list of modifications contained the medium.
    */
   Collection<Modification> read() throws IOException;
