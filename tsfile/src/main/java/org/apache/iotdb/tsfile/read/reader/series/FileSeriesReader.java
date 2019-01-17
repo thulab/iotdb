@@ -36,12 +36,19 @@ public abstract class FileSeriesReader {
 
   private BatchData data;
 
+  /**
+   * constructor of FileSeriesReader.
+   */
   public FileSeriesReader(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
     this.chunkLoader = chunkLoader;
     this.chunkMetaDataList = chunkMetaDataList;
     this.chunkToRead = 0;
   }
 
+  /**
+   * check if current chunk has next batch data.
+   * @return True if current chunk has next batch data
+   */
   public boolean hasNextBatch() {
 
     // current chunk has data
@@ -55,6 +62,9 @@ public abstract class FileSeriesReader {
 
   }
 
+  /**
+   * get next batch data.
+   */
   public BatchData nextBatch() throws IOException {
 
     // current chunk has additional batch
