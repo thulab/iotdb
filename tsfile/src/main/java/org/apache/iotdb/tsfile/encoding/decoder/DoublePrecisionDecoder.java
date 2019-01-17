@@ -38,7 +38,9 @@ public class DoublePrecisionDecoder extends GorillaDecoder {
     @Override
     public double readDouble(ByteBuffer buffer) {
         if (!flag) {
+
             flag = true;
+
             try {
                 int[] buf = new int[8];
                 for (int i = 0; i < 8; i++)
