@@ -33,6 +33,7 @@ public class DoublePrecisionDecoder extends GorillaDecoder {
     private long preValue;
 
     public DoublePrecisionDecoder() {
+
     }
 
     @Override
