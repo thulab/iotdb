@@ -193,7 +193,7 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
   public void slimitTrim(SelectOperator select, int seriesLimit, int seriesOffset)
       throws LogicalOptimizeException {
     List<Path> suffixList = select.getSuffixPaths();
-
+    List<String> aggregations = select.getAggregations();
     int size = suffixList.size();
 
     // check parameter range
@@ -210,7 +210,6 @@ public class ConcatPathOptimizer implements ILogicalOptimizer {
     select.setSuffixPathList(trimedSuffixList);
 
     // trim aggregations if exists
-    List<String> aggregations = select.getAggregations();
     if (aggregations != null && !aggregations.isEmpty()) {
       List<String> trimedAggregations = new ArrayList<>(
           aggregations.subList(seriesOffset, endPosition));
