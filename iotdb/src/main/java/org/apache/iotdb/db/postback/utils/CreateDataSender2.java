@@ -28,8 +28,9 @@ import java.util.Map;
 import org.apache.iotdb.db.conf.IoTDBConstant;
 
 /**
- * The class is to generate data of half timeseries (simulating jilian scene) to test
- *     stability of postback function.
+ * The class is to generate data of half timeseries (simulating jilian scene) to test stability of
+ * postback function.
+ *
  * @author lta
  */
 public class CreateDataSender2 {
@@ -51,6 +52,7 @@ public class CreateDataSender2 {
 
   /**
    * generate time series map from file.
+   *
    * @param inputFilePath input file path
    * @return map
    * @throws Exception Exception
@@ -77,6 +79,7 @@ public class CreateDataSender2 {
 
   /**
    * create time series.
+   *
    * @param statement statement
    * @param timeseriesMap time series map
    * @throws SQLException SQLException
@@ -113,6 +116,7 @@ public class CreateDataSender2 {
 
   /**
    * set storage group.
+   *
    * @param statement statement
    * @param storageGroupList storage group list
    * @throws SQLException SQLException
@@ -133,6 +137,7 @@ public class CreateDataSender2 {
 
   /**
    * randomly insert data.
+   *
    * @param statement statement
    * @param timeseriesMap time series map
    * @throws Exception Exception
@@ -212,6 +217,7 @@ public class CreateDataSender2 {
 
   /**
    * main function.
+   *
    * @param args arguments
    * @throws Exception Exception
    */

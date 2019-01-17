@@ -22,8 +22,9 @@ public interface TimeValuePairSorter {
 
   /**
    * get the distinct sorted startTime.
+   *
    * @return a List which contains all distinct {@link TimeValuePair}s in ascending order by
-             timestamp.
+   * timestamp.
    */
   List<TimeValuePair> getSortedTimeValuePairList();
 

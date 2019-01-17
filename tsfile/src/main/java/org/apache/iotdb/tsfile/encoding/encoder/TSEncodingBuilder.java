@@ -28,10 +28,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Each subclass of TSEncodingBuilder responds a enumerate value in {@linkplain TSEncoding
  * TSEncoding}, which stores several configuration related to responding encoding type to generate
- * {@linkplain Encoder Encoder} instance.<br>Each TSEncoding has a responding TSEncodingBuilder.
- * The design referring to visit pattern provides same outer interface for different TSEncodings
- * and gets rid of the duplicate switch-case code.
- *
+ * {@linkplain Encoder Encoder} instance.<br>Each TSEncoding has a responding TSEncodingBuilder. The
+ * design referring to visit pattern provides same outer interface for different TSEncodings and
+ * gets rid of the duplicate switch-case code.
  */
 public abstract class TSEncodingBuilder {
 
@@ -45,8 +44,7 @@ public abstract class TSEncodingBuilder {
   /**
    * return responding TSEncodingBuilder from a TSEncoding.
    *
-   * @param type
-   *            - given encoding type
+   * @param type - given encoding type
    * @return - responding TSEncodingBuilder
    */
   public static TSEncodingBuilder getConverter(TSEncoding type) {
@@ -68,19 +66,17 @@ public abstract class TSEncodingBuilder {
    * return a series's encoder with different types and parameters according to its measurement id
    * and data type.
    *
-   * @param type
-   *            - given data type
+   * @param type - given data type
    * @return - return a {@linkplain Encoder Encoder}
    */
   public abstract Encoder getEncoder(TSDataType type);
 
   /**
    * for TSEncoding, JSON is a kind of type for initialization. {@code InitFromJsonObject} gets
-   * values from JSON object which will be used latter.<br>
-   * if this type has extra parameters to construct, override it.
+   * values from JSON object which will be used latter.<br> if this type has extra parameters to
+   * construct, override it.
    *
-   * @param props
-   *            - properties of encoding
+   * @param props - properties of encoding
    */
   public abstract void initFromProps(Map<String, String> props);
 

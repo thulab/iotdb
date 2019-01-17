@@ -204,7 +204,7 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
    * bytesBuffer }.
    *
    * @param lastBitPackedNum - in last bit-packing group, it may have useful values less than 8.
-   *        This param indicates how many values are useful
+   * This param indicates how many values are useful
    */
   protected void endPreviousBitPackedRun(int lastBitPackedNum) {
     if (!isBitPackRun) {

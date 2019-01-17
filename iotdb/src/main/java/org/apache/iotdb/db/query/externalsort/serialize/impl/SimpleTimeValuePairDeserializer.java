@@ -25,14 +25,16 @@ import org.apache.iotdb.db.utils.TimeValuePair;
 
 /**
  * Deserializer TimeValuePair.
- * */
+ */
 public class SimpleTimeValuePairDeserializer implements TimeValuePairDeserializer {
 
   private InputStream inputStream;
   private ObjectInputStream objectInputStream;
   private String tmpFilePath;
 
-  /** init with file path.*/
+  /**
+   * init with file path.
+   */
   public SimpleTimeValuePairDeserializer(String tmpFilePath) throws IOException {
     inputStream = new BufferedInputStream(new FileInputStream(tmpFilePath));
     objectInputStream = new ObjectInputStream(inputStream);

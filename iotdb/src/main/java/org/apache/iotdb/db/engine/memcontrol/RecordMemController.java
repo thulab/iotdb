@@ -34,12 +34,6 @@ public class RecordMemController extends BasicMemController {
   private Map<Object, Long> memMap;
   private AtomicLong totalMemUsed;
 
-  private static class InstanceHolder {
-
-    private static final RecordMemController INSTANCE = new RecordMemController(
-        IoTDBDescriptor.getInstance().getConfig());
-  }
-
   private RecordMemController(IoTDBConfig config) {
     super(config);
     memMap = new HashMap<>();
@@ -65,7 +59,7 @@ public class RecordMemController extends BasicMemController {
 
   /**
    * get the current memory usage level.
-   * */
+   */
   public UsageLevel getCurrLevel() {
     long memUsage = totalMemUsed.get();
     if (memUsage < warningThreshold) {
@@ -79,7 +73,7 @@ public class RecordMemController extends BasicMemController {
 
   /**
    * report the increased memory usage of the object user.
-   * */
+   */
   public UsageLevel reportUse(Object user, long usage) {
     Long oldUsage = memMap.get(user);
     if (oldUsage == null) {
@@ -122,7 +116,7 @@ public class RecordMemController extends BasicMemController {
 
   /**
    * report the decreased memory usage of the object user.
-   * */
+   */
   public void reportFree(Object user, long freeSize) {
     Long usage = memMap.get(user);
     if (usage == null) {
@@ -144,5 +138,11 @@ public class RecordMemController extends BasicMemController {
           user.getClass(), MemUtils.bytesCntToStr(usage - freeSize),
           MemUtils.bytesCntToStr(newTotalMemUsage));
     }
+  }
+
+  private static class InstanceHolder {
+
+    private static final RecordMemController INSTANCE = new RecordMemController(
+        IoTDBDescriptor.getInstance().getConfig());
   }
 }

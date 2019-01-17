@@ -68,6 +68,63 @@ public abstract class Statistics<T> {
     }
   }
 
+  public static Statistics deserialize(InputStream inputStream, TSDataType dataType)
+      throws IOException {
+    Statistics statistics = null;
+    switch (dataType) {
+      case INT32:
+        statistics = new IntegerStatistics();
+        break;
+      case INT64:
+        statistics = new LongStatistics();
+        break;
+      case TEXT:
+        statistics = new BinaryStatistics();
+        break;
+      case BOOLEAN:
+        statistics = new BooleanStatistics();
+        break;
+      case DOUBLE:
+        statistics = new DoubleStatistics();
+        break;
+      case FLOAT:
+        statistics = new FloatStatistics();
+        break;
+      default:
+        throw new UnknownColumnTypeException(dataType.toString());
+    }
+    statistics.fill(inputStream);
+    return statistics;
+  }
+
+  public static Statistics deserialize(ByteBuffer buffer, TSDataType dataType) throws IOException {
+    Statistics statistics = null;
+    switch (dataType) {
+      case INT32:
+        statistics = new IntegerStatistics();
+        break;
+      case INT64:
+        statistics = new LongStatistics();
+        break;
+      case TEXT:
+        statistics = new BinaryStatistics();
+        break;
+      case BOOLEAN:
+        statistics = new BooleanStatistics();
+        break;
+      case DOUBLE:
+        statistics = new DoubleStatistics();
+        break;
+      case FLOAT:
+        statistics = new FloatStatistics();
+        break;
+      default:
+        throw new UnknownColumnTypeException(dataType.toString());
+    }
+    statistics.fill(buffer);
+    return statistics;
+  }
+
   abstract public void setMinMaxFromBytes(byte[] minBytes, byte[] maxBytes);
 
   abstract public T getMin();
@@ -230,63 +287,6 @@ public abstract class Statistics<T> {
       length += 8;
     }
     return length;
-  }
-
-  public static Statistics deserialize(InputStream inputStream, TSDataType dataType)
-      throws IOException {
-    Statistics statistics = null;
-    switch (dataType) {
-      case INT32:
-        statistics = new IntegerStatistics();
-        break;
-      case INT64:
-        statistics = new LongStatistics();
-        break;
-      case TEXT:
-        statistics = new BinaryStatistics();
-        break;
-      case BOOLEAN:
-        statistics = new BooleanStatistics();
-        break;
-      case DOUBLE:
-        statistics = new DoubleStatistics();
-        break;
-      case FLOAT:
-        statistics = new FloatStatistics();
-        break;
-      default:
-        throw new UnknownColumnTypeException(dataType.toString());
-    }
-    statistics.fill(inputStream);
-    return statistics;
-  }
-
-  public static Statistics deserialize(ByteBuffer buffer, TSDataType dataType) throws IOException {
-    Statistics statistics = null;
-    switch (dataType) {
-      case INT32:
-        statistics = new IntegerStatistics();
-        break;
-      case INT64:
-        statistics = new LongStatistics();
-        break;
-      case TEXT:
-        statistics = new BinaryStatistics();
-        break;
-      case BOOLEAN:
-        statistics = new BooleanStatistics();
-        break;
-      case DOUBLE:
-        statistics = new DoubleStatistics();
-        break;
-      case FLOAT:
-        statistics = new FloatStatistics();
-        break;
-      default:
-        throw new UnknownColumnTypeException(dataType.toString());
-    }
-    statistics.fill(buffer);
-    return statistics;
   }
 
 }

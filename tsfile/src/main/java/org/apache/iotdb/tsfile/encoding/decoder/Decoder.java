@@ -33,6 +33,7 @@ public abstract class Decoder {
 
   /**
    * get Decoder object by type.
+   *
    * @param type TSEncoding type
    * @param dataType TSDataType
    * @return Decoder object

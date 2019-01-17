@@ -146,6 +146,7 @@ public class AstNode extends CommonTree implements Node, Serializable {
 
   /**
    * dump string.
+   *
    * @return dump string
    */
   public String dump() {

@@ -53,6 +53,7 @@ public class BitmapEncoder extends Encoder {
 
   /**
    * BitmapEncoder constructor.
+   *
    * @param endianType deprecated
    */
   public BitmapEncoder(EndianType endianType) {

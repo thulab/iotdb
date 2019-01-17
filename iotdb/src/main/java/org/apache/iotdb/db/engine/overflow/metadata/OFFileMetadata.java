@@ -38,6 +38,23 @@ public class OFFileMetadata {
   }
 
   /**
+   * function for deserializing data from input stream.
+   */
+  public static OFFileMetadata deserializeFrom(InputStream inputStream) throws IOException {
+    long lastFooterOffset = ReadWriteIOUtils.readLong(inputStream);
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    List<OFRowGroupListMetadata> list = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      list.add(OFRowGroupListMetadata.deserializeFrom(inputStream));
+    }
+    return new OFFileMetadata(lastFooterOffset, list);
+  }
+
+  public static OFFileMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
+    throw new NotImplementedException();
+  }
+
+  /**
    * add OFRowGroupListMetadata to list.
    */
   public void addRowGroupListMetaData(OFRowGroupListMetadata rowGroupListMetadata) {
@@ -80,23 +97,6 @@ public class OFFileMetadata {
   }
 
   public int serializeTo(ByteBuffer buffer) throws IOException {
-    throw new NotImplementedException();
-  }
-
-  /**
-   * function for deserializing data from input stream.
-   */
-  public static OFFileMetadata deserializeFrom(InputStream inputStream) throws IOException {
-    long lastFooterOffset = ReadWriteIOUtils.readLong(inputStream);
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    List<OFRowGroupListMetadata> list = new ArrayList<>();
-    for (int i = 0; i < size; i++) {
-      list.add(OFRowGroupListMetadata.deserializeFrom(inputStream));
-    }
-    return new OFFileMetadata(lastFooterOffset, list);
-  }
-
-  public static OFFileMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
     throw new NotImplementedException();
   }
 

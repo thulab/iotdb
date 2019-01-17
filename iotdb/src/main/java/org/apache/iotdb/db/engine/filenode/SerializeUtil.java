@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author kangrong
  * @author liukun
- *
  */
 public class SerializeUtil<T> {
 
@@ -37,7 +36,7 @@ public class SerializeUtil<T> {
 
   /**
    * serialize obj and write to filePath.
-   * */
+   */
   public void serialize(Object obj, String filePath) throws IOException {
     ObjectOutputStream oos = null;
     try {
@@ -56,7 +55,7 @@ public class SerializeUtil<T> {
 
   /**
    * deserialize obj from filePath.
-   * */
+   */
   public Optional<T> deserialize(String filePath) throws IOException {
     ObjectInputStream ois = null;
     File file = new File(filePath);

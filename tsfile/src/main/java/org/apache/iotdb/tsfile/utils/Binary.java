@@ -93,6 +93,7 @@ public class Binary implements Comparable<Binary>, Serializable {
 
   /**
    * get length.
+   *
    * @return length
    */
   public int getLength() {

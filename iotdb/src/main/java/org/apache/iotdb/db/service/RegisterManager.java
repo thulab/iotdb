@@ -31,7 +31,7 @@ public class RegisterManager {
 
   /**
    * register service.
-   * */
+   */
   public void register(IService service) throws StartupException {
     for (IService s : iServices) {
       if (s.getID() == service.getID()) {
@@ -45,7 +45,7 @@ public class RegisterManager {
 
   /**
    * stop all service and clear iService list.
-   * */
+   */
   public void deregisterAll() {
     for (IService service : iServices) {
       try {

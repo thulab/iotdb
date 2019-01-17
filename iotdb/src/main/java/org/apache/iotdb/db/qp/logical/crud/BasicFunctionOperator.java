@@ -33,12 +33,10 @@ import org.slf4j.LoggerFactory;
  */
 public class BasicFunctionOperator extends FunctionOperator {
 
-  private Logger logger = LoggerFactory.getLogger(BasicFunctionOperator.class);
-
-  private BasicOperatorType funcToken;
-
   protected Path path;
   protected String value;
+  private Logger logger = LoggerFactory.getLogger(BasicFunctionOperator.class);
+  private BasicOperatorType funcToken;
 
   /**
    * BasicFunctionOperator Constructor.

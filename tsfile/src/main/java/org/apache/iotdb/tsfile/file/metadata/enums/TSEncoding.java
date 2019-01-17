@@ -20,8 +20,9 @@ public enum TSEncoding {
 
   /**
    * judge the encoding deserialize type.
+   *
    * @param i -use to determine encoding type
-   * @return  -encoding type
+   * @return -encoding type
    */
   public static TSEncoding deserialize(short i) {
     switch (i) {
@@ -44,9 +45,14 @@ public enum TSEncoding {
     }
   }
 
+  public static int getSerializedSize() {
+    return Short.BYTES;
+  }
+
   /**
    * judge the encoding deserialize type.
-   * @return  -encoding type
+   *
+   * @return -encoding type
    */
   public short serialize() {
     switch (this) {
@@ -67,9 +73,5 @@ public enum TSEncoding {
       default:
         return 0;
     }
-  }
-
-  public static int getSerializedSize() {
-    return Short.BYTES;
   }
 }

@@ -29,11 +29,6 @@ import org.slf4j.LoggerFactory;
 // Notice : statistics in this class may not be accurate because of limited user authority.
 public class OpenFileNumUtil {
 
-  private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
-  private static IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
-  private static Directories directories = Directories.getInstance();
-  private int pid;
-  private String processName;
   private static final int PID_ERROR_CODE = -1;
   private static final int UNSUPPORTED_OS_ERROR_CODE = -2;
   private static final int UNKNOWN_STATISTICS_ERROR_CODE = -3;
@@ -43,35 +38,12 @@ public class OpenFileNumUtil {
   private static final String SEARCH_PID_LINUX = "ps -aux | grep -i %s | grep -v grep";
   private static final String SEARCH_PID_MAC = "ps aux | grep -i %s | grep -v grep";
   private static final String SEARCH_OPEN_DATA_FILE_BY_PID = "lsof -p %d";
+  private static Logger log = LoggerFactory.getLogger(OpenFileNumUtil.class);
+  private static IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
+  private static Directories directories = Directories.getInstance();
   private final String[] cmds = {"/bin/bash", "-c", ""};
-
-  public enum OpenFileNumStatistics {
-    TOTAL_OPEN_FILE_NUM(null), DATA_OPEN_FILE_NUM(
-        Collections.singletonList(config.dataDir)), DELTA_OPEN_FILE_NUM(
-        directories.getAllTsFileFolders()), OVERFLOW_OPEN_FILE_NUM(
-        Collections.singletonList(config.overflowDataDir)), WAL_OPEN_FILE_NUM(
-        Collections.singletonList(config.walFolder)), METADATA_OPEN_FILE_NUM(
-        Collections.singletonList(config.metadataDir)), DIGEST_OPEN_FILE_NUM(
-        Collections.singletonList(config.fileNodeDir)), SOCKET_OPEN_FILE_NUM(
-        null);
-
-    // path is a list of directory corresponding to the OpenFileNumStatistics enum element,
-    // e.g. data/data/ for DATA_OPEN_FILE_NUM
-    private List<String> path;
-
-    public List<String> getPath() {
-      return path;
-    }
-
-    OpenFileNumStatistics(List<String> path) {
-      this.path = path;
-    }
-  }
-
-  private static class OpenFileNumUtilHolder {
-
-    private static final OpenFileNumUtil INSTANCE = new OpenFileNumUtil();
-  }
+  private int pid;
+  private String processName;
 
   /**
    * constructor, process key word is defined by IOTDB_PROCESS_KEY_WORD.
@@ -88,6 +60,26 @@ public class OpenFileNumUtil {
    */
   public static OpenFileNumUtil getInstance() {
     return OpenFileNumUtilHolder.INSTANCE;
+  }
+
+  /**
+   * check if the string is numeric.
+   *
+   * @param str string need to be checked
+   * @return whether the string is a number
+   */
+  private static boolean isNumeric(String str) {
+    if (str == null || str.equals("")) {
+      return false;
+    } else {
+      for (int i = str.length(); --i >= 0; ) {
+        if (!Character.isDigit(str.charAt(i))) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -134,26 +126,6 @@ public class OpenFileNumUtil {
    */
   void setPid(int pid) {
     this.pid = pid;
-  }
-
-  /**
-   * check if the string is numeric.
-   *
-   * @param str string need to be checked
-   * @return whether the string is a number
-   */
-  private static boolean isNumeric(String str) {
-    if (str == null || str.equals("")) {
-      return false;
-    } else {
-      for (int i = str.length(); --i >= 0; ) {
-        if (!Character.isDigit(str.charAt(i))) {
-          return false;
-        }
-      }
-    }
-
-    return true;
   }
 
   /**
@@ -251,6 +223,34 @@ public class OpenFileNumUtil {
   public int get(OpenFileNumStatistics statistics) {
     EnumMap<OpenFileNumStatistics, Integer> statisticsMap = getStatisticMap();
     return statisticsMap.getOrDefault(statistics, UNKNOWN_STATISTICS_ERROR_CODE);
+  }
+
+  public enum OpenFileNumStatistics {
+    TOTAL_OPEN_FILE_NUM(null), DATA_OPEN_FILE_NUM(
+        Collections.singletonList(config.dataDir)), DELTA_OPEN_FILE_NUM(
+        directories.getAllTsFileFolders()), OVERFLOW_OPEN_FILE_NUM(
+        Collections.singletonList(config.overflowDataDir)), WAL_OPEN_FILE_NUM(
+        Collections.singletonList(config.walFolder)), METADATA_OPEN_FILE_NUM(
+        Collections.singletonList(config.metadataDir)), DIGEST_OPEN_FILE_NUM(
+        Collections.singletonList(config.fileNodeDir)), SOCKET_OPEN_FILE_NUM(
+        null);
+
+    // path is a list of directory corresponding to the OpenFileNumStatistics enum element,
+    // e.g. data/data/ for DATA_OPEN_FILE_NUM
+    private List<String> path;
+
+    OpenFileNumStatistics(List<String> path) {
+      this.path = path;
+    }
+
+    public List<String> getPath() {
+      return path;
+    }
+  }
+
+  private static class OpenFileNumUtilHolder {
+
+    private static final OpenFileNumUtil INSTANCE = new OpenFileNumUtil();
   }
 
 }

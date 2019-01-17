@@ -26,12 +26,12 @@ public final class UpdateOperator extends SFWOperator {
     operatorType = OperatorType.UPDATE;
   }
 
-  public void setValue(String value) {
-    this.value = value;
-  }
-
   public String getValue() {
     return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
   }
 
 }

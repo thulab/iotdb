@@ -28,12 +28,12 @@ public class DeleteOperator extends SFWOperator {
     operatorType = Operator.OperatorType.DELETE;
   }
 
-  public void setTime(long time) {
-    this.time = time;
-  }
-
   public long getTime() {
     return time;
+  }
+
+  public void setTime(long time) {
+    this.time = time;
   }
 
 }

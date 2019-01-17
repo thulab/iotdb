@@ -34,6 +34,7 @@ public class EngineDataSetWithTimeGenerator extends QueryDataSet {
 
   /**
    * constructor of EngineDataSetWithTimeGenerator.
+   *
    * @param paths paths in List structure
    * @param dataTypes time series data type
    * @param timeGenerator EngineTimeGenerator object

@@ -133,6 +133,7 @@ public abstract class DeltaBinaryEncoder extends Encoder {
 
     /**
      * constructor of IntDeltaEncoder which is a sub-class of DeltaBinaryEncoder.
+     *
      * @param size - the number how many numbers to be packed into a block.
      */
     public IntDeltaEncoder(int size) {
@@ -241,6 +242,7 @@ public abstract class DeltaBinaryEncoder extends Encoder {
 
     /**
      * constructor of LongDeltaEncoder which is a sub-class of DeltaBinaryEncoder.
+     *
      * @param size - the number how many numbers to be packed into a block.
      */
     public LongDeltaEncoder(int size) {

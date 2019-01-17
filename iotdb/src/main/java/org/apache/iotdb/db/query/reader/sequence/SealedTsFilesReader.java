@@ -51,7 +51,7 @@ public class SealedTsFilesReader implements IReader {
 
   /**
    * init with seriesPath and sealedTsFiles.
-   * */
+   */
   public SealedTsFilesReader(Path seriesPath, List<IntervalFileNode> sealedTsFiles) {
     this.seriesPath = seriesPath;
     this.sealedTsFiles = sealedTsFiles;

@@ -52,6 +52,7 @@ public class CreateDataSender1 {
 
   /**
    * generate time series map from file.
+   *
    * @param inputFilePath input file path
    * @return Map
    * @throws Exception Exception
@@ -78,6 +79,7 @@ public class CreateDataSender1 {
 
   /**
    * create time series.
+   *
    * @param statement statement
    * @param timeseriesMap time series map
    * @throws SQLException SQLException
@@ -114,6 +116,7 @@ public class CreateDataSender1 {
 
   /**
    * set storage group.
+   *
    * @param statement statement
    * @param storageGroupList storage group list
    * @throws SQLException SQLException
@@ -133,6 +136,7 @@ public class CreateDataSender1 {
 
   /**
    * random insert data.
+   *
    * @param statement statement
    * @param timeseriesMap time series map
    * @throws Exception Exception
@@ -213,6 +217,7 @@ public class CreateDataSender1 {
 
   /**
    * main function.
+   *
    * @param args arguments
    * @throws Exception Exception
    */

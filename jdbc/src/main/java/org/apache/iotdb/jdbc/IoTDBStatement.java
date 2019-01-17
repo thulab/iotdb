@@ -43,6 +43,9 @@ import org.apache.thrift.TException;
 
 public class IoTDBStatement implements Statement {
 
+  private static final String SHOW_TIMESERIES_COMMAND_LOWERCASE = "show timeseries";
+  private static final String SHOW_STORAGE_GROUP_COMMAND_LOWERCASE = "show storage group";
+  ZoneId zoneId;
   private ResultSet resultSet = null;
   private IoTDBConnection connection;
   private int fetchSize = Config.fetchSize;
@@ -51,9 +54,6 @@ public class IoTDBStatement implements Statement {
   private TS_SessionHandle sessionHandle = null;
   private TSOperationHandle operationHandle = null;
   private List<String> batchSQLList;
-  private static final String SHOW_TIMESERIES_COMMAND_LOWERCASE = "show timeseries";
-  private static final String SHOW_STORAGE_GROUP_COMMAND_LOWERCASE = "show storage group";
-  ZoneId zoneId;
   /**
    * Keep state so we can fail certain calls made after close().
    */
@@ -214,10 +214,7 @@ public class IoTDBStatement implements Statement {
   }
 
   /**
-   * There are four kinds of sql here:
-   * (1) show timeseries path
-   * (2) show storage group
-   * (3) query sql
+   * There are four kinds of sql here: (1) show timeseries path (2) show storage group (3) query sql
    * (4) update sql .
    * <p></p>
    * (1) and (2) return new TsfileMetadataResultSet (3) return new TsfileQueryResultSet (4) simply
@@ -407,9 +404,26 @@ public class IoTDBStatement implements Statement {
   }
 
   @Override
+  public void setFetchDirection(int direction) throws SQLException {
+    checkConnection("setFetchDirection");
+    if (direction != ResultSet.FETCH_FORWARD) {
+      throw new SQLException(String.format("direction %d is not supported!", direction));
+    }
+  }
+
+  @Override
   public int getFetchSize() throws SQLException {
     checkConnection("getFetchSize");
     return fetchSize;
+  }
+
+  @Override
+  public void setFetchSize(int fetchSize) throws SQLException {
+    checkConnection("setFetchSize");
+    if (fetchSize < 0) {
+      throw new SQLException(String.format("fetchSize %d must be >= 0!", fetchSize));
+    }
+    this.fetchSize = fetchSize == 0 ? Config.fetchSize : fetchSize;
   }
 
   @Override
@@ -423,9 +437,23 @@ public class IoTDBStatement implements Statement {
   }
 
   @Override
+  public void setMaxFieldSize(int arg0) throws SQLException {
+    throw new SQLException("Method not supported");
+  }
+
+  @Override
   public int getMaxRows() throws SQLException {
     checkConnection("getMaxRows");
     return maxRows;
+  }
+
+  @Override
+  public void setMaxRows(int num) throws SQLException {
+    checkConnection("setMaxRows");
+    if (num < 0) {
+      throw new SQLException(String.format("maxRows %d must be >= 0!", num));
+    }
+    this.maxRows = num;
   }
 
   @Override
@@ -441,6 +469,15 @@ public class IoTDBStatement implements Statement {
   @Override
   public int getQueryTimeout() throws SQLException {
     return this.queryTimeout;
+  }
+
+  @Override
+  public void setQueryTimeout(int seconds) throws SQLException {
+    checkConnection("setQueryTimeout");
+    if (seconds <= 0) {
+      throw new SQLException(String.format("queryTimeout %d must be >= 0!", seconds));
+    }
+    this.queryTimeout = seconds;
   }
 
   @Override
@@ -491,6 +528,11 @@ public class IoTDBStatement implements Statement {
   }
 
   @Override
+  public void setPoolable(boolean arg0) throws SQLException {
+    throw new SQLException("Method not supported");
+  }
+
+  @Override
   public void setCursorName(String arg0) throws SQLException {
     throw new SQLException("Method not supported");
   }
@@ -498,51 +540,6 @@ public class IoTDBStatement implements Statement {
   @Override
   public void setEscapeProcessing(boolean enable) throws SQLException {
     throw new SQLException("Method not supported");
-  }
-
-  @Override
-  public void setFetchDirection(int direction) throws SQLException {
-    checkConnection("setFetchDirection");
-    if (direction != ResultSet.FETCH_FORWARD) {
-      throw new SQLException(String.format("direction %d is not supported!", direction));
-    }
-  }
-
-  @Override
-  public void setFetchSize(int fetchSize) throws SQLException {
-    checkConnection("setFetchSize");
-    if (fetchSize < 0) {
-      throw new SQLException(String.format("fetchSize %d must be >= 0!", fetchSize));
-    }
-    this.fetchSize = fetchSize == 0 ? Config.fetchSize : fetchSize;
-  }
-
-  @Override
-  public void setMaxFieldSize(int arg0) throws SQLException {
-    throw new SQLException("Method not supported");
-  }
-
-  @Override
-  public void setMaxRows(int num) throws SQLException {
-    checkConnection("setMaxRows");
-    if (num < 0) {
-      throw new SQLException(String.format("maxRows %d must be >= 0!", num));
-    }
-    this.maxRows = num;
-  }
-
-  @Override
-  public void setPoolable(boolean arg0) throws SQLException {
-    throw new SQLException("Method not supported");
-  }
-
-  @Override
-  public void setQueryTimeout(int seconds) throws SQLException {
-    checkConnection("setQueryTimeout");
-    if (seconds <= 0) {
-      throw new SQLException(String.format("queryTimeout %d must be >= 0!", seconds));
-    }
-    this.queryTimeout = seconds;
   }
 
   private void checkConnection(String action) throws SQLException {

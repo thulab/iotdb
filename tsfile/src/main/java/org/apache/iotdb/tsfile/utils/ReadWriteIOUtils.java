@@ -116,7 +116,7 @@ public class ReadWriteIOUtils {
    * write a byte n.
    *
    * @return The number of bytes used to represent a {@code byte} value in two's complement binary
-   *        form.
+   * form.
    */
   public static int write(byte n, OutputStream outputStream) throws IOException {
     outputStream.write(n);
@@ -138,7 +138,7 @@ public class ReadWriteIOUtils {
    * write a byte n to byteBuffer.
    *
    * @return The number of bytes used to represent a {@code byte} value in two's complement binary
-   *        form.
+   * form.
    */
   public static int write(byte n, ByteBuffer buffer) {
     buffer.put(n);
@@ -509,9 +509,9 @@ public class ReadWriteIOUtils {
   }
 
   /**
-   * read bytes from inputStream, this method makes sure that you can read length bytes or reach
-   * to the end of the stream.
-   * */
+   * read bytes from inputStream, this method makes sure that you can read length bytes or reach to
+   * the end of the stream.
+   */
   public static ByteBuffer readByteBufferWithSelfDescriptionLength(InputStream inputStream)
       throws IOException {
     byte[] bytes = readBytesWithSelfDescriptionLength(inputStream);
@@ -522,9 +522,9 @@ public class ReadWriteIOUtils {
   }
 
   /**
-   * read bytes from byteBuffer, this method makes sure that you can read length bytes or reach
-   * to the end of the buffer.
-   * */
+   * read bytes from byteBuffer, this method makes sure that you can read length bytes or reach to
+   * the end of the buffer.
+   */
   public static ByteBuffer readByteBufferWithSelfDescriptionLength(ByteBuffer buffer) {
     int byteLength = readInt(buffer);
     byte[] bytes = new byte[byteLength];
@@ -537,7 +537,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read bytes from buffer with offset position to the end of buffer.
-   * */
+   */
   public static int readAsPossible(FileChannel channel, long position, ByteBuffer buffer)
       throws IOException {
     int length = 0;
@@ -552,7 +552,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read util to the end of buffer.
-   * */
+   */
   public static int readAsPossible(FileChannel channel, ByteBuffer buffer) throws IOException {
     int length = 0;
     int read;
@@ -564,7 +564,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read util to the end of buffer or up to len.
-   * */
+   */
   public static int readAsPossible(FileChannel channel, ByteBuffer buffer, int len)
       throws IOException {
     int length = 0;
@@ -582,7 +582,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read bytes from buffer with offset position to the end of buffer or up to len.
-   * */
+   */
   public static int readAsPossible(FileChannel channel, ByteBuffer target, long offset, int len)
       throws IOException {
     int length = 0;
@@ -618,7 +618,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read integer list with self define length.
-   * */
+   */
   public static List<Integer> readIntegerList(ByteBuffer buffer) throws IOException {
     int size = readInt(buffer);
     if (size <= 0) {
@@ -634,7 +634,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read string list with self define length.
-   * */
+   */
   public static List<String> readStringList(InputStream inputStream) throws IOException {
     List<String> list = new ArrayList<>();
     int size = readInt(inputStream);
@@ -648,7 +648,7 @@ public class ReadWriteIOUtils {
 
   /**
    * read string list with self define length.
-   * */
+   */
   public static List<String> readStringList(ByteBuffer buffer) throws IOException {
     int size = readInt(buffer);
     if (size <= 0) {

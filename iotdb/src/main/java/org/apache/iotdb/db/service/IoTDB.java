@@ -1,24 +1,21 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.service;
 
 import java.io.IOException;
 import java.util.List;
-
 import org.apache.iotdb.db.concurrent.IoTDBDefaultThreadExceptionHandler;
 import org.apache.iotdb.db.conf.IoTDBConfig;
 import org.apache.iotdb.db.conf.IoTDBConstant;
@@ -41,19 +38,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IoTDB implements IoTDBMBean {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(IoTDB.class);
-  private RegisterManager registerManager = new RegisterManager();
   private final String MBEAN_NAME = String.format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE,
-          IoTDBConstant.JMX_TYPE, "IoTDB");
-
+      IoTDBConstant.JMX_TYPE, "IoTDB");
+  private RegisterManager registerManager = new RegisterManager();
   private ServerManager serverManager = ServerManager.getInstance();
-
-  private static class IoTDBHolder {
-    private static final IoTDB INSTANCE = new IoTDB();
-  }
 
   public static final IoTDB getInstance() {
     return IoTDBHolder.INSTANCE;
+  }
+
+  public static void main(String[] args) {
+    IoTDB daemon = IoTDB.getInstance();
+    daemon.active();
   }
 
   public void active() {
@@ -63,7 +61,7 @@ public class IoTDB implements IoTDBMBean {
     } catch (StartupException e) {
       // TODO: what are some checks
       LOGGER.error("{}: failed to start because some checks failed. {}",
-              IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
+          IoTDBConstant.GLOBAL_DB_NAME, e.getMessage());
       return;
     }
     try {
@@ -85,7 +83,7 @@ public class IoTDB implements IoTDBMBean {
       systemDataRecovery();
     } catch (RecoverException e) {
       String errorMessage = String.format("Failed to recover system data because of %s",
-              e.getMessage());
+          e.getMessage());
       throw new StartupException(errorMessage);
     }
     // When registering statMonitor, we should start recovering some statistics
@@ -163,9 +161,9 @@ public class IoTDB implements IoTDBMBean {
     config.enableWal = enableWal;
   }
 
-  public static void main(String[] args) {
-    IoTDB daemon = IoTDB.getInstance();
-    daemon.active();
+  private static class IoTDBHolder {
+
+    private static final IoTDB INSTANCE = new IoTDB();
   }
 
 }

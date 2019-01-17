@@ -19,6 +19,7 @@ public enum TSDataType {
 
   /**
    * give an integer to return a data type.
+   *
    * @param i -param to judge enum type
    * @return -enum type
    */
@@ -42,8 +43,13 @@ public enum TSDataType {
     }
   }
 
+  public static int getSerializedSize() {
+    return Short.BYTES;
+  }
+
   /**
    * return a serialize data type.
+   *
    * @return -enum type
    */
   public short serialize() {
@@ -63,9 +69,5 @@ public enum TSDataType {
       default:
         return -1;
     }
-  }
-
-  public static int getSerializedSize() {
-    return Short.BYTES;
   }
 }

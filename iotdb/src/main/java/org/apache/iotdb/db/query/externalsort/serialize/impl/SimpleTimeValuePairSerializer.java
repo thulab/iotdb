@@ -24,14 +24,14 @@ import org.apache.iotdb.db.utils.TimeValuePair;
 
 /**
  * Serializer timeValuePair.
- * */
+ */
 public class SimpleTimeValuePairSerializer implements TimeValuePairSerializer {
 
   private ObjectOutputStream objectOutputStream;
 
   /**
    * init with file path.
-   * */
+   */
   public SimpleTimeValuePairSerializer(String tmpFilePath) throws IOException {
     checkPath(tmpFilePath);
     objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(

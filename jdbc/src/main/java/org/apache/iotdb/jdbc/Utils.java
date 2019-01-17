@@ -70,6 +70,7 @@ public class Utils {
 
   /**
    * verify success.
+   *
    * @param status -status
    */
   public static void verifySuccess(TS_Status status) throws IoTDBSQLException {
@@ -80,6 +81,7 @@ public class Utils {
 
   /**
    * convert row records.
+   *
    * @param tsQueryDataSet -query data set
    * @return -list of row record
    */

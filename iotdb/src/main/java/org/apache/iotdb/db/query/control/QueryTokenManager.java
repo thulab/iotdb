@@ -81,6 +81,15 @@ public class QueryTokenManager {
    */
   private ConcurrentHashMap<Long, ConcurrentHashMap<String, List<Integer>>> queryTokensMap;
 
+  private QueryTokenManager() {
+    jobContainer = new ThreadLocal<>();
+    queryTokensMap = new ConcurrentHashMap<>();
+  }
+
+  public static QueryTokenManager getInstance() {
+    return QueryTokenManagerHelper.INSTANCE;
+  }
+
   /**
    * Set job id for current request thread. When a query request is created firstly, this method
    * must be invoked.
@@ -154,17 +163,8 @@ public class QueryTokenManager {
     queryTokensMap.get(jobId).get(deviceId).add(queryToken);
   }
 
-  private QueryTokenManager() {
-    jobContainer = new ThreadLocal<>();
-    queryTokensMap = new ConcurrentHashMap<>();
-  }
-
   private static class QueryTokenManagerHelper {
 
     public static QueryTokenManager INSTANCE = new QueryTokenManager();
-  }
-
-  public static QueryTokenManager getInstance() {
-    return QueryTokenManagerHelper.INSTANCE;
   }
 }

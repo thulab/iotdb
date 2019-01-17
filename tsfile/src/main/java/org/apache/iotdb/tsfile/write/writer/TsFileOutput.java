@@ -24,10 +24,8 @@ public interface TsFileOutput {
    * Writes <code>b.length</code> bytes from the specified byte array to this output at the current
    * position.
    *
-   * @param b
-   *            the data.
-   * @exception IOException
-   *                if an I/O error occurs.
+   * @param b the data.
+   * @throws IOException if an I/O error occurs.
    */
   void write(byte[] b) throws IOException;
 
@@ -35,29 +33,25 @@ public interface TsFileOutput {
    * Writes <code>b.remaining()</code> bytes from the specified byte array to this output at the
    * current position.
    *
-   * @param b
-   *            the data.
-   * @exception IOException
-   *                if an I/O error occurs.
+   * @param b the data.
+   * @throws IOException if an I/O error occurs.
    */
   void write(ByteBuffer b) throws IOException;
 
   /**
    * gets the current position of the Output. This method is usually used for recording where the
-   * data is. <br/>
-   * For example, if the Output is a fileOutputStream, then getPosition returns its file position.
+   * data is. <br/> For example, if the Output is a fileOutputStream, then getPosition returns its
+   * file position.
    *
    * @return current position
-   * @throws java.io.IOException
-   *             if an I/O error occurs.
+   * @throws java.io.IOException if an I/O error occurs.
    */
   long getPosition() throws IOException;
 
   /**
    * close the output.
    *
-   * @throws IOException
-   *             if an I/O error occurs.
+   * @throws IOException if an I/O error occurs.
    */
   void close() throws IOException;
 
@@ -65,16 +59,14 @@ public interface TsFileOutput {
    * convert this TsFileOutput as a outputstream.
    *
    * @return an output stream whose position is the same with this Output
-   * @throws IOException
-   *             if an I/O error occurs.
+   * @throws IOException if an I/O error occurs.
    */
   OutputStream wrapAsStream() throws IOException;
 
   /**
    * the same with {@link OutputStream#flush()}.
    *
-   * @exception IOException
-   *                if an I/O error occurs.
+   * @throws IOException if an I/O error occurs.
    */
   void flush() throws IOException;
 

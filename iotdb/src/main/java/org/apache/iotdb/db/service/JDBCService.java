@@ -38,9 +38,13 @@ import org.slf4j.LoggerFactory;
 public class JDBCService implements JDBCServiceMBean, IService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JDBCService.class);
+  private final String statusUp = "UP";
+  private final String statusDown = "DOWN";
+  private final String mbeanName = String
+      .format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE, IoTDBConstant.JMX_TYPE,
+          getID().getJmxName());
   private Thread jdbcServiceThread;
   private boolean isStart;
-
   private Factory protocolFactory;
   private Processor<TSIService.Iface> processor;
   private TServerSocket serverTransport;
@@ -48,24 +52,12 @@ public class JDBCService implements JDBCServiceMBean, IService {
   private TServer poolServer;
   private TSServiceImpl impl;
 
-  private final String statusUp = "UP";
-  private final String statusDown = "DOWN";
-
-  private final String mbeanName = String
-      .format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE, IoTDBConstant.JMX_TYPE,
-          getID().getJmxName());
-
-  private static class JDBCServiceHolder {
-
-    private static final JDBCService INSTANCE = new JDBCService();
+  private JDBCService() {
+    isStart = false;
   }
 
   public static final JDBCService getInstance() {
     return JDBCServiceHolder.INSTANCE;
-  }
-
-  private JDBCService() {
-    isStart = false;
   }
 
   @Override
@@ -157,6 +149,11 @@ public class JDBCService implements JDBCServiceMBean, IService {
       serverTransport = null;
     }
     isStart = false;
+  }
+
+  private static class JDBCServiceHolder {
+
+    private static final JDBCService INSTANCE = new JDBCService();
   }
 
   private class JDBCServiceThread implements Runnable {

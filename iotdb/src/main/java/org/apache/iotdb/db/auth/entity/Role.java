@@ -50,7 +50,7 @@ public class Role {
 
   /**
    * set privileges of path.
-   * */
+   */
   public void setPrivileges(String path, Set<Integer> privileges) {
     for (PathPrivilege pathPrivilege : privilegeList) {
       if (pathPrivilege.path.equals(path)) {

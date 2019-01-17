@@ -40,12 +40,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<ExclusiveWriteLogNode> {
 
-  private static final Logger logger = LoggerFactory.getLogger(ExclusiveWriteLogNode.class);
-
   public static final String WAL_FILE_NAME = "wal";
-
   public static final String OLD_SUFFIX = "-old";
-
+  private static final Logger logger = LoggerFactory.getLogger(ExclusiveWriteLogNode.class);
   /**
    * This should be the same as the corresponding FileNode's name.
    */
@@ -65,6 +62,7 @@ public class ExclusiveWriteLogNode implements WriteLogNode, Comparable<Exclusive
 
   /**
    * constructor of ExclusiveWriteLogNode.
+   *
    * @param identifier ExclusiveWriteLogNode identifier
    * @param restoreFilePath restore file path
    * @param processorStoreFilePath processor store file path

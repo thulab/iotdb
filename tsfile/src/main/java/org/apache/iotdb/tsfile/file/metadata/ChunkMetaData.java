@@ -53,20 +53,6 @@ public class ChunkMetaData {
 
   private TsDigest valuesStatistics;
 
-  /**
-   * get serialized size.
-   *
-   * @return serialized size (int type)
-   */
-  public int getSerializedSize() {
-    return (Integer.BYTES + measurementUid.length()) + // measurementUid
-        4 * Long.BYTES + // 4 long: offsetOfChunkHeader, numOfPoints, startTime, endTime
-        TSDataType.getSerializedSize() + // TSDataType
-        (valuesStatistics == null ? TsDigest.getNullDigestSize()
-            : valuesStatistics.getSerializedSize());
-
-  }
-
   private ChunkMetaData() {
   }
 
@@ -86,6 +72,66 @@ public class ChunkMetaData {
     this.offsetOfChunkHeader = fileOffset;
     this.startTime = startTime;
     this.endTime = endTime;
+  }
+
+  /**
+   * deserialize from InputStream.
+   *
+   * @param inputStream InputStream
+   * @return ChunkMetaData object
+   * @throws IOException IOException
+   */
+  public static ChunkMetaData deserializeFrom(InputStream inputStream) throws IOException {
+    ChunkMetaData chunkMetaData = new ChunkMetaData();
+
+    chunkMetaData.measurementUid = ReadWriteIOUtils.readString(inputStream);
+
+    chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(inputStream);
+
+    chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(inputStream);
+    chunkMetaData.startTime = ReadWriteIOUtils.readLong(inputStream);
+    chunkMetaData.endTime = ReadWriteIOUtils.readLong(inputStream);
+
+    chunkMetaData.tsDataType = ReadWriteIOUtils.readDataType(inputStream);
+
+    chunkMetaData.valuesStatistics = TsDigest.deserializeFrom(inputStream);
+
+    return chunkMetaData;
+  }
+
+  /**
+   * deserialize from ByteBuffer.
+   *
+   * @param buffer ByteBuffer
+   * @return ChunkMetaData object
+   */
+  public static ChunkMetaData deserializeFrom(ByteBuffer buffer) {
+    ChunkMetaData chunkMetaData = new ChunkMetaData();
+
+    chunkMetaData.measurementUid = ReadWriteIOUtils.readString(buffer);
+    chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(buffer);
+    chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(buffer);
+    chunkMetaData.startTime = ReadWriteIOUtils.readLong(buffer);
+    chunkMetaData.endTime = ReadWriteIOUtils.readLong(buffer);
+    chunkMetaData.tsDataType = ReadWriteIOUtils.readDataType(buffer);
+
+    chunkMetaData.valuesStatistics = TsDigest.deserializeFrom(buffer);
+
+    return chunkMetaData;
+  }
+
+  /**
+   * get serialized size.
+   *
+   * @return serialized size (int type)
+   */
+  public int getSerializedSize() {
+    return (Integer.BYTES + measurementUid.length()) + // measurementUid
+        4 * Long.BYTES + // 4 long: offsetOfChunkHeader, numOfPoints, startTime, endTime
+        TSDataType.getSerializedSize() + // TSDataType
+        (valuesStatistics == null ? TsDigest.getNullDigestSize()
+            : valuesStatistics.getSerializedSize());
+
   }
 
   @Override
@@ -198,52 +244,6 @@ public class ChunkMetaData {
 
     assert byteLen == getSerializedSize();
     return byteLen;
-  }
-
-  /**
-   * deserialize from InputStream.
-   *
-   * @param inputStream InputStream
-   * @return ChunkMetaData object
-   * @throws IOException IOException
-   */
-  public static ChunkMetaData deserializeFrom(InputStream inputStream) throws IOException {
-    ChunkMetaData chunkMetaData = new ChunkMetaData();
-
-    chunkMetaData.measurementUid = ReadWriteIOUtils.readString(inputStream);
-
-    chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(inputStream);
-
-    chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(inputStream);
-    chunkMetaData.startTime = ReadWriteIOUtils.readLong(inputStream);
-    chunkMetaData.endTime = ReadWriteIOUtils.readLong(inputStream);
-
-    chunkMetaData.tsDataType = ReadWriteIOUtils.readDataType(inputStream);
-
-    chunkMetaData.valuesStatistics = TsDigest.deserializeFrom(inputStream);
-
-    return chunkMetaData;
-  }
-
-  /**
-   * deserialize from ByteBuffer.
-   *
-   * @param buffer ByteBuffer
-   * @return ChunkMetaData object
-   */
-  public static ChunkMetaData deserializeFrom(ByteBuffer buffer) {
-    ChunkMetaData chunkMetaData = new ChunkMetaData();
-
-    chunkMetaData.measurementUid = ReadWriteIOUtils.readString(buffer);
-    chunkMetaData.offsetOfChunkHeader = ReadWriteIOUtils.readLong(buffer);
-    chunkMetaData.numOfPoints = ReadWriteIOUtils.readLong(buffer);
-    chunkMetaData.startTime = ReadWriteIOUtils.readLong(buffer);
-    chunkMetaData.endTime = ReadWriteIOUtils.readLong(buffer);
-    chunkMetaData.tsDataType = ReadWriteIOUtils.readDataType(buffer);
-
-    chunkMetaData.valuesStatistics = TsDigest.deserializeFrom(buffer);
-
-    return chunkMetaData;
   }
 
   public long getMaxTombstoneTime() {

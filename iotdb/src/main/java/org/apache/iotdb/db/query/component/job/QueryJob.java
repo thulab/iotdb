@@ -18,6 +18,7 @@ import org.apache.iotdb.tsfile.read.expression.QueryExpression;
 
 public abstract class QueryJob {
 
+  protected QueryJobType type;
   private long jobId;
   private long submitTimestamp;
   private long startTimestamp;
@@ -25,8 +26,6 @@ public abstract class QueryJob {
   private QueryJobStatus status;
   private QueryJobExecutionMessage message;
   private String clientId;
-
-  protected QueryJobType type;
 
   public QueryJob(long jobId) {
     this.jobId = jobId;
@@ -53,12 +52,12 @@ public abstract class QueryJob {
     return false;
   }
 
-  public void setJobId(long jobId) {
-    this.jobId = jobId;
-  }
-
   public long getJobId() {
     return jobId;
+  }
+
+  public void setJobId(long jobId) {
+    this.jobId = jobId;
   }
 
   public long getSubmitTimestamp() {

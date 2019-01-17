@@ -27,20 +27,24 @@ import org.apache.iotdb.tsfile.write.record.datapoint.DataPoint;
  */
 public class TSRecord {
 
-  /** timestamp of this TSRecord. **/
+  /**
+   * timestamp of this TSRecord.
+   **/
   public long time;
-  /** deviceId of this TSRecord. **/
+  /**
+   * deviceId of this TSRecord.
+   **/
   public String deviceId;
-  /** all value of this TSRecord. **/
+  /**
+   * all value of this TSRecord.
+   **/
   public List<DataPoint> dataPointList = new ArrayList<>();
 
   /**
    * constructor of TSRecord.
    *
-   * @param timestamp
-   *            timestamp of this TSRecord
-   * @param deviceId
-   *            deviceId of this TSRecord
+   * @param timestamp timestamp of this TSRecord
+   * @param deviceId deviceId of this TSRecord
    */
   public TSRecord(long timestamp, String deviceId) {
     this.time = timestamp;
@@ -54,8 +58,7 @@ public class TSRecord {
   /**
    * add one data point to this TSRecord.
    *
-   * @param tuple
-   *            data point to be added
+   * @param tuple data point to be added
    */
   public void addTuple(DataPoint tuple) {
     this.dataPointList.add(tuple);

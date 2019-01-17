@@ -22,6 +22,7 @@ import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 /**
  * Boolean Statistics.
+ *
  * @author CGF
  */
 public class BooleanStatistics extends Statistics<Boolean> {
@@ -126,6 +127,7 @@ public class BooleanStatistics extends Statistics<Boolean> {
 
   /**
    * initialize boolean Statistics.
+   *
    * @param min min boolean
    * @param max max boolean
    * @param firstValue first boolean value

@@ -20,15 +20,15 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 
 public abstract class AbstractMemTable implements IMemTable {
 
-  @Override
-  public Map<String, Map<String, IWritableMemChunk>> getMemTableMap() {
-    return memTableMap;
-  }
-
   private final Map<String, Map<String, IWritableMemChunk>> memTableMap;
 
   public AbstractMemTable() {
     this.memTableMap = new HashMap<>();
+  }
+
+  @Override
+  public Map<String, Map<String, IWritableMemChunk>> getMemTableMap() {
+    return memTableMap;
   }
 
   /**

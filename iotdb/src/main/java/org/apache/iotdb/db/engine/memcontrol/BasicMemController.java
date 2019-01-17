@@ -25,7 +25,32 @@ import org.slf4j.LoggerFactory;
 public abstract class BasicMemController implements IService {
 
   private static final Logger logger = LoggerFactory.getLogger(BasicMemController.class);
+  protected long warningThreshold;
+  protected long dangerouseThreshold;
+  protected MemMonitorThread monitorThread;
+  protected MemStatisticThread memStatisticThread;
   private IoTDBConfig config;
+
+  BasicMemController(IoTDBConfig config) {
+    this.config = config;
+    warningThreshold = config.memThresholdWarning;
+    dangerouseThreshold = config.memThresholdDangerous;
+  }
+
+  /**
+   * change instance here.
+   *
+   * @return BasicMemController
+   */
+  public static BasicMemController getInstance() {
+    switch (ControllerType.values()[IoTDBDescriptor.getInstance().getConfig().memControllerType]) {
+      case JVM:
+        return JVMMemController.getInstance();
+      case RECORD:
+      default:
+        return RecordMemController.getInstance();
+    }
+  }
 
   @Override
   public void start() throws StartupException {
@@ -65,42 +90,9 @@ public abstract class BasicMemController implements IService {
     return ServiceType.JVM_MEM_CONTROL_SERVICE;
   }
 
-  public enum ControllerType {
-    RECORD, JVM
-  }
-
-  protected long warningThreshold;
-  protected long dangerouseThreshold;
-
-  protected MemMonitorThread monitorThread;
-  protected MemStatisticThread memStatisticThread;
-
-  public enum UsageLevel {
-    SAFE, WARNING, DANGEROUS
-  }
-
-  BasicMemController(IoTDBConfig config) {
-    this.config = config;
-    warningThreshold = config.memThresholdWarning;
-    dangerouseThreshold = config.memThresholdDangerous;
-  }
-
-  /**
-   * change instance here.
-   * @return BasicMemController
-   */
-  public static BasicMemController getInstance() {
-    switch (ControllerType.values()[IoTDBDescriptor.getInstance().getConfig().memControllerType]) {
-      case JVM:
-        return JVMMemController.getInstance();
-      case RECORD:
-      default:
-        return RecordMemController.getInstance();
-    }
-  }
-
   /**
    * set dangerous threshold.
+   *
    * @param dangerouseThreshold dangerous threshold
    */
   public void setDangerousThreshold(long dangerouseThreshold) {
@@ -109,6 +101,7 @@ public abstract class BasicMemController implements IService {
 
   /**
    * set warning threshold.
+   *
    * @param warningThreshold warning threshold
    */
   public void setWarningThreshold(long warningThreshold) {
@@ -117,6 +110,7 @@ public abstract class BasicMemController implements IService {
 
   /**
    * set check interval.
+   *
    * @param checkInterval check interval
    */
   public void setCheckInterval(long checkInterval) {
@@ -155,4 +149,12 @@ public abstract class BasicMemController implements IService {
   public abstract UsageLevel reportUse(Object user, long usage);
 
   public abstract void reportFree(Object user, long freeSize);
+
+  public enum ControllerType {
+    RECORD, JVM
+  }
+
+  public enum UsageLevel {
+    SAFE, WARNING, DANGEROUS
+  }
 }

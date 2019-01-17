@@ -42,9 +42,8 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
     queryJobResultSet = new ConcurrentHashMap<>();
   }
 
-  private static class QueryEngineImplHelper {
-
-    private static final QueryEngineImpl INSTANCE = new QueryEngineImpl();
+  public static QueryEngineImpl getInstance() {
+    return QueryEngineImplHelper.INSTANCE;
   }
 
   @Override
@@ -141,11 +140,12 @@ public class QueryEngineImpl implements QueryEngine, Runnable {
     this.queryJobResultSet.put(job, queryDataSet);
   }
 
-  public static QueryEngineImpl getInstance() {
-    return QueryEngineImplHelper.INSTANCE;
-  }
-
   public void setQueryJobDispatcher(QueryJobDispatcher queryJobDispatcher) {
     this.queryJobDispatcher = queryJobDispatcher;
+  }
+
+  private static class QueryEngineImplHelper {
+
+    private static final QueryEngineImpl INSTANCE = new QueryEngineImpl();
   }
 }

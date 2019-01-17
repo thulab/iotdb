@@ -33,6 +33,16 @@ public class LocalFileAuthorizer extends BasicAuthorizer {
         new LocalFileRoleManager(config.dataDir + File.separator + "roles" + File.separator));
   }
 
+  /**
+   * function for getting the instance of the local file authorizer.
+   */
+  public static LocalFileAuthorizer getInstance() throws AuthException {
+    if (InstanceHolder.instance == null) {
+      throw new AuthException("Authorizer uninitialized");
+    }
+    return InstanceHolder.instance;
+  }
+
   private static class InstanceHolder {
 
     private static LocalFileAuthorizer instance;
@@ -45,15 +55,5 @@ public class LocalFileAuthorizer extends BasicAuthorizer {
         instance = null;
       }
     }
-  }
-
-  /**
-   * function for getting the instance of the local file authorizer.
-   */
-  public static LocalFileAuthorizer getInstance() throws AuthException {
-    if (InstanceHolder.instance == null) {
-      throw new AuthException("Authorizer uninitialized");
-    }
-    return InstanceHolder.instance;
   }
 }

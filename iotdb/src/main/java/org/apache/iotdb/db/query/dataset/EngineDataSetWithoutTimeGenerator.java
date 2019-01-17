@@ -46,6 +46,7 @@ public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
   /**
    * constructor of EngineDataSetWithoutTimeGenerator.
+   *
    * @param paths paths in List structure
    * @param dataTypes time series data type
    * @param readers readers in List(IReader) structure

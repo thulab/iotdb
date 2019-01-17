@@ -104,6 +104,7 @@ public class DoubleStatistics extends Statistics<Double> {
 
   /**
    * initialize double statistics.
+   *
    * @param min min value
    * @param max max value
    * @param first the first value

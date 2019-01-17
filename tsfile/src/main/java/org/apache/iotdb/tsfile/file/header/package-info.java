@@ -22,5 +22,4 @@ package org.apache.iotdb.tsfile.file.header;
  *
  * However, because Page has only the header structure, therefore, PageHeader has the both two
  * functions.
- *
  */

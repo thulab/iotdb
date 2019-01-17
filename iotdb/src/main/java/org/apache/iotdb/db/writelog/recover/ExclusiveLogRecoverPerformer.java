@@ -41,29 +41,18 @@ import org.slf4j.LoggerFactory;
 
 public class ExclusiveLogRecoverPerformer implements RecoverPerformer {
 
-  private static final Logger logger = LoggerFactory.getLogger(ExclusiveLogRecoverPerformer.class);
-
   public static final String RECOVER_FLAG_NAME = "recover-flag";
-
   public static final String RECOVER_SUFFIX = "-recover";
-
   public static final String FLAG_SEPERATOR = "-";
-
-  private ExclusiveWriteLogNode writeLogNode;
-
-  private String recoveryFlagPath;
-
-  private String restoreFilePath;
-
-  private String processorStoreFilePath;
-
-  private RecoverStage currStage;
-
-  private LogReplayer replayer = new ConcreteLogReplayer();
-
+  private static final Logger logger = LoggerFactory.getLogger(ExclusiveLogRecoverPerformer.class);
   // The two fields can be made static only because the recovery is a serial process.
   private static RAFLogReader RAFLogReader = new RAFLogReader();
-
+  private ExclusiveWriteLogNode writeLogNode;
+  private String recoveryFlagPath;
+  private String restoreFilePath;
+  private String processorStoreFilePath;
+  private RecoverStage currStage;
+  private LogReplayer replayer = new ConcreteLogReplayer();
   private RecoverPerformer fileNodeRecoverPerformer;
 
   /**

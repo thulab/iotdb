@@ -159,7 +159,7 @@ public class AuthUtils {
    * @param pathA sub-path
    * @param pathB path
    * @return True if pathA == pathB, or pathA is an extension of pathB, e.g. pathA = "root.a.b.c"
-   *     and pathB = "root.a"
+   * and pathB = "root.a"
    */
   public static boolean pathBelongsTo(String pathA, String pathB) {
     return pathA.equals(pathB)
@@ -169,8 +169,9 @@ public class AuthUtils {
 
   /**
    * check privilege.
+   *
    * @param path series path
-   * @param privilegeId  privilege ID
+   * @param privilegeId privilege ID
    * @param privilegeList privileges in List structure
    * @return True if privilege-check passed
    */
@@ -199,8 +200,9 @@ public class AuthUtils {
 
   /**
    * get privileges.
+   *
    * @param path The seriesPath on which the privileges take effect. If seriesPath-free privileges
-   *     are desired, this should be null.
+   * are desired, this should be null.
    * @return The privileges granted to the role.
    */
   public static Set<Integer> getPrivileges(String path, List<PathPrivilege> privilegeList) {
@@ -224,6 +226,7 @@ public class AuthUtils {
 
   /**
    * check if series path has this privilege.
+   *
    * @param path series path
    * @param privilegeId privilege Id
    * @param privilegeList privileges in List structure
@@ -242,8 +245,9 @@ public class AuthUtils {
 
   /**
    * add privilege.
+   *
    * @param path series path
-   * @param privilgeId  privilege Id
+   * @param privilgeId privilege Id
    * @param privilegeList privileges in List structure
    */
   public static void addPrivilege(String path, int privilgeId, List<PathPrivilege> privilegeList) {
@@ -272,6 +276,7 @@ public class AuthUtils {
 
   /**
    * remove privilege.
+   *
    * @param path series path
    * @param privilgeId privilege Id
    * @param privilegeList privileges in List structure

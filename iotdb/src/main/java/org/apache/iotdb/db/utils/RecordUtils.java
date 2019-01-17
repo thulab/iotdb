@@ -41,10 +41,8 @@ public class RecordUtils {
    * support input format: {@code <deviceId>,<timestamp>,[<measurementId>,<value>,]}.CSV line is
    * separated by ","
    *
-   * @param str
-   *            - input string
-   * @param schema
-   *            - constructed file schema
+   * @param str - input string
+   * @param schema - constructed file schema
    * @return TSRecord constructed from str
    */
   public static TSRecord parseSimpleTupleRecord(String str, FileSchema schema) {

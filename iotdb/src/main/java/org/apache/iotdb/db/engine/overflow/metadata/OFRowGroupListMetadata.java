@@ -41,6 +41,25 @@ public class OFRowGroupListMetadata {
   }
 
   /**
+   * function for deserializing data from input stream.
+   */
+  public static OFRowGroupListMetadata deserializeFrom(InputStream inputStream) throws IOException {
+    OFRowGroupListMetadata ofRowGroupListMetadata = new OFRowGroupListMetadata();
+    ofRowGroupListMetadata.deviceId = ReadWriteIOUtils.readString(inputStream);
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    List<OFSeriesListMetadata> list = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      list.add(OFSeriesListMetadata.deserializeFrom(inputStream));
+    }
+    ofRowGroupListMetadata.seriesList = list;
+    return ofRowGroupListMetadata;
+  }
+
+  public static OFRowGroupListMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
+    throw new NotImplementedException();
+  }
+
+  /**
    * add OFSeriesListMetadata metadata to list.
    */
   public void addSeriesListMetaData(OFSeriesListMetadata timeSeries) {
@@ -82,25 +101,6 @@ public class OFRowGroupListMetadata {
    * function for serializing data to byte buffer.
    */
   public int serializeTo(ByteBuffer buffer) throws IOException {
-    throw new NotImplementedException();
-  }
-
-  /**
-   * function for deserializing data from input stream.
-   */
-  public static OFRowGroupListMetadata deserializeFrom(InputStream inputStream) throws IOException {
-    OFRowGroupListMetadata ofRowGroupListMetadata = new OFRowGroupListMetadata();
-    ofRowGroupListMetadata.deviceId = ReadWriteIOUtils.readString(inputStream);
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    List<OFSeriesListMetadata> list = new ArrayList<>();
-    for (int i = 0; i < size; i++) {
-      list.add(OFSeriesListMetadata.deserializeFrom(inputStream));
-    }
-    ofRowGroupListMetadata.seriesList = list;
-    return ofRowGroupListMetadata;
-  }
-
-  public static OFRowGroupListMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
     throw new NotImplementedException();
   }
 }

@@ -43,13 +43,11 @@ public class TsFileSequenceReader {
 
   /**
    * Create a file reader of the given file. The reader will read the tail of the file to get the
-   * file metadata size.Then the reader will skip the first TSFileConfig.MAGIC_STRING.length()
-   * bytes of the file for preparing reading real data.
+   * file metadata size.Then the reader will skip the first TSFileConfig.MAGIC_STRING.length() bytes
+   * of the file for preparing reading real data.
    *
-   * @param file
-   *            the data file
-   * @throws IOException
-   *             If some I/O error occurs
+   * @param file the data file
+   * @throws IOException If some I/O error occurs
    */
   public TsFileSequenceReader(String file) throws IOException {
     this(file, true);
@@ -57,6 +55,7 @@ public class TsFileSequenceReader {
 
   /**
    * construct function for TsFileSequenceReader.
+   *
    * @param file -given file name
    * @param loadMetadataSize -load meta data size
    */
@@ -66,6 +65,21 @@ public class TsFileSequenceReader {
     if (loadMetadataSize) {
       loadMetadataSize();
     }
+  }
+
+  /**
+   * construct function for TsFileSequenceReader.
+   *
+   * @param input the input of a tsfile. The current position should be a markder and then a chunk
+   * Header, rather than the magic number
+   * @param fileMetadataPos the position of the file metadata in the TsFileInput from the beginning
+   * of the input to the current position
+   * @param fileMetadataSize the byte size of the file metadata in the input
+   */
+  public TsFileSequenceReader(TsFileInput input, long fileMetadataPos, int fileMetadataSize) {
+    this.tsFileInput = input;
+    this.fileMetadataPos = fileMetadataPos;
+    this.fileMetadataSize = fileMetadataSize;
   }
 
   private void loadMetadataSize() throws IOException {
@@ -79,23 +93,6 @@ public class TsFileSequenceReader {
         tsFileInput.size() - TSFileConfig.MAGIC_STRING.length() - Integer.BYTES - fileMetadataSize;
     // skip the magic header
     tsFileInput.position(TSFileConfig.MAGIC_STRING.length());
-  }
-
-  /**
-   * construct function for TsFileSequenceReader.
-   * @param input
-   *            the input of a tsfile. The current position should be a markder and then a chunk
-   *            Header, rather than the magic number
-   * @param fileMetadataPos
-   *            the position of the file metadata in the TsFileInput from the beginning of the
-   *            input to the current position
-   * @param fileMetadataSize
-   *            the byte size of the file metadata in the input
-   */
-  public TsFileSequenceReader(TsFileInput input, long fileMetadataPos, int fileMetadataSize) {
-    this.tsFileInput = input;
-    this.fileMetadataPos = fileMetadataPos;
-    this.fileMetadataSize = fileMetadataSize;
   }
 
   public long getFileMetadataPos() {
@@ -146,8 +143,7 @@ public class TsFileSequenceReader {
    * This method is not threadsafe.
    *
    * @return a ChunkGroupFooter
-   * @throws IOException
-   *             io error
+   * @throws IOException io error
    */
   public ChunkGroupFooter readChunkGroupFooter() throws IOException {
     return ChunkGroupFooter.deserializeFrom(tsFileInput.wrapAsInputStream(), true);
@@ -156,13 +152,10 @@ public class TsFileSequenceReader {
   /**
    * read data from current position of the input, and deserialize it to a ChunkGroupFooter.
    *
-   * @param position
-   *            the offset of the chunk group footer in the file
-   * @param markerRead
-   *            true if the offset does not contains the marker , otherwise false
+   * @param position the offset of the chunk group footer in the file
+   * @param markerRead true if the offset does not contains the marker , otherwise false
    * @return a ChunkGroupFooter
-   * @throws IOException
-   *             io error
+   * @throws IOException io error
    */
   public ChunkGroupFooter readChunkGroupFooter(long position, boolean markerRead)
       throws IOException {
@@ -171,11 +164,10 @@ public class TsFileSequenceReader {
 
   /**
    * After reading the footer of a ChunkGroup, call this method to set the file pointer to the start
-   * of the data of this ChunkGroup if you want to read its data next. <br>
-   * This method is not threadsafe.
+   * of the data of this ChunkGroup if you want to read its data next. <br> This method is not
+   * threadsafe.
    *
-   * @param footer
-   *            the chunkGroupFooter which you want to read data
+   * @param footer the chunkGroupFooter which you want to read data
    */
   public void setPositionToAChunkGroup(ChunkGroupFooter footer) throws IOException {
     tsFileInput
@@ -183,12 +175,11 @@ public class TsFileSequenceReader {
   }
 
   /**
-   * read data from current position of the input, and deserialize it to a ChunkHeader. <br>
-   * This method is not threadsafe.
+   * read data from current position of the input, and deserialize it to a ChunkHeader. <br> This
+   * method is not threadsafe.
    *
    * @return a ChunkHeader
-   * @throws IOException
-   *             io error
+   * @throws IOException io error
    */
   public ChunkHeader readChunkHeader() throws IOException {
     return ChunkHeader.deserializeFrom(tsFileInput.wrapAsInputStream(), true);
@@ -196,18 +187,17 @@ public class TsFileSequenceReader {
 
   /**
    * read the chunk's header.
-   * @param position
-   *            the file offset of this chunk's header
-   * @param markerRead
-   *            true if the offset does not contains the marker , otherwise false
+   *
+   * @param position the file offset of this chunk's header
+   * @param markerRead true if the offset does not contains the marker , otherwise false
    */
   private ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
     return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
   }
 
   /**
-   * notice, the position of the channel MUST be at the end of this header. <br>
-   * This method is not threadsafe.
+   * notice, the position of the channel MUST be at the end of this header. <br> This method is not
+   * threadsafe.
    *
    * @return the pages of this chunk
    */
@@ -218,8 +208,7 @@ public class TsFileSequenceReader {
   /**
    * notice, this function will modify channel's position.
    *
-   * @param position
-   *            the offset of the chunk data
+   * @param position the offset of the chunk data
    * @return the pages of this chunk
    */
   public ByteBuffer readChunk(ChunkHeader header, long position) throws IOException {
@@ -229,10 +218,8 @@ public class TsFileSequenceReader {
   /**
    * notice, this function will modify channel's position.
    *
-   * @param dataSize
-   *            the size of chunkdata
-   * @param position
-   *            the offset of the chunk data
+   * @param dataSize the size of chunkdata
+   * @param position the offset of the chunk data
    * @return the pages of this chunk
    */
   private ByteBuffer readChunk(long position, int dataSize) throws IOException {
@@ -241,6 +228,7 @@ public class TsFileSequenceReader {
 
   /**
    * read memory chunk.
+   *
    * @param metaData -given chunk meta data
    * @return -chunk
    */
@@ -255,7 +243,6 @@ public class TsFileSequenceReader {
    * not thread safe.
    *
    * @param type -given tsfile data type
-   * @return
    */
   public PageHeader readPageHeader(TSDataType type) throws IOException {
     return readPageHeader(type, -1);
@@ -264,8 +251,7 @@ public class TsFileSequenceReader {
   /**
    * notice, this function will modify channel's position.
    *
-   * @param position
-   *            the file offset of this page header's header
+   * @param position the file offset of this page header's header
    */
   private PageHeader readPageHeader(TSDataType type, long position) throws IOException {
     int size = PageHeader.calculatePageHeaderSize(type);
@@ -300,8 +286,7 @@ public class TsFileSequenceReader {
   }
 
   /**
-   * read one byte from the input. <br>
-   * this method is not thread safe
+   * read one byte from the input. <br> this method is not thread safe
    */
   public byte readMarker() throws IOException {
     markerBuffer.clear();
@@ -324,15 +309,13 @@ public class TsFileSequenceReader {
 
   /**
    * read data from tsFileInput, from the current position (if position = -1), or the given
-   * position. <br>
-   * if position = -1, the tsFileInput's position will be changed to the current position + real
-   * data size that been read. Other wise, the tsFileInput's position is not changed.
+   * position. <br> if position = -1, the tsFileInput's position will be changed to the current
+   * position + real data size that been read. Other wise, the tsFileInput's position is not
+   * changed.
    *
-   * @param position
-   *            the start position of data in the tsFileInput, or the current position if
-   *            position = -1
-   * @param size
-   *            the size of data that want to read
+   * @param position the start position of data in the tsFileInput, or the current position if
+   * position = -1
+   * @param size the size of data that want to read
    * @return data that been read.
    */
   private ByteBuffer readData(long position, int size) throws IOException {

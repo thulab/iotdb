@@ -21,6 +21,7 @@ public enum CompressionType {
 
   /**
    * deserialize short number.
+   *
    * @param i short number
    * @return CompressionType
    */
@@ -45,37 +46,13 @@ public enum CompressionType {
     }
   }
 
-  /**
-   * serialize.
-   * @return short number
-   */
-  public short serialize() {
-    switch (this) {
-      case UNCOMPRESSED:
-        return 0;
-      case SNAPPY:
-        return 1;
-      case GZIP:
-        return 2;
-      case LZO:
-        return 3;
-      case SDT:
-        return 4;
-      case PAA:
-        return 5;
-      case PLA:
-        return 6;
-      default:
-        return 0;
-    }
-  }
-
   public static int getSerializedSize() {
     return Short.BYTES;
   }
 
   /**
    * find by short name.
+   *
    * @param name name
    * @return CompressionType
    */
@@ -104,7 +81,34 @@ public enum CompressionType {
   }
 
   /**
+   * serialize.
+   *
+   * @return short number
+   */
+  public short serialize() {
+    switch (this) {
+      case UNCOMPRESSED:
+        return 0;
+      case SNAPPY:
+        return 1;
+      case GZIP:
+        return 2;
+      case LZO:
+        return 3;
+      case SDT:
+        return 4;
+      case PAA:
+        return 5;
+      case PLA:
+        return 6;
+      default:
+        return 0;
+    }
+  }
+
+  /**
    * get extension.
+   *
    * @return extension (string type), for example: .snappy, .gz, .lzo
    */
   public String getExtension() {

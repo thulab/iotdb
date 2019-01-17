@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.query.externalsort.serialize.impl;
@@ -21,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
 import org.apache.iotdb.db.query.externalsort.serialize.TimeValuePairSerializer;
 import org.apache.iotdb.db.utils.TimeValuePair;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
@@ -97,14 +94,16 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
         break;
       default:
         throw new RuntimeException("Unknown TSDataType in FixLengthTimeValuePairSerializer:"
-                + type);
+            + type);
     }
   }
 
   private abstract static class TimeValuePairWriter {
+
     public abstract void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException;
 
     private static class BooleanWriter extends TimeValuePairWriter {
+
       @Override
       public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
         outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
@@ -113,6 +112,7 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
     }
 
     private static class IntWriter extends TimeValuePairWriter {
+
       @Override
       public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
         outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
@@ -121,6 +121,7 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
     }
 
     private static class LongWriter extends TimeValuePairWriter {
+
       @Override
       public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
         outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
@@ -129,6 +130,7 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
     }
 
     private static class FloatWriter extends TimeValuePairWriter {
+
       @Override
       public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
         outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
@@ -137,6 +139,7 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
     }
 
     private static class DoubleWriter extends TimeValuePairWriter {
+
       @Override
       public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
         outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
@@ -145,12 +148,13 @@ public class FixLengthTimeValuePairSerializer implements TimeValuePairSerializer
     }
 
     private static class BinaryWriter extends TimeValuePairWriter {
+
       @Override
       public void write(TimeValuePair tvPair, OutputStream outputStream) throws IOException {
         outputStream.write(BytesUtils.longToBytes(tvPair.getTimestamp()));
         outputStream.write(BytesUtils.intToBytes(tvPair.getValue().getBinary().getLength()));
         outputStream.write(BytesUtils.stringToBytes(tvPair.getValue()
-                .getBinary().getStringValue()));
+            .getBinary().getStringValue()));
       }
     }
   }

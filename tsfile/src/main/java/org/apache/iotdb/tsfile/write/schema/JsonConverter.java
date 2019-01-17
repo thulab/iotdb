@@ -29,7 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <p> JsonConverter is used to convert JsonObject to TSFile Schema which is a java class defined in
+ * <p> JsonConverter is used to convert JsonObject to TSFile Schema which is a java class defined
+ * in
  * tsfile project. the main function of this converter is to receive a json object of schema and
  * register all measurements. </p>
  *
@@ -102,11 +103,9 @@ public class JsonConverter {
    *
    * @param measurementObj properties of one measurement
    *
-   *     an example:
-   *     { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
-   *     // some measurement may have some properties
-   *     "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"],
-   *     "max_error":12, "max_point_number":3 }
+   * an example: { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP", // some
+   * measurement may have some properties "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"],
+   * "max_error":12, "max_point_number":3 }
    * @return converted MeasurementSchema
    */
   public static MeasurementSchema convertJsonToMeasurementSchema(JSONObject measurementObj) {
@@ -181,11 +180,9 @@ public class JsonConverter {
    * MeasurementSchema}
    * @return converted MeasurementSchema in form of JSONObject
    *
-   *     an example:
-   *     { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP",
-   *     // some measurement may have some properties
-   *     "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"], "max_error":12,
-   *     "max_point_number":3 }
+   * an example: { "measurement_id": "s3", "data_type": "ENUMS", "encoding": "BITMAP", // some
+   * measurement may have some properties "compressor": "SNAPPY", "enum_values":["MAN","WOMAN"],
+   * "max_error":12, "max_point_number":3 }
    */
   private static JSONObject convertMeasurementSchemaToJson(MeasurementSchema measurementSchema) {
     JSONObject measurementObj = new JSONObject();

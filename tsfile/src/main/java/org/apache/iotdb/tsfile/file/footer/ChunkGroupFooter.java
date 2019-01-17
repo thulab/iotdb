@@ -40,20 +40,9 @@ public class ChunkGroupFooter {
   // this field does not need to be serialized.
   private int serializedSize;
 
-  public int getSerializedSize() {
-    return serializedSize;
-  }
-
-  public static int getSerializedSize(String deviceID) {
-    return Byte.BYTES + Integer.BYTES + getSerializedSize(deviceID.length());
-  }
-
-  private static int getSerializedSize(int deviceIdLength) {
-    return deviceIdLength + Long.BYTES + Integer.BYTES;
-  }
-
   /**
    * constructor of ChunkGroupFooter.
+   *
    * @param deviceID device ID
    * @param dataSize data size
    * @param numberOfChunks number of chunks
@@ -66,40 +55,17 @@ public class ChunkGroupFooter {
         Byte.BYTES + Integer.BYTES + deviceID.length() + Long.BYTES + Integer.BYTES;
   }
 
-  public String getDeviceID() {
-    return deviceID;
+  public static int getSerializedSize(String deviceID) {
+    return Byte.BYTES + Integer.BYTES + getSerializedSize(deviceID.length());
   }
 
-  public long getDataSize() {
-    return dataSize;
-  }
-
-  public int getNumberOfChunks() {
-    return numberOfChunks;
-  }
-
-  /**
-   * serialize to outputStream.
-   * @param outputStream output stream
-   * @return length
-   * @throws IOException IOException
-   */
-  public int serializeTo(OutputStream outputStream) throws IOException {
-    int length = 0;
-    length += ReadWriteIOUtils.write(MARKER, outputStream);
-    length += ReadWriteIOUtils.write(deviceID, outputStream);
-    length += ReadWriteIOUtils.write(dataSize, outputStream);
-    length += ReadWriteIOUtils.write(numberOfChunks, outputStream);
-    assert length == getSerializedSize();
-    return length;
-  }
-
-  public void setDataSize(long dataSize) {
-    this.dataSize = dataSize;
+  private static int getSerializedSize(int deviceIdLength) {
+    return deviceIdLength + Long.BYTES + Integer.BYTES;
   }
 
   /**
    * deserialize from inputStream.
+   *
    * @param markerRead Whether the marker of the ChunkGroupFooter is read ahead.
    */
   public static ChunkGroupFooter deserializeFrom(InputStream inputStream, boolean markerRead)
@@ -119,6 +85,7 @@ public class ChunkGroupFooter {
 
   /**
    * deserialize from FileChannel.
+   *
    * @param markerRead Whether the marker of the ChunkGroupFooter is read ahead.
    */
   public static ChunkGroupFooter deserializeFrom(FileChannel channel, long offset,
@@ -139,6 +106,43 @@ public class ChunkGroupFooter {
     long dataSize = ReadWriteIOUtils.readLong(buffer);
     int numOfChunks = ReadWriteIOUtils.readInt(buffer);
     return new ChunkGroupFooter(deviceID, dataSize, numOfChunks);
+  }
+
+  public int getSerializedSize() {
+    return serializedSize;
+  }
+
+  public String getDeviceID() {
+    return deviceID;
+  }
+
+  public long getDataSize() {
+    return dataSize;
+  }
+
+  public void setDataSize(long dataSize) {
+    this.dataSize = dataSize;
+  }
+
+  public int getNumberOfChunks() {
+    return numberOfChunks;
+  }
+
+  /**
+   * serialize to outputStream.
+   *
+   * @param outputStream output stream
+   * @return length
+   * @throws IOException IOException
+   */
+  public int serializeTo(OutputStream outputStream) throws IOException {
+    int length = 0;
+    length += ReadWriteIOUtils.write(MARKER, outputStream);
+    length += ReadWriteIOUtils.write(deviceID, outputStream);
+    length += ReadWriteIOUtils.write(dataSize, outputStream);
+    length += ReadWriteIOUtils.write(numberOfChunks, outputStream);
+    assert length == getSerializedSize();
+    return length;
   }
 
   @Override

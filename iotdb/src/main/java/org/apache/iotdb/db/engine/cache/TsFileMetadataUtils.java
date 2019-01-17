@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
  * <code>TsRowGroupBlockMetaData</code>).
  *
  * @author liukun
- *
  */
 public class TsFileMetadataUtils {
 
@@ -35,6 +34,7 @@ public class TsFileMetadataUtils {
 
   /**
    * get tsfile meta data.
+   *
    * @param filePath -given path
    * @return -meta data
    */
@@ -52,6 +52,7 @@ public class TsFileMetadataUtils {
 
   /**
    * get row group block meta data.
+   *
    * @param filePath -file path
    * @param deviceId -device id
    * @param fileMetaData -ts file meta data

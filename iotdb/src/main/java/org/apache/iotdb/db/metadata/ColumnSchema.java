@@ -31,6 +31,7 @@ public class ColumnSchema implements Serializable {
 
   /**
    * constructor of ColumnSchema.
+   *
    * @param name name
    * @param dataType time series data type
    * @param encoding time series data encoding type

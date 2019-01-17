@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.jdbc;
@@ -25,14 +23,16 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
 import org.apache.thrift.transport.TTransportException;
 
 public class IoTDBDriver implements Driver {
-  private final String TSFILE_URL_PREFIX = Config.IOTDB_URL_PREFIX + ".*";
 
   private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory
-          .getLogger(IoTDBDriver.class);
+      .getLogger(IoTDBDriver.class);
+  /**
+   * Is this driver JDBC compliant.
+   */
+  private static final boolean TSFILE_JDBC_COMPLIANT = false;
 
   static {
     try {
@@ -42,10 +42,7 @@ public class IoTDBDriver implements Driver {
     }
   }
 
-  /**
-   * Is this driver JDBC compliant.
-   */
-  private static final boolean TSFILE_JDBC_COMPLIANT = false;
+  private final String TSFILE_URL_PREFIX = Config.IOTDB_URL_PREFIX + ".*";
 
   public IoTDBDriver() {
 
@@ -62,8 +59,8 @@ public class IoTDBDriver implements Driver {
       return acceptsURL(url) ? new IoTDBConnection(url, info) : null;
     } catch (TTransportException e) {
       throw new SQLException(
-              "Connection Error, please check whether the network is available or the server"
-                      + " has started.");
+          "Connection Error, please check whether the network is available or the server"
+              + " has started.");
     }
   }
 

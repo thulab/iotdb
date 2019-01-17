@@ -53,20 +53,16 @@ import org.slf4j.LoggerFactory;
 public class BufferWriteProcessor extends Processor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferWriteProcessor.class);
-
-  private FileSchema fileSchema;
+  RestorableTsFileIOWriter writer;
   // private RestorableTsFileIOWriter bufferWriteRestoreManager;
-
+  private FileSchema fileSchema;
   private volatile FlushStatus flushStatus = new FlushStatus();
   private volatile boolean isFlush;
   private ReentrantLock flushQueryLock = new ReentrantLock();
   private AtomicLong memSize = new AtomicLong();
   private long memThreshold = TSFileDescriptor.getInstance().getConfig().groupSizeInByte;
-
   private IMemTable workMemTable;
   private IMemTable flushMemTable;
-  RestorableTsFileIOWriter writer;
-
   private Action bufferwriteFlushAction;
   private Action bufferwriteCloseAction;
   private Action filenodeFlushAction;
@@ -423,6 +419,7 @@ public class BufferWriteProcessor extends Processor {
 
   /**
    * get metadata size.
+   *
    * @return The sum of all timeseries's metadata size within this file.
    */
   public long getMetaSize() {
@@ -432,6 +429,7 @@ public class BufferWriteProcessor extends Processor {
 
   /**
    * get file size.
+   *
    * @return The file size of the TsFile corresponding to this processor.
    */
   public long getFileSize() {

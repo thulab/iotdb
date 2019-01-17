@@ -51,6 +51,10 @@ public class SeriesReaderFactory {
   private SeriesReaderFactory() {
   }
 
+  public static SeriesReaderFactory getInstance() {
+    return SeriesReaderFactoryHelper.INSTANCE;
+  }
+
   /**
    * This method is used to create unseq file reader for IoTDB request, such as query, aggregation
    * and groupby request. Note that, job id equals -1 meant that this method is used for IoTDB merge
@@ -169,9 +173,5 @@ public class SeriesReaderFactory {
   private static class SeriesReaderFactoryHelper {
 
     private static SeriesReaderFactory INSTANCE = new SeriesReaderFactory();
-  }
-
-  public static SeriesReaderFactory getInstance() {
-    return SeriesReaderFactoryHelper.INSTANCE;
   }
 }

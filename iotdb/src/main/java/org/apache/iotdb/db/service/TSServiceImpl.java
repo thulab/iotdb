@@ -88,6 +88,7 @@ import org.slf4j.LoggerFactory;
 
 public class TSServiceImpl implements TSIService.Iface, ServerContext {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
   private QueryProcessor processor = new QueryProcessor(new OverflowQPExecutor());
   // Record the username for every rpc connection. Username.get() is null if
   // login is failed.
@@ -96,8 +97,6 @@ public class TSServiceImpl implements TSIService.Iface, ServerContext {
   private ThreadLocal<HashMap<String, QueryDataSet>> queryRet = new ThreadLocal<>();
   private ThreadLocal<ZoneId> zoneIds = new ThreadLocal<>();
   private IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TSServiceImpl.class);
 
   public TSServiceImpl() throws IOException {
 

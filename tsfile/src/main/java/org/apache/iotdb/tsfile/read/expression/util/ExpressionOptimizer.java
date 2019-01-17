@@ -29,13 +29,12 @@ import org.apache.iotdb.tsfile.read.filter.factory.FilterFactory;
 
 public class ExpressionOptimizer {
 
-  private static class QueryFilterOptimizerHelper {
-
-    private static final ExpressionOptimizer INSTANCE = new ExpressionOptimizer();
-  }
-
   private ExpressionOptimizer() {
 
+  }
+
+  public static ExpressionOptimizer getInstance() {
+    return QueryFilterOptimizerHelper.INSTANCE;
   }
 
   /**
@@ -44,7 +43,7 @@ public class ExpressionOptimizer {
    * @param expression IExpression to be transferred
    * @param selectedSeries selected series
    * @return an executable query filter, whether a GlobalTimeExpression or All leaf nodes are
-   *     SingleSeriesExpression
+   * SingleSeriesExpression
    */
   public IExpression optimize(IExpression expression, List<Path> selectedSeries)
       throws QueryFilterOptimizationException {
@@ -115,13 +114,10 @@ public class ExpressionOptimizer {
   }
 
   /**
-   * Combine GlobalTimeExpression with all selected series.
-   * example:
-   * input:
-   * GlobalTimeExpression(timeFilter) Selected Series: path1, path2, path3
-   * output:
-   * QueryFilterOR( QueryFilterOR( SingleSeriesExpression(path1, timeFilter),
-   * SingleSeriesExpression(path2, timeFilter) ), SingleSeriesExpression(path3, timeFilter) )
+   * Combine GlobalTimeExpression with all selected series. example: input:
+   * GlobalTimeExpression(timeFilter) Selected Series: path1, path2, path3 output: QueryFilterOR(
+   * QueryFilterOR( SingleSeriesExpression(path1, timeFilter), SingleSeriesExpression(path2,
+   * timeFilter) ), SingleSeriesExpression(path3, timeFilter) )
    *
    * @return a DNF query filter without GlobalTimeExpression
    */
@@ -157,12 +153,9 @@ public class ExpressionOptimizer {
   }
 
   /**
-   * Merge the timeFilter with the filter in SingleSeriesExpression with AndExpression.
-   * example:
-   * input:
-   * timeFilter SingleSeriesExpression(path, filter)
-   * output:
-   * SingleSeriesExpression( path, AndExpression(filter, timeFilter) )
+   * Merge the timeFilter with the filter in SingleSeriesExpression with AndExpression. example:
+   * input: timeFilter SingleSeriesExpression(path, filter) output: SingleSeriesExpression( path,
+   * AndExpression(filter, timeFilter) )
    */
   private void addTimeFilterToSeriesFilter(Filter timeFilter,
       SingleSeriesExpression singleSeriesExp) {
@@ -170,12 +163,9 @@ public class ExpressionOptimizer {
   }
 
   /**
-   * combine two GlobalTimeExpression by merge the TimeFilter in each GlobalTimeExpression.
-   * example:
+   * combine two GlobalTimeExpression by merge the TimeFilter in each GlobalTimeExpression. example:
    * input: QueryFilterAnd/OR( GlobalTimeExpression(timeFilter1), GlobalTimeExpression(timeFilter2)
-   * )
-   * output:
-   * GlobalTimeExpression( AndExpression/OR(timeFilter1, timeFilter2) )
+   * ) output: GlobalTimeExpression( AndExpression/OR(timeFilter1, timeFilter2) )
    */
   private GlobalTimeExpression combineTwoGlobalTimeFilter(GlobalTimeExpression left,
       GlobalTimeExpression right,
@@ -188,7 +178,8 @@ public class ExpressionOptimizer {
     throw new UnsupportedOperationException("unrecognized QueryFilterOperatorType :" + type);
   }
 
-  public static ExpressionOptimizer getInstance() {
-    return QueryFilterOptimizerHelper.INSTANCE;
+  private static class QueryFilterOptimizerHelper {
+
+    private static final ExpressionOptimizer INSTANCE = new ExpressionOptimizer();
   }
 }

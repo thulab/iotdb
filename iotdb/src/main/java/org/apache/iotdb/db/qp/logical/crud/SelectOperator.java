@@ -29,7 +29,7 @@ public final class SelectOperator extends Operator {
 
   /**
    * init with tokenIntType, default operatorType is <code>OperatorType.SELECT</code>.
-   * */
+   */
   public SelectOperator(int tokenIntType) {
     super(tokenIntType);
     operatorType = OperatorType.SELECT;

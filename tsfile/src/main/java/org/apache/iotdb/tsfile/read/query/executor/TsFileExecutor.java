@@ -73,8 +73,7 @@ public class TsFileExecutor implements QueryExecutor {
   /**
    * no filter, can use multi-way merge.
    *
-   * @param selectedPathList
-   *            all selected paths
+   * @param selectedPathList all selected paths
    * @return DataSet without TimeGenerator
    */
   private QueryDataSet execute(List<Path> selectedPathList) throws IOException {
@@ -94,10 +93,8 @@ public class TsFileExecutor implements QueryExecutor {
   /**
    * has a GlobalTimeExpression, can use multi-way merge.
    *
-   * @param selectedPathList
-   *            all selected paths
-   * @param timeFilter
-   *            GlobalTimeExpression that takes effect to all selected paths
+   * @param selectedPathList all selected paths
+   * @param timeFilter GlobalTimeExpression that takes effect to all selected paths
    * @return DataSet without TimeGenerator
    */
   private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeExpression timeFilter)

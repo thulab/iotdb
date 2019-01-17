@@ -31,6 +31,7 @@ public class AuthorityChecker {
 
   /**
    * check permission.
+   *
    * @param username username
    * @param paths paths in List structure
    * @param type Operator type

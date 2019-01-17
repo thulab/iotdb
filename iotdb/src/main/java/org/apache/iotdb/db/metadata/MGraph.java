@@ -29,10 +29,9 @@ import org.apache.iotdb.db.exception.PathErrorException;
 public class MGraph implements Serializable {
 
   private static final long serialVersionUID = 8214849219614352834L;
-
+  private final String separator = "\\.";
   private MTree mtree;
   private HashMap<String, PTree> ptreeMap;
-  private final String separator = "\\.";
 
   public MGraph(String mtreeName) {
     mtree = new MTree(mtreeName);
@@ -234,7 +233,7 @@ public class MGraph implements Serializable {
    * Get all ColumnSchemas for the filenode seriesPath.
    *
    * @param path the filenode seriesPath
-   * @return ArrayList<' ColumnSchema '> The list of the schema
+   * @return ArrayList<'   ColumnSchema   '> The list of the schema
    */
   public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path) {
     return mtree.getSchemaForOneFileNode(path);

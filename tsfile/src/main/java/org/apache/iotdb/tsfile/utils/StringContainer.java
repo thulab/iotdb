@@ -17,8 +17,8 @@ package org.apache.iotdb.tsfile.utils;
 import java.util.ArrayList;
 
 /**
- * this class is used to contact String effectively.It contains a StringBuider and initialize
- * it until {@code toString} is called. Note:it's not thread safety
+ * this class is used to contact String effectively.It contains a StringBuider and initialize it
+ * until {@code toString} is called. Note:it's not thread safety
  *
  * @author kangrong
  */
@@ -86,8 +86,8 @@ public class StringContainer {
 
   /**
    * add a objects array at this container's tail.
-   * @param objs
-   *            -to be added
+   *
+   * @param objs -to be added
    * @return another string contains objs as tail
    */
   public StringContainer addTail(Object... objs) {
@@ -102,13 +102,10 @@ public class StringContainer {
   }
 
   /**
-   * add a Strings array at this container's tail.<br>
-   * strings:"a","b","c",<br>
-   * StringContainer this:["d","e","f"],<br>
-   * result:this:["d","e","f","a","b","c"],<br>
+   * add a Strings array at this container's tail.<br> strings:"a","b","c",<br> StringContainer
+   * this:["d","e","f"],<br> result:this:["d","e","f","a","b","c"],<br>
    *
-   * @param strings
-   *            - to be added
+   * @param strings - to be added
    * @return - this object
    */
   public StringContainer addTail(String... strings) {
@@ -122,13 +119,10 @@ public class StringContainer {
   }
 
   /**
-   * add a StringContainer at this container's tail.<br>
-   * param StringContainer:["a","b","c"],<br>
-   * this StringContainer :["d","e","f"],<br>
-   * result:this:["d","e","f","a","b","c"],<br>
+   * add a StringContainer at this container's tail.<br> param StringContainer:["a","b","c"],<br>
+   * this StringContainer :["d","e","f"],<br> result:this:["d","e","f","a","b","c"],<br>
    *
-   * @param myContainer
-   *            - to be added
+   * @param myContainer - to be added
    * @return - this object
    */
   public StringContainer addTail(StringContainer myContainer) {
@@ -151,13 +145,10 @@ public class StringContainer {
   }
 
   /**
-   * add a Strings array from this container's header.<br>
-   * strings:"a","b","c",<br>
-   * StringContainer this:["d","e","f"],<br>
-   * result:this:["a","b","c","d","e","f"],<br>
+   * add a Strings array from this container's header.<br> strings:"a","b","c",<br> StringContainer
+   * this:["d","e","f"],<br> result:this:["a","b","c","d","e","f"],<br>
    *
-   * @param strings
-   *            - to be added
+   * @param strings - to be added
    * @return - this object
    */
   public StringContainer addHead(String... strings) {
@@ -171,13 +162,10 @@ public class StringContainer {
   }
 
   /**
-   * add a StringContainer from this container's header.<br>
-   * StringContainer m:["a","b","c"],<br>
-   * StringContainer this:["d","e","f"],<br>
-   * result:this:["a","b","c","d","e","f"],<br>
+   * add a StringContainer from this container's header.<br> StringContainer m:["a","b","c"],<br>
+   * StringContainer this:["d","e","f"],<br> result:this:["a","b","c","d","e","f"],<br>
    *
-   * @param myContainer
-   *            - given StringContainer to be add in head
+   * @param myContainer - given StringContainer to be add in head
    * @return - this object
    */
   public StringContainer addHead(StringContainer myContainer) {
@@ -226,8 +214,7 @@ public class StringContainer {
   /**
    * for all string in rev and seq, concat them with separator and return String.
    *
-   * @param separator
-   *            separator of string
+   * @param separator separator of string
    * @return - result joined in type of String with parameter
    */
   public String join(String separator) {
@@ -257,12 +244,10 @@ public class StringContainer {
   }
 
   /**
-   * return a sub-string in this container.<br>
-   * e.g. this container is ["aa","bbb","cc","d","ee"]; this.getSubString(0) = "a";
-   * this.getSubString(2) ="c";this.getSubString(-1) = "ee";
+   * return a sub-string in this container.<br> e.g. this container is ["aa","bbb","cc","d","ee"];
+   * this.getSubString(0) = "a"; this.getSubString(2) ="c";this.getSubString(-1) = "ee";
    *
-   * @param index
-   *            - the index of wanted sub-string
+   * @param index - the index of wanted sub-string
    * @return - substring result
    */
   public String getSubString(int index) {
@@ -279,17 +264,13 @@ public class StringContainer {
   }
 
   /**
-   * /** return a sub-container consist of several continuous strings in this
-   * {@code container.If start <= end, return a empty container} e.g. this container
-   * is ["aa","bbb","cc","d","ee"];
-   * this.getSubString(0,0) = ["aa"]<br>
-   * this.getSubString(1,3) = ["bbb","cc","d"]<br>
+   * /** return a sub-container consist of several continuous strings in this {@code container.If
+   * start <= end, return a empty container} e.g. this container is ["aa","bbb","cc","d","ee"];
+   * this.getSubString(0,0) = ["aa"]<br> this.getSubString(1,3) = ["bbb","cc","d"]<br>
    * this.getSubString(1,-1) = ["bbb","cc","d", "ee"]<br>
    *
-   * @param start
-   *            - the start index of wanted sub-string
-   * @param end
-   *            - the end index of wanted sub-string
+   * @param start - the start index of wanted sub-string
+   * @param end - the end index of wanted sub-string
    * @return - substring result
    */
   public StringContainer getSubStringContainer(int start, int end) {
@@ -342,9 +323,9 @@ public class StringContainer {
   }
 
   /**
-   *judge whether the param is equal to this container.
-   * @param sc
-   *        -StringContainer Object to judge whether the object is equal to this container
+   * judge whether the param is equal to this container.
+   *
+   * @param sc -StringContainer Object to judge whether the object is equal to this container
    * @return boolean value to judge whether is equal
    */
   public boolean equals(StringContainer sc) {

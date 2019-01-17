@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 
 public class ExceptionBuilder {
 
-  private Properties properties = new Properties();
-
   public static final int UNKNOWN_ERROR = 20000;
   public static final int NO_PARAMETERS_EXISTS = 20001;
   public static final int INVALID﻿_PARAMETER_NO = 20002;
@@ -40,13 +38,12 @@ public class ExceptionBuilder {
   public static final int OUT_OF_MEMORY = 20064;
   public static final int NO_PREPARE_STMT = 20130;
   public static final int CON_FAIL_ERR = 20220;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(IoTDBDescriptor.class);
   public static final String CONFIG_NAME = "error_info_";
   public static final String FILE_SUFFIX = ".properties";
   public static final String DEFAULT_FILEPATH = "error_info_en.properties";
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(IoTDBDescriptor.class);
   private static final ExceptionBuilder INSTANCE = new ExceptionBuilder();
+  private Properties properties = new Properties();
 
   public static final ExceptionBuilder getInstance() {
     return ExceptionBuilder.INSTANCE;
@@ -54,6 +51,7 @@ public class ExceptionBuilder {
 
   /**
    * load error information file.
+   *
    * @param filePath the path of error information file
    */
   public void loadInfo(String filePath) {

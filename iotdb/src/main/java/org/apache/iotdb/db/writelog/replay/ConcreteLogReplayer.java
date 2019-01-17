@@ -34,6 +34,7 @@ public class ConcreteLogReplayer implements LogReplayer {
 
   /**
    * replay operation log (PhysicalPlan).
+   *
    * @param plan PhysicalPlan
    * @throws ProcessorException ProcessorException
    */

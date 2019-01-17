@@ -32,7 +32,7 @@ public class ReadOnlyTsFile {
 
   /**
    * constructor, create ReadOnlyTsFile with TsFileSequenceReader.
-   * */
+   */
   public ReadOnlyTsFile(TsFileSequenceReader fileReader) throws IOException {
     this.fileReader = fileReader;
     this.metadataQuerier = new MetadataQuerierByFileImpl(fileReader);

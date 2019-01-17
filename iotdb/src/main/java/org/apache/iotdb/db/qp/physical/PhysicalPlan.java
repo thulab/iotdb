@@ -40,10 +40,6 @@ public abstract class PhysicalPlan {
     this.operatorType = operatorType;
   }
 
-  public void setOperatorType(Operator.OperatorType operatorType) {
-    this.operatorType = operatorType;
-  }
-
   public String printQueryPlan() {
     return "abstract plan";
   }
@@ -56,6 +52,10 @@ public abstract class PhysicalPlan {
 
   public Operator.OperatorType getOperatorType() {
     return operatorType;
+  }
+
+  public void setOperatorType(Operator.OperatorType operatorType) {
+    this.operatorType = operatorType;
   }
 
   public List<String> getAggregations() {

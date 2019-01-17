@@ -46,6 +46,59 @@ public class TsDeviceMetadata {
    */
   private List<ChunkGroupMetaData> chunkGroupMetadataList = new ArrayList<>();
 
+  public TsDeviceMetadata() {
+  }
+
+  /**
+   * deserialize from the inputstream.
+   *
+   * @param inputStream -input stream to deserialize
+   * @return -device meta data
+   */
+  public static TsDeviceMetadata deserializeFrom(InputStream inputStream) throws IOException {
+    TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
+
+    deviceMetadata.startTime = ReadWriteIOUtils.readLong(inputStream);
+    deviceMetadata.endTime = ReadWriteIOUtils.readLong(inputStream);
+
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    if (size > 0) {
+      List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
+      for (int i = 0; i < size; i++) {
+        chunkGroupMetaDataList.add(ChunkGroupMetaData.deserializeFrom(inputStream));
+      }
+      deviceMetadata.chunkGroupMetadataList = chunkGroupMetaDataList;
+    }
+
+    deviceMetadata.reCalculateSerializedSize();
+    return deviceMetadata;
+  }
+
+  /**
+   * deserialize from the given buffer.
+   *
+   * @param buffer -buffer to deserialize
+   * @return -device meta data
+   */
+  public static TsDeviceMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
+    TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
+
+    deviceMetadata.startTime = ReadWriteIOUtils.readLong(buffer);
+    deviceMetadata.endTime = ReadWriteIOUtils.readLong(buffer);
+
+    int size = ReadWriteIOUtils.readInt(buffer);
+    if (size > 0) {
+      List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
+      for (int i = 0; i < size; i++) {
+        chunkGroupMetaDataList.add(ChunkGroupMetaData.deserializeFrom(buffer));
+      }
+      deviceMetadata.chunkGroupMetadataList = chunkGroupMetaDataList;
+    }
+
+    deviceMetadata.reCalculateSerializedSize();
+    return deviceMetadata;
+  }
+
   public int getSerializedSize() {
     return serializedSize;
   }
@@ -59,14 +112,11 @@ public class TsDeviceMetadata {
     }
   }
 
-  public TsDeviceMetadata() {
-  }
-
   /**
    * set the ChunkGroupMetadataList and recalculate serialized size.
    *
-   * @param chunkGroupMetadataList -use to set the ChunkGroupMetadataList and recalculate
-   *       serialized size
+   * @param chunkGroupMetadataList -use to set the ChunkGroupMetadataList and recalculate serialized
+   * size
    */
   public void setChunkGroupMetadataList(List<ChunkGroupMetaData> chunkGroupMetadataList) {
     this.chunkGroupMetadataList = chunkGroupMetadataList;
@@ -76,8 +126,7 @@ public class TsDeviceMetadata {
   /**
    * add chunk group metadata to chunkGroups. THREAD NOT SAFE
    *
-   * @param chunkGroup
-   *            - chunk group metadata to add
+   * @param chunkGroup - chunk group metadata to add
    */
   public void addChunkGroupMetaData(ChunkGroupMetaData chunkGroup) {
     chunkGroupMetadataList.add(chunkGroup);
@@ -111,6 +160,7 @@ public class TsDeviceMetadata {
 
   /**
    * get the byte length of the outputStream.
+   *
    * @param outputStream -outputStream to determine byte length
    * @return -byte length of the outputStream
    */
@@ -133,6 +183,7 @@ public class TsDeviceMetadata {
 
   /**
    * get the byte length of the given buffer.
+   *
    * @param buffer -buffer to determine the byte length
    * @return -byte length
    */
@@ -152,54 +203,6 @@ public class TsDeviceMetadata {
     }
 
     return byteLen;
-  }
-
-  /**
-   * deserialize from the inputstream.
-   * @param inputStream -input stream to deserialize
-   * @return -device meta data
-   */
-  public static TsDeviceMetadata deserializeFrom(InputStream inputStream) throws IOException {
-    TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
-
-    deviceMetadata.startTime = ReadWriteIOUtils.readLong(inputStream);
-    deviceMetadata.endTime = ReadWriteIOUtils.readLong(inputStream);
-
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    if (size > 0) {
-      List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
-      for (int i = 0; i < size; i++) {
-        chunkGroupMetaDataList.add(ChunkGroupMetaData.deserializeFrom(inputStream));
-      }
-      deviceMetadata.chunkGroupMetadataList = chunkGroupMetaDataList;
-    }
-
-    deviceMetadata.reCalculateSerializedSize();
-    return deviceMetadata;
-  }
-
-  /**
-   * deserialize from the given buffer.
-   * @param buffer -buffer to deserialize
-   * @return -device meta data
-   */
-  public static TsDeviceMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
-    TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
-
-    deviceMetadata.startTime = ReadWriteIOUtils.readLong(buffer);
-    deviceMetadata.endTime = ReadWriteIOUtils.readLong(buffer);
-
-    int size = ReadWriteIOUtils.readInt(buffer);
-    if (size > 0) {
-      List<ChunkGroupMetaData> chunkGroupMetaDataList = new ArrayList<>();
-      for (int i = 0; i < size; i++) {
-        chunkGroupMetaDataList.add(ChunkGroupMetaData.deserializeFrom(buffer));
-      }
-      deviceMetadata.chunkGroupMetadataList = chunkGroupMetaDataList;
-    }
-
-    deviceMetadata.reCalculateSerializedSize();
-    return deviceMetadata;
   }
 
   @Override

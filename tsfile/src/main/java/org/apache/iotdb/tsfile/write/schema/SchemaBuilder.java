@@ -24,7 +24,9 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
  */
 public class SchemaBuilder {
 
-  /** the FileSchema which is being built. **/
+  /**
+   * the FileSchema which is being built.
+   **/
   private FileSchema fileSchema;
 
   /**
@@ -37,15 +39,11 @@ public class SchemaBuilder {
   /**
    * add one series to TsFile schema.
    *
-   * @param measurementId
-   *            (not null) id of the series
-   * @param dataType
-   *            (not null) series data type
-   * @param tsEncoding
-   *            (not null) encoding method you specified
-   * @param props
-   *            information in encoding method. For RLE, Encoder.MAX_POINT_NUMBER For PLAIN,
-   *            Encoder.MAX_STRING_LENGTH
+   * @param measurementId (not null) id of the series
+   * @param dataType (not null) series data type
+   * @param tsEncoding (not null) encoding method you specified
+   * @param props information in encoding method. For RLE, Encoder.MAX_POINT_NUMBER For PLAIN,
+   * Encoder.MAX_STRING_LENGTH
    * @return this
    */
   public SchemaBuilder addSeries(String measurementId, TSDataType dataType, TSEncoding tsEncoding,
@@ -58,12 +56,9 @@ public class SchemaBuilder {
   /**
    * add one series to tsfile schema.
    *
-   * @param measurementId
-   *            (not null) id of the series
-   * @param dataType
-   *            (not null) series data type
-   * @param tsEncoding
-   *            (not null) encoding method you specified
+   * @param measurementId (not null) id of the series
+   * @param dataType (not null) series data type
+   * @param tsEncoding (not null) encoding method you specified
    * @return this
    */
   public SchemaBuilder addSeries(String measurementId, TSDataType dataType, TSEncoding tsEncoding) {
@@ -75,8 +70,7 @@ public class SchemaBuilder {
   /**
    * MeasurementSchema is the schema of one series.
    *
-   * @param descriptor
-   *            series schema
+   * @param descriptor series schema
    * @return schema builder
    */
   public SchemaBuilder addSeries(MeasurementSchema descriptor) {

@@ -26,13 +26,12 @@ public interface WriteLogNodeManager {
   /**
    * Get a WriteLogNode by a identifier like "{storageGroupName}-bufferwrite/overflow". The
    * WriteLogNode will be automatically created if not exist and restoreFilePath and
-   * processorStoreFilePath are provided, if either restoreFilePath or processorStoreFilePath is
-   * not provided and the LogNode does not exist, null is returned.
+   * processorStoreFilePath are provided, if either restoreFilePath or processorStoreFilePath is not
+   * provided and the LogNode does not exist, null is returned.
    *
    * @param identifier -identifier
    * @param processorStoreFilePath -processor store file path
    * @param restoreFilePath -restore file path
-   * @return
    */
   WriteLogNode getNode(String identifier, String restoreFilePath, String processorStoreFilePath)
       throws IOException;
@@ -56,6 +55,7 @@ public interface WriteLogNodeManager {
 
   /**
    * return whether wal files exist for certain fileNode.
+   *
    * @param fileNodeName -fileNode Name
    * @return Whether WAL files exist for certain fileNode/
    */

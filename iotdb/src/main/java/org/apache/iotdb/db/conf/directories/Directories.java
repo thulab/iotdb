@@ -51,6 +51,10 @@ public class Directories {
     }
   }
 
+  public static Directories getInstance() {
+    return DirectoriesHolder.INSTANCE;
+  }
+
   private void initFolders() {
     for (String folder : tsfileFolders) {
       File file = new File(folder);
@@ -76,6 +80,7 @@ public class Directories {
 
   /**
    * get next folder index for TsFile.
+   *
    * @return next folder index
    */
   public int getNextFolderIndexForTsFile() {
@@ -99,9 +104,5 @@ public class Directories {
   private static class DirectoriesHolder {
 
     private static final Directories INSTANCE = new Directories();
-  }
-
-  public static Directories getInstance() {
-    return DirectoriesHolder.INSTANCE;
   }
 }

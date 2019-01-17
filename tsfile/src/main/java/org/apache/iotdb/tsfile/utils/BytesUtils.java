@@ -47,7 +47,8 @@ public class BytesUtils {
   }
 
   /**
-   * integer convert to byte array, then write four bytes to parameter desc start from index:offset.
+   * integer convert to byte array, then write four bytes to parameter desc start from
+   * index:offset.
    *
    * @param i integer to convert
    * @param desc byte array be written
@@ -90,6 +91,7 @@ public class BytesUtils {
 
   /**
    * divide int to two bytes.
+   *
    * @param i int
    * @return two bytes in byte[] structure
    */
@@ -103,6 +105,7 @@ public class BytesUtils {
 
   /**
    * concatenate two bytes to int.
+   *
    * @param ret byte[]
    * @return int value
    */
@@ -336,7 +339,8 @@ public class BytesUtils {
   }
 
   /**
-   * boolean convert to byte array, then write four bytes to parameter desc start from index:offset.
+   * boolean convert to byte array, then write four bytes to parameter desc start from
+   * index:offset.
    *
    * @param x input boolean
    * @param desc byte array be written
@@ -534,6 +538,7 @@ public class BytesUtils {
 
   /**
    * convert byte array to string using UTF-8 encoding.
+   *
    * @param byteStr input byte array
    * @return string
    */
@@ -791,6 +796,7 @@ public class BytesUtils {
 
   /**
    * we modify the order of serialization for fitting ByteBuffer.putShort()
+   *
    * @param number input short number
    * @return Bytes
    */
@@ -807,6 +813,7 @@ public class BytesUtils {
 
   /**
    * we modify the order of serialization for fitting ByteBuffer.getShort()
+   *
    * @param b bytes
    * @return short number
    */

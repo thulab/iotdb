@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.jdbc;
@@ -23,13 +21,13 @@ import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.iotdb.service.rpc.thrift.TSFetchMetadataReq;
 import org.apache.iotdb.service.rpc.thrift.TSFetchMetadataResp;
 import org.apache.iotdb.service.rpc.thrift.TSIService;
 import org.apache.thrift.TException;
 
 public class IoTDBDatabaseMetadata implements DatabaseMetaData {
+
   private IoTDBConnection connection;
   private TSIService.Iface client;
 
@@ -40,8 +38,8 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getColumns(String catalog, String schemaPattern, String columnPattern,
-                              String devicePattern)
-          throws SQLException {
+      String devicePattern)
+      throws SQLException {
     try {
       return getColumnsFunc(catalog, schemaPattern, columnPattern, devicePattern);
     } catch (TException e) {
@@ -52,23 +50,23 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
           return getColumnsFunc(catalog, schemaPattern, columnPattern, devicePattern);
         } catch (TException e2) {
           throw new SQLException(String.format("Fail to get columns catalog=%s, schemaPattern=%s,"
-                          + " columnPattern=%s, devicePattern=%s after reconnecting."
-                          + " please check server status",
-                  catalog, schemaPattern, columnPattern, devicePattern));
+                  + " columnPattern=%s, devicePattern=%s after reconnecting."
+                  + " please check server status",
+              catalog, schemaPattern, columnPattern, devicePattern));
         }
       } else {
         throw new SQLException(String.format(
-                "Fail to reconnect to server when getting columns catalog=%s, schemaPattern=%s,"
-                        + " columnPattern=%s, devicePattern=%s after reconnecting. "
-                        + "please check server status",
-                catalog, schemaPattern, columnPattern, devicePattern));
+            "Fail to reconnect to server when getting columns catalog=%s, schemaPattern=%s,"
+                + " columnPattern=%s, devicePattern=%s after reconnecting. "
+                + "please check server status",
+            catalog, schemaPattern, columnPattern, devicePattern));
       }
     }
   }
 
   private ResultSet getColumnsFunc(String catalog, String schemaPattern, String columnPattern,
-                                   String devicePattern)
-          throws TException, SQLException {
+      String devicePattern)
+      throws TException, SQLException {
     TSFetchMetadataReq req;
     switch (catalog) {
       case Constant.CatalogColumn:
@@ -114,7 +112,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
         }
       default:
         throw new SQLException(catalog + " is not supported. Please refer to the user guide"
-                + " for more details.");
+            + " for more details.");
     }
   }
 
@@ -180,15 +178,15 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getAttributes(String arg0, String arg1, String arg2, String arg3)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
   @Override
   public ResultSet getBestRowIdentifier(String arg0, String arg1, String arg2, int arg3,
-                                        boolean arg4)
-          throws SQLException {
+      boolean arg4)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -219,7 +217,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getColumnPrivileges(String arg0, String arg1, String arg2,
-                                       String arg3) throws SQLException {
+      String arg3) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -231,8 +229,8 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getCrossReference(String arg0, String arg1, String arg2, String arg3,
-                                     String arg4, String arg5)
-          throws SQLException {
+      String arg4, String arg5)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -303,7 +301,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getFunctionColumns(String arg0, String arg1, String arg2, String arg3)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -328,7 +326,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getIndexInfo(String arg0, String arg1, String arg2, boolean arg3, boolean arg4)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -479,7 +477,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getProcedureColumns(String arg0, String arg1, String arg2, String arg3)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -498,7 +496,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
-                                    String columnNamePattern) throws SQLException {
+      String columnNamePattern) throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -559,14 +557,14 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
 
   @Override
   public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -579,7 +577,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -592,8 +590,8 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern,
-                             String[] types)
-          throws SQLException {
+      String[] types)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -612,8 +610,8 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern,
-                           int[] types)
-          throws SQLException {
+      int[] types)
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -632,7 +630,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
 
   @Override
   public ResultSet getVersionColumns(String catalog, String schema, String table)
-          throws SQLException {
+      throws SQLException {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
@@ -1201,14 +1199,14 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
           return getMetadataInJsonFunc();
         } catch (TException e2) {
           System.out.println(
-                  "Fail to get all timeseries " + "info after reconnecting."
-                          + " please check server status");
+              "Fail to get all timeseries " + "info after reconnecting."
+                  + " please check server status");
         } catch (IoTDBSQLException e1) {
           // ignored
         }
       } else {
         System.out.println("Fail to reconnect to server "
-                + "when getting all timeseries info. please check server status");
+            + "when getting all timeseries info. please check server status");
       }
     }
     return null;
@@ -1228,11 +1226,11 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
           return getMetadataInJsonFunc();
         } catch (TException e2) {
           throw new SQLException("Failed to fetch all metadata in json "
-                  + "after reconnecting. Please check the server status.");
+              + "after reconnecting. Please check the server status.");
         }
       } else {
         throw new SQLException("Failed to reconnect to the server "
-                + "when fetching all metadata in json. Please check the server status.");
+            + "when fetching all metadata in json. Please check the server status.");
       }
     }
   }

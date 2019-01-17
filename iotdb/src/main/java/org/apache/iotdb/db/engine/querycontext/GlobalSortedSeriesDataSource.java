@@ -1,28 +1,26 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.engine.querycontext;
 
 import java.util.List;
-
 import org.apache.iotdb.db.engine.filenode.IntervalFileNode;
 import org.apache.iotdb.db.engine.memtable.TimeValuePairSorter;
 import org.apache.iotdb.tsfile.read.common.Path;
 
 public class GlobalSortedSeriesDataSource {
+
   private Path seriesPath;
 
   // sealed tsfile
@@ -35,8 +33,8 @@ public class GlobalSortedSeriesDataSource {
   private TimeValuePairSorter readableChunk;
 
   public GlobalSortedSeriesDataSource(Path seriesPath, List<IntervalFileNode> sealedTsFiles,
-                                      UnsealedTsFile unsealedTsFile,
-                                      TimeValuePairSorter readableChunk) {
+      UnsealedTsFile unsealedTsFile,
+      TimeValuePairSorter readableChunk) {
     this.seriesPath = seriesPath;
     this.sealedTsFiles = sealedTsFiles;
     this.unsealedTsFile = unsealedTsFile;
@@ -52,12 +50,20 @@ public class GlobalSortedSeriesDataSource {
     return sealedTsFiles;
   }
 
+  public void setSealedTsFiles(List<IntervalFileNode> sealedTsFiles) {
+    this.sealedTsFiles = sealedTsFiles;
+  }
+
   public boolean hasUnsealedTsFile() {
     return unsealedTsFile != null;
   }
 
   public UnsealedTsFile getUnsealedTsFile() {
     return unsealedTsFile;
+  }
+
+  public void setUnsealedTsFile(UnsealedTsFile unsealedTsFile) {
+    this.unsealedTsFile = unsealedTsFile;
   }
 
   public boolean hasRawSeriesChunk() {
@@ -68,24 +74,16 @@ public class GlobalSortedSeriesDataSource {
     return readableChunk;
   }
 
-  public void setSealedTsFiles(List<IntervalFileNode> sealedTsFiles) {
-    this.sealedTsFiles = sealedTsFiles;
-  }
-
-  public void setUnsealedTsFile(UnsealedTsFile unsealedTsFile) {
-    this.unsealedTsFile = unsealedTsFile;
-  }
-
   public void setReadableChunk(TimeValuePairSorter readableChunk) {
     this.readableChunk = readableChunk;
   }
 
-  public void setSeriesPath(Path seriesPath) {
-    this.seriesPath = seriesPath;
-  }
-
   public Path getSeriesPath() {
     return seriesPath;
+  }
+
+  public void setSeriesPath(Path seriesPath) {
+    this.seriesPath = seriesPath;
   }
 
 }

@@ -26,6 +26,34 @@ import org.apache.iotdb.tsfile.read.filter.operator.NotFilter;
 
 public class ValueFilter {
 
+  public static <T extends Comparable<T>> ValueEq<T> eq(T value) {
+    return new ValueEq(value);
+  }
+
+  public static <T extends Comparable<T>> ValueGt<T> gt(T value) {
+    return new ValueGt(value);
+  }
+
+  public static <T extends Comparable<T>> ValueGtEq<T> gtEq(T value) {
+    return new ValueGtEq(value);
+  }
+
+  public static <T extends Comparable<T>> ValueLt<T> lt(T value) {
+    return new ValueLt(value);
+  }
+
+  public static <T extends Comparable<T>> ValueLtEq<T> ltEq(T value) {
+    return new ValueLtEq(value);
+  }
+
+  public static ValueNotFilter not(Filter filter) {
+    return new ValueNotFilter(filter);
+  }
+
+  public static <T extends Comparable<T>> ValueNotEq<T> notEq(T value) {
+    return new ValueNotEq(value);
+  }
+
   public static class ValueEq<T extends Comparable<T>> extends Eq<T> {
 
     private ValueEq(T value) {
@@ -78,33 +106,5 @@ public class ValueFilter {
     private ValueNotEq(T value) {
       super(value, FilterType.VALUE_FILTER);
     }
-  }
-
-  public static <T extends Comparable<T>> ValueEq<T> eq(T value) {
-    return new ValueEq(value);
-  }
-
-  public static <T extends Comparable<T>> ValueGt<T> gt(T value) {
-    return new ValueGt(value);
-  }
-
-  public static <T extends Comparable<T>> ValueGtEq<T> gtEq(T value) {
-    return new ValueGtEq(value);
-  }
-
-  public static <T extends Comparable<T>> ValueLt<T> lt(T value) {
-    return new ValueLt(value);
-  }
-
-  public static <T extends Comparable<T>> ValueLtEq<T> ltEq(T value) {
-    return new ValueLtEq(value);
-  }
-
-  public static ValueNotFilter not(Filter filter) {
-    return new ValueNotFilter(filter);
-  }
-
-  public static <T extends Comparable<T>> ValueNotEq<T> notEq(T value) {
-    return new ValueNotEq(value);
   }
 }

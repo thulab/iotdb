@@ -44,22 +44,8 @@ public abstract class AbstractCsvTool {
 
   protected static final String TIME_ZONE_ARGS = "tz";
   protected static final String TIME_ZONE_NAME = "timeZone";
-
-  protected static String host;
-  protected static String port;
-  protected static String username;
-  protected static String password;
-
   protected static final int MAX_HELP_CONSOLE_WIDTH = 92;
-
-  protected static ZoneId zoneId;
-  protected static String timeZoneID;
-  protected static String timeFormat;
-
-  // protected static final String JDBC_DRIVER = "case hu.tsfiledb.jdbc.IoTDBDriver";
-
   protected static final String DEFAULT_TIME_FORMAT = "ISO8601";
-
   protected static final String[] SUPPORT_TIME_FORMAT = new String[]{DEFAULT_TIME_FORMAT, "default",
       "long",
       "number", "timestamp", "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss", "yyyy.MM.dd HH:mm:ss",
@@ -72,7 +58,15 @@ public abstract class AbstractCsvTool {
       "yyyy/MM/dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSS",
       "yyyy.MM.dd'T'HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss.SSSZZ", "yyyy/MM/dd HH:mm:ss.SSSZZ",
       "yyyy.MM.dd HH:mm:ss.SSSZZ", "yyyy-MM-dd'T'HH:mm:ss.SSSZZ", "yyyy/MM/dd'T'HH:mm:ss.SSSZZ",};
+  protected static String host;
+  protected static String port;
+  protected static String username;
+  protected static String password;
+  protected static ZoneId zoneId;
 
+  // protected static final String JDBC_DRIVER = "case hu.tsfiledb.jdbc.IoTDBDriver";
+  protected static String timeZoneID;
+  protected static String timeFormat;
   protected static IoTDBConnection connection;
 
   protected static String checkRequiredArg(String arg, String name, CommandLine commandLine)

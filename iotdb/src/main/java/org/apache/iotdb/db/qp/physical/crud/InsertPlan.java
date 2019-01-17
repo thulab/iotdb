@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.qp.physical.crud;
@@ -19,12 +17,12 @@ package org.apache.iotdb.db.qp.physical.crud;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
 import org.apache.iotdb.db.qp.logical.Operator;
 import org.apache.iotdb.db.qp.physical.PhysicalPlan;
 import org.apache.iotdb.tsfile.read.common.Path;
 
 public class InsertPlan extends PhysicalPlan {
+
   private String deviceId;
   private List<String> measurements;
   private List<String> values;
@@ -35,7 +33,7 @@ public class InsertPlan extends PhysicalPlan {
   private int insertType;
 
   public InsertPlan(String deviceId, long insertTime, List<String> measurementList,
-                    List<String> insertValues) {
+      List<String> insertValues) {
     super(false, Operator.OperatorType.INSERT);
     this.time = insertTime;
     this.deviceId = deviceId;
@@ -44,7 +42,7 @@ public class InsertPlan extends PhysicalPlan {
   }
 
   public InsertPlan(int insertType, String deviceId, long insertTime, List<String> measurementList,
-                    List<String> insertValues) {
+      List<String> insertValues) {
     super(false, Operator.OperatorType.INSERT);
     this.insertType = insertType;
     this.time = insertTime;
@@ -113,8 +111,8 @@ public class InsertPlan extends PhysicalPlan {
     }
     InsertPlan that = (InsertPlan) o;
     return time == that.time && Objects.equals(deviceId, that.deviceId)
-            && Objects.equals(measurements, that.measurements)
-            && Objects.equals(values, that.values);
+        && Objects.equals(measurements, that.measurements)
+        && Objects.equals(values, that.values);
   }
 
 }

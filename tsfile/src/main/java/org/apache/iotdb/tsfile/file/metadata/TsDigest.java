@@ -34,6 +34,71 @@ public class TsDigest {
 
   private int sizeOfList;
 
+  public TsDigest() {
+  }
+
+  public static int getNullDigestSize() {
+    return Integer.BYTES;
+  }
+
+  public static int serializeNullTo(OutputStream outputStream) throws IOException {
+    return ReadWriteIOUtils.write(0, outputStream);// Integer.BYTES;
+  }
+
+  public static int serializeNullTo(ByteBuffer buffer) {
+    return ReadWriteIOUtils.write(0, buffer);// Integer.BYTES;
+  }
+
+  /**
+   * use given input stream to deserialize.
+   *
+   * @param inputStream -given input stream
+   * @return -an instance of TsDigest
+   */
+  public static TsDigest deserializeFrom(InputStream inputStream) throws IOException {
+    TsDigest digest = new TsDigest();
+
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    if (size > 0) {
+      Map<String, ByteBuffer> statistics = new HashMap<>();
+      String key;
+      ByteBuffer value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(inputStream);
+        value = ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(inputStream);
+        statistics.put(key, value);
+      }
+      digest.statistics = statistics;
+    }
+
+    return digest;
+  }
+
+  /**
+   * use given buffer to deserialize.
+   *
+   * @param buffer -given buffer
+   * @return -an instance of TsDigest
+   */
+  public static TsDigest deserializeFrom(ByteBuffer buffer) {
+    TsDigest digest = new TsDigest();
+
+    int size = ReadWriteIOUtils.readInt(buffer);
+    if (size > 0) {
+      Map<String, ByteBuffer> statistics = new HashMap<>();
+      String key;
+      ByteBuffer value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(buffer);
+        value = ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(buffer);
+        statistics.put(key, value);
+      }
+      digest.statistics = statistics;
+    }
+
+    return digest;
+  }
+
   private void reCalculateSerializedSize() {
     serializedSize = Integer.BYTES;
     if (statistics != null) {
@@ -47,16 +112,9 @@ public class TsDigest {
     }
   }
 
-  public TsDigest() {
-  }
-
-  public void setStatistics(Map<String, ByteBuffer> statistics) {
-    this.statistics = statistics;
-    reCalculateSerializedSize();
-  }
-
   /**
    * get statistics of the current object.
+   *
    * @return -unmodifiableMap of the current object's statistics
    */
   public Map<String, ByteBuffer> getStatistics() {
@@ -66,8 +124,14 @@ public class TsDigest {
     return Collections.unmodifiableMap(this.statistics);
   }
 
+  public void setStatistics(Map<String, ByteBuffer> statistics) {
+    this.statistics = statistics;
+    reCalculateSerializedSize();
+  }
+
   /**
    * add statistics using given param.
+   *
    * @param key -key of the entry
    * @param value -value of the entry
    */
@@ -87,6 +151,7 @@ public class TsDigest {
 
   /**
    * use given outputStream to serialize.
+   *
    * @param outputStream -given outputStream
    * @return -byte length
    */
@@ -113,6 +178,7 @@ public class TsDigest {
 
   /**
    * use given buffer to serialize.
+   *
    * @param buffer -given buffer
    * @return -byte length
    */
@@ -137,68 +203,9 @@ public class TsDigest {
     return byteLen;
   }
 
-  public static int getNullDigestSize() {
-    return Integer.BYTES;
-  }
-
-  public static int serializeNullTo(OutputStream outputStream) throws IOException {
-    return ReadWriteIOUtils.write(0, outputStream);// Integer.BYTES;
-  }
-
-  public static int serializeNullTo(ByteBuffer buffer) {
-    return ReadWriteIOUtils.write(0, buffer);// Integer.BYTES;
-  }
-
-  /**
-   * use given input stream to deserialize.
-   * @param inputStream -given input stream
-   * @return -an instance of TsDigest
-   */
-  public static TsDigest deserializeFrom(InputStream inputStream) throws IOException {
-    TsDigest digest = new TsDigest();
-
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    if (size > 0) {
-      Map<String, ByteBuffer> statistics = new HashMap<>();
-      String key;
-      ByteBuffer value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(inputStream);
-        value = ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(inputStream);
-        statistics.put(key, value);
-      }
-      digest.statistics = statistics;
-    }
-
-    return digest;
-  }
-
-  /**
-   * use given buffer to deserialize.
-   * @param buffer -given buffer
-   * @return -an instance of TsDigest
-   */
-  public static TsDigest deserializeFrom(ByteBuffer buffer) {
-    TsDigest digest = new TsDigest();
-
-    int size = ReadWriteIOUtils.readInt(buffer);
-    if (size > 0) {
-      Map<String, ByteBuffer> statistics = new HashMap<>();
-      String key;
-      ByteBuffer value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(buffer);
-        value = ReadWriteIOUtils.readByteBufferWithSelfDescriptionLength(buffer);
-        statistics.put(key, value);
-      }
-      digest.statistics = statistics;
-    }
-
-    return digest;
-  }
-
   /**
    * get the serializedSize of the current object.
+   *
    * @return -serializedSize
    */
   public int getSerializedSize() {

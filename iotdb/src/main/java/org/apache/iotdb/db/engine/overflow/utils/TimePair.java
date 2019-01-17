@@ -31,6 +31,7 @@ public class TimePair {
 
   /**
    * construct function for TiemPair.
+   *
    * @param s -use to initial startTime
    * @param e -use to initial endTime
    */
@@ -42,6 +43,7 @@ public class TimePair {
 
   /**
    * construct function for TiemPair.
+   *
    * @param s -use to initial startTime
    * @param e -use to initial endTime
    * @param v -use to initial value
@@ -74,6 +76,7 @@ public class TimePair {
 
   /**
    * construct function for TimePair.
+   *
    * @param s -use to initial startTiem
    * @param e -use to initial endTime
    * @param v -use to initial value

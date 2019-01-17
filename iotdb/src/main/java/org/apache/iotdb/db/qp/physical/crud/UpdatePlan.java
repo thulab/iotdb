@@ -37,6 +37,7 @@ public class UpdatePlan extends PhysicalPlan {
 
   /**
    * Construct function for UpdatePlan.
+   *
    * @param startTime -start time
    * @param endTime -end time
    * @param value -value
@@ -51,6 +52,7 @@ public class UpdatePlan extends PhysicalPlan {
 
   /**
    * Construct function for UpdatePlan.
+   *
    * @param list -list to initial intervals
    * @param value -value
    * @param path -path

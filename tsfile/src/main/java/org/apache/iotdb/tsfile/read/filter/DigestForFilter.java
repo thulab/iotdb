@@ -33,6 +33,7 @@ public class DigestForFilter {
 
   /**
    * constructor of DigestForFilter with ByteBuffer minValue and maxValue.
+   *
    * @param minTime min timestamp
    * @param maxTime max timestamp
    * @param minValue MUST be ByteBuffer
@@ -50,6 +51,7 @@ public class DigestForFilter {
 
   /**
    * constructor of DigestForFilter with byte[] minValue and maxValue.
+   *
    * @param minTime min timestamp
    * @param maxTime max timestamp
    * @param minValue MUST be byte[]
@@ -104,6 +106,7 @@ public class DigestForFilter {
 
   /**
    * get type class.
+   *
    * @return type class, i.g. Long.class
    */
   public Class<?> getTypeClass() {

@@ -194,6 +194,7 @@ public abstract class DeltaBinaryDecoder extends Decoder {
 
     /**
      * if remaining data has been run out, load next pack from InputStream.
+     *
      * @param buffer ByteBuffer
      * @return long value
      */

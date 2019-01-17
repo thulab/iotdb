@@ -16,6 +16,7 @@ package org.apache.iotdb.db.exception;
 
 /**
  * ErrorDebugException.
+ *
  * @author kangrong
  */
 public class ErrorDebugException extends RuntimeException {

@@ -220,6 +220,7 @@ public class BatchData {
 
   /**
    * put int data.
+   *
    * @param v int data
    */
   public void putInt(int v) {
@@ -243,6 +244,7 @@ public class BatchData {
 
   /**
    * put long data.
+   *
    * @param v long data
    */
   public void putLong(long v) {
@@ -266,6 +268,7 @@ public class BatchData {
 
   /**
    * put float data.
+   *
    * @param v float data
    */
   public void putFloat(float v) {
@@ -289,6 +292,7 @@ public class BatchData {
 
   /**
    * put double data.
+   *
    * @param v double data
    */
   public void putDouble(double v) {
@@ -312,6 +316,7 @@ public class BatchData {
 
   /**
    * put binary data.
+   *
    * @param v binary data.
    */
   public void putBinary(Binary v) {
@@ -437,6 +442,7 @@ public class BatchData {
 
   /**
    * get time as array in long[] structure.
+   *
    * @return time array
    */
   public long[] getTimeAsArray() {
@@ -449,6 +455,7 @@ public class BatchData {
 
   /**
    * put an object.
+   *
    * @param v object
    */
   public void putAnObject(Object v) {
@@ -478,6 +485,7 @@ public class BatchData {
 
   /**
    * get and object.
+   *
    * @return object
    */
   public Comparable<?> getAnObject() {
@@ -501,6 +509,7 @@ public class BatchData {
 
   /**
    * set an object.
+   *
    * @param idx object id
    * @param v object value
    */

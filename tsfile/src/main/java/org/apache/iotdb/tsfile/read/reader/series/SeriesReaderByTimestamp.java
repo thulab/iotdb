@@ -27,8 +27,7 @@ import org.apache.iotdb.tsfile.read.reader.chunk.ChunkReaderByTimestamp;
 /**
  * <p>
  * Series reader is used to query one series of one tsfile, using this reader to query the value of
- * a series with given
- * timestamps.
+ * a series with given timestamps.
  * </p>
  */
 public class SeriesReaderByTimestamp {
@@ -41,7 +40,9 @@ public class SeriesReaderByTimestamp {
   private long currentTimestamp;
   private BatchData data = null; // current batch data
 
-  /** init with chunkLoader and chunkMetaDataList.*/
+  /**
+   * init with chunkLoader and chunkMetaDataList.
+   */
   public SeriesReaderByTimestamp(ChunkLoader chunkLoader, List<ChunkMetaData> chunkMetaDataList) {
     this.chunkLoader = chunkLoader;
     this.chunkMetaDataList = chunkMetaDataList;
@@ -54,7 +55,7 @@ public class SeriesReaderByTimestamp {
 
   /**
    * get value with time equals timestamp. If there is no such point, return null.
-   * */
+   */
   public Object getValueInTimestamp(long timestamp) throws IOException {
     this.currentTimestamp = timestamp;
 

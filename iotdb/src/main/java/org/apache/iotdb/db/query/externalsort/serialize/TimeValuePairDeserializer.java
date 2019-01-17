@@ -25,7 +25,6 @@ public interface TimeValuePairDeserializer {
 
   /**
    * Close current deserializer.
-   *
    */
   void close() throws IOException;
 }

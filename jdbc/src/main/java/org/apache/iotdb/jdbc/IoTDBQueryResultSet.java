@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.jdbc;
@@ -43,7 +41,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.iotdb.service.rpc.thrift.TSCloseOperationReq;
 import org.apache.iotdb.service.rpc.thrift.TSCloseOperationResp;
 import org.apache.iotdb.service.rpc.thrift.TSFetchResultsReq;
@@ -52,13 +49,15 @@ import org.apache.iotdb.service.rpc.thrift.TSIService;
 import org.apache.iotdb.service.rpc.thrift.TSOperationHandle;
 import org.apache.iotdb.service.rpc.thrift.TSQueryDataSet;
 import org.apache.iotdb.service.rpc.thrift.TS_SessionHandle;
-
 import org.apache.iotdb.tsfile.read.common.Field;
 import org.apache.iotdb.tsfile.read.common.RowRecord;
 import org.apache.thrift.TException;
 
 public class IoTDBQueryResultSet implements ResultSet {
 
+  private final String TIMESTAMP_STR = "Time";
+  private final String LIMIT_STR = "LIMIT";
+  private final String OFFSET_STR = "OFFSET";
   private Statement statement = null;
   private String sql;
   private SQLWarning warningChain = null;
@@ -76,9 +75,6 @@ public class IoTDBQueryResultSet implements ResultSet {
   private int fetchSize;
   private boolean emptyResultSet = false;
   private String operationType;
-  private final String TIMESTAMP_STR = "Time";
-  private final String LIMIT_STR = "LIMIT";
-  private final String OFFSET_STR = "OFFSET";
   // 0 means it is not constrained in sql
   private int rowsLimit = 0;
   // 0 means it is not constrained in sql, or the offset position has been reached
@@ -102,9 +98,9 @@ public class IoTDBQueryResultSet implements ResultSet {
   }
 
   public IoTDBQueryResultSet(Statement statement, List<String> columnName, TSIService.Iface client,
-                             TS_SessionHandle sessionHandle, TSOperationHandle operationHandle,
-                             String sql, String aggregations,
-                             List<String> columnTypeList) throws SQLException {
+      TS_SessionHandle sessionHandle, TSOperationHandle operationHandle,
+      String sql, String aggregations,
+      List<String> columnTypeList) throws SQLException {
     this.statement = statement;
     this.maxRows = statement.getMaxRows();
     this.fetchSize = statement.getFetchSize();
@@ -212,11 +208,11 @@ public class IoTDBQueryResultSet implements ResultSet {
       }
     } catch (SQLException e) {
       throw new SQLException("Error occurs for close opeation in server side becasuse "
-              + e.getMessage());
+          + e.getMessage());
     } catch (TException e) {
       throw new SQLException(
-              "Error occurs when connecting to server for close operation, becasue: "
-                      + e.getMessage());
+          "Error occurs when connecting to server for close operation, becasue: "
+              + e.getMessage());
     }
   }
 
@@ -403,7 +399,17 @@ public class IoTDBQueryResultSet implements ResultSet {
   }
 
   @Override
+  public void setFetchDirection(int arg0) throws SQLException {
+    throw new SQLException("Method not supported");
+  }
+
+  @Override
   public int getFetchSize() throws SQLException {
+    throw new SQLException("Method not supported");
+  }
+
+  @Override
+  public void setFetchSize(int arg0) throws SQLException {
     throw new SQLException("Method not supported");
   }
 
@@ -771,16 +777,6 @@ public class IoTDBQueryResultSet implements ResultSet {
 
   @Override
   public boolean rowUpdated() throws SQLException {
-    throw new SQLException("Method not supported");
-  }
-
-  @Override
-  public void setFetchDirection(int arg0) throws SQLException {
-    throw new SQLException("Method not supported");
-  }
-
-  @Override
-  public void setFetchSize(int arg0) throws SQLException {
     throw new SQLException("Method not supported");
   }
 
@@ -1217,7 +1213,7 @@ public class IoTDBQueryResultSet implements ResultSet {
     }
     if (columnIndex > columnInfoList.size()) {
       throw new SQLException(
-              String.format("column index %d out of range %d", columnIndex, columnInfoList.size()));
+          String.format("column index %d out of range %d", columnIndex, columnInfoList.size()));
     }
     return columnInfoList.get(columnIndex - 1);
   }

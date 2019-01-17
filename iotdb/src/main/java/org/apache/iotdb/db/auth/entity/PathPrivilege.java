@@ -26,9 +26,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class PathPrivilege {
 
+  /**
+   * Sort PathPrivilege by referenceCnt in descent order.
+   */
+  public static Comparator<PathPrivilege> referenceDescentSorter = (o1,
+      o2) -> -Integer.compare(o1.referenceCnt.get(), o2.referenceCnt.get());
   public Set<Integer> privileges;
   public String path;
-
   /**
    * This field records how many times this privilege is referenced during a life cycle (from being
    * loaded to being discarded). When serialized to a file, this determines the order of
@@ -60,12 +64,6 @@ public class PathPrivilege {
 
     return Objects.hash(privileges, path);
   }
-
-  /**
-   * Sort PathPrivilege by referenceCnt in descent order.
-   */
-  public static Comparator<PathPrivilege> referenceDescentSorter = (o1,
-      o2) -> -Integer.compare(o1.referenceCnt.get(), o2.referenceCnt.get());
 
   @Override
   public String toString() {

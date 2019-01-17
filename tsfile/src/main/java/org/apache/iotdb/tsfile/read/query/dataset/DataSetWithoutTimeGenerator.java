@@ -48,6 +48,7 @@ public class DataSetWithoutTimeGenerator extends QueryDataSet {
 
   /**
    * constructor of DataSetWithoutTimeGenerator.
+   *
    * @param paths paths in List structure
    * @param dataTypes TSDataTypes in List structure
    * @param readers readers in List(SeriesReaderByTimestamp) structure

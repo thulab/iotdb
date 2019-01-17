@@ -40,31 +40,11 @@ public class JMXService implements IService {
 
   private JMXConnectorServer jmxService;
 
-  private static class JMXServerHolder {
-
-    private static final JMXService INSTANCE = new JMXService();
+  private JMXService() {
   }
 
   public static final JMXService getInstance() {
     return JMXServerHolder.INSTANCE;
-  }
-
-  private JMXService() {
-  }
-
-  private JMXConnectorServer createJMXServer(int port, boolean local) throws IOException {
-    Map<String, Object> env = new HashMap<>();
-
-    InetAddress serverAddress = null;
-    if (local) {
-      serverAddress = InetAddress.getLoopbackAddress();
-      System.setProperty(IoTDBConstant.RMI_SERVER_HOST_NAME, serverAddress.getHostAddress());
-    }
-    int rmiPort = Integer.getInteger(IoTDBConstant.JMX_REMOTE_RMI_PORT, 0);
-
-    JMXConnectorServer jmxServer = JMXConnectorServerFactory.newJMXConnectorServer(
-        new JMXServiceURL("rmi", null, rmiPort), env, ManagementFactory.getPlatformMBeanServer());
-    return jmxServer;
   }
 
   /**
@@ -98,6 +78,21 @@ public class JMXService implements IService {
         | InstanceNotFoundException e) {
       LOGGER.error("Failed to unregisterMBean {}", name, e);
     }
+  }
+
+  private JMXConnectorServer createJMXServer(int port, boolean local) throws IOException {
+    Map<String, Object> env = new HashMap<>();
+
+    InetAddress serverAddress = null;
+    if (local) {
+      serverAddress = InetAddress.getLoopbackAddress();
+      System.setProperty(IoTDBConstant.RMI_SERVER_HOST_NAME, serverAddress.getHostAddress());
+    }
+    int rmiPort = Integer.getInteger(IoTDBConstant.JMX_REMOTE_RMI_PORT, 0);
+
+    JMXConnectorServer jmxServer = JMXConnectorServerFactory.newJMXConnectorServer(
+        new JMXServiceURL("rmi", null, rmiPort), env, ManagementFactory.getPlatformMBeanServer());
+    return jmxServer;
   }
 
   @Override
@@ -155,5 +150,10 @@ public class JMXService implements IService {
         LOGGER.error("Failed to stop {} because of {}", this.getID().getName(), e.getMessage());
       }
     }
+  }
+
+  private static class JMXServerHolder {
+
+    private static final JMXService INSTANCE = new JMXService();
   }
 }

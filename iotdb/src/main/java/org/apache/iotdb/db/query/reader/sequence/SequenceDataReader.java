@@ -40,7 +40,7 @@ public class SequenceDataReader implements IReader {
 
   /**
    * init with globalSortedSeriesDataSource and filter.
-   * */
+   */
   public SequenceDataReader(GlobalSortedSeriesDataSource sources, Filter filter)
       throws IOException {
     seriesReaders = new ArrayList<>();

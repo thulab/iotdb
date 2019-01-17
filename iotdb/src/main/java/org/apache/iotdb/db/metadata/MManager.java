@@ -63,15 +63,6 @@ public class MManager {
   private RandomDeleteCache<String, PathCheckRet> checkAndGetDataTypeCache;
   private RandomDeleteCache<String, MNode> mnodecache;
 
-  private static class MManagerHolder {
-
-    private static final MManager INSTANCE = new MManager();
-  }
-
-  public static MManager getInstance() {
-    return MManagerHolder.INSTANCE;
-  }
-
   private MManager() {
     metadataDirPath = IoTDBDescriptor.getInstance().getConfig().metadataDir;
     if (metadataDirPath.length() > 0
@@ -115,6 +106,10 @@ public class MManager {
     };
 
     init();
+  }
+
+  public static MManager getInstance() {
+    return MManagerHolder.INSTANCE;
   }
 
   private void init() {
@@ -960,6 +955,11 @@ public class MManager {
     } catch (PathErrorException e) {
       throw new CacheException(e);
     }
+  }
+
+  private static class MManagerHolder {
+
+    private static final MManager INSTANCE = new MManager();
   }
 
   public static class PathCheckRet {

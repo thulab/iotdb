@@ -67,6 +67,7 @@ public class BinaryStatistics extends Statistics<Binary> {
 
   /**
    * initialize Statistics.
+   *
    * @param min minimum value
    * @param max maximum value
    * @param first the first value

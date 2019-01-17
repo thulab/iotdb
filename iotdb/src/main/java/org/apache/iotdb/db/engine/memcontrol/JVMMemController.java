@@ -27,18 +27,12 @@ public class JVMMemController extends BasicMemController {
   // memory used by non-data objects, this is used to estimate the memory used by data
   private long nonDataUsage = 0;
 
-  private static class InstanceHolder {
-
-    private static final JVMMemController INSTANCE = new JVMMemController(
-        IoTDBDescriptor.getInstance().getConfig());
+  private JVMMemController(IoTDBConfig config) {
+    super(config);
   }
 
   public static JVMMemController getInstance() {
     return InstanceHolder.INSTANCE;
-  }
-
-  private JVMMemController(IoTDBConfig config) {
-    super(config);
   }
 
   @Override
@@ -95,5 +89,11 @@ public class JVMMemController extends BasicMemController {
         .info("{} freed from {}, total usage {}", MemUtils.bytesCntToStr(freeSize), user.getClass(),
             MemUtils.bytesCntToStr(getTotalUsage()));
     System.gc();
+  }
+
+  private static class InstanceHolder {
+
+    private static final JVMMemController INSTANCE = new JVMMemController(
+        IoTDBDescriptor.getInstance().getConfig());
   }
 }

@@ -1,23 +1,20 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.auth.role;
 
 import java.util.List;
-
 import org.apache.iotdb.db.auth.AuthException;
 import org.apache.iotdb.db.auth.entity.Role;
 
@@ -25,6 +22,7 @@ import org.apache.iotdb.db.auth.entity.Role;
  * This interface maintains roles in memory and is responsible for their modifications.
  */
 public interface IRoleManager {
+
   /**
    * Get a role object.
    *
@@ -76,7 +74,7 @@ public interface IRoleManager {
    * @throws AuthException If the role does not exist or the privilege or the seriesPath is illegal.
    */
   boolean revokePrivilegeFromRole(String rolename, String path,
-                                  int privilegeId) throws AuthException;
+      int privilegeId) throws AuthException;
 
   /**
    * Re-initialize this object.

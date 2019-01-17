@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.cli.tool;
@@ -33,7 +31,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import jline.console.ConsoleReader;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -54,6 +51,7 @@ import org.apache.thrift.TException;
  * @author zhanggr
  */
 public class ImportCsv extends AbstractCsvTool {
+
   private static final String FILE_ARGS = "f";
   private static final String FILE_NAME = "file or folder";
   private static final String FILE_SUFFIX = "csv";
@@ -76,35 +74,35 @@ public class ImportCsv extends AbstractCsvTool {
     Options options = new Options();
 
     Option opHost = Option.builder(HOST_ARGS).longOpt(HOST_NAME).required()
-            .argName(HOST_NAME).hasArg().desc("Host Name (required)").build();
+        .argName(HOST_NAME).hasArg().desc("Host Name (required)").build();
     options.addOption(opHost);
 
     Option opPort = Option.builder(PORT_ARGS).longOpt(PORT_NAME).required()
-            .argName(PORT_NAME).hasArg().desc("Port (required)").build();
+        .argName(PORT_NAME).hasArg().desc("Port (required)").build();
     options.addOption(opPort);
 
     Option opUsername = Option.builder(USERNAME_ARGS).longOpt(USERNAME_NAME)
-            .required().argName(USERNAME_NAME)
-            .hasArg().desc("Username (required)").build();
+        .required().argName(USERNAME_NAME)
+        .hasArg().desc("Username (required)").build();
     options.addOption(opUsername);
 
     Option opPassword = Option.builder(PASSWORD_ARGS).longOpt(PASSWORD_NAME)
-            .optionalArg(true).argName(PASSWORD_NAME).hasArg().desc("Password (optional)").build();
+        .optionalArg(true).argName(PASSWORD_NAME).hasArg().desc("Password (optional)").build();
     options.addOption(opPassword);
 
     Option opFile = Option.builder(FILE_ARGS).required().argName(FILE_NAME).hasArg().desc(
-            "If input a file path, load a csv file, "
-                    + "otherwise load all csv file under this directory (required)")
-            .build();
+        "If input a file path, load a csv file, "
+            + "otherwise load all csv file under this directory (required)")
+        .build();
     options.addOption(opFile);
 
     Option opHelp = Option.builder(HELP_ARGS).longOpt(HELP_ARGS)
-            .hasArg(false).desc("Display help information")
-            .build();
+        .hasArg(false).desc("Display help information")
+        .build();
     options.addOption(opHelp);
 
     Option opTimeZone = Option.builder(TIME_ZONE_ARGS).argName(TIME_ZONE_NAME).hasArg()
-            .desc("Time Zone eg. +08:00 or -01:00 (optional)").build();
+        .desc("Time Zone eg. +08:00 or -01:00 (optional)").build();
     options.addOption(opTimeZone);
 
     return options;
@@ -126,7 +124,6 @@ public class ImportCsv extends AbstractCsvTool {
       }
       bw = new BufferedWriter(new FileWriter(errorFile));
 
-
       String header = br.readLine();
 
       bw.write("From " + file.getAbsolutePath());
@@ -146,7 +143,7 @@ public class ImportCsv extends AbstractCsvTool {
       String[] strHeadInfo = header.split(",");
       if (strHeadInfo.length <= 1) {
         System.out.println("[ERROR] The CSV file" + file.getName()
-                + " illegal, please check first line");
+            + " illegal, please check first line");
         return;
       }
 
@@ -156,13 +153,13 @@ public class ImportCsv extends AbstractCsvTool {
 
       for (int i = 1; i < strHeadInfo.length; i++) {
         ResultSet resultSet = databaseMetaData.getColumns(null,
-                null, strHeadInfo[i], null);
+            null, strHeadInfo[i], null);
         if (resultSet.next()) {
           timeseriesDataType.put(resultSet.getString(1),
-                  resultSet.getString(2));
+              resultSet.getString(2));
         } else {
           String errorInfo = String.format("[ERROR] Database cannot find %s in %s, stop import!",
-                  strHeadInfo[i], file.getAbsolutePath());
+              strHeadInfo[i], file.getAbsolutePath());
           System.out.println(errorInfo);
           bw.write(errorInfo);
           errorFlag = false;
@@ -230,8 +227,8 @@ public class ImportCsv extends AbstractCsvTool {
         count = 0;
         tmp.clear();
         System.out.println(String.format("[INFO] Load data from %s successfully,"
-                        + " it takes %dms", file.getName(),
-                (System.currentTimeMillis() - startTime)));
+                + " it takes %dms", file.getName(),
+            (System.currentTimeMillis() - startTime)));
       } catch (SQLException e) {
         bw.write(e.getMessage());
         bw.newLine();
@@ -259,8 +256,8 @@ public class ImportCsv extends AbstractCsvTool {
           FileUtils.forceDelete(errorFile);
         } else {
           System.out.println(String.format(
-                  "[ERROR] Format of some lines in %s error, please check %s for more information",
-                  file.getAbsolutePath(), errorFile.getAbsolutePath()));
+              "[ERROR] Format of some lines in %s error, please check %s for more information",
+              file.getAbsolutePath(), errorFile.getAbsolutePath()));
         }
       } catch (SQLException e) {
         e.printStackTrace();
@@ -271,9 +268,9 @@ public class ImportCsv extends AbstractCsvTool {
   }
 
   private static List<String> createInsertSQL(String line, Map<String, String> timeseriesToType,
-                                              Map<String, ArrayList<Integer>> deviceToColumn,
-                                              List<String> colInfo, List<String> headInfo)
-          throws IOException {
+      Map<String, ArrayList<Integer>> deviceToColumn,
+      List<String> colInfo, List<String> headInfo)
+      throws IOException {
     String[] data = line.split(",", headInfo.size() + 1);
     List<String> sqls = new ArrayList<>();
     Iterator<Map.Entry<String, ArrayList<Integer>>> it = deviceToColumn.entrySet().iterator();
@@ -299,7 +296,7 @@ public class ImportCsv extends AbstractCsvTool {
       // TODO when timestampsStr is empty,
       String timestampsStr = data[0];
       sbd.append(") values(").append(timestampsStr.trim().equals("")
-              ? "NO TIMESTAMP" : timestampsStr);
+          ? "NO TIMESTAMP" : timestampsStr);
       // if (timestampsStr.trim().equals("")) {
       // continue;
       // }
@@ -367,13 +364,13 @@ public class ImportCsv extends AbstractCsvTool {
   }
 
   private static void parseSpecialParams(CommandLine commandLine, ConsoleReader reader)
-          throws IOException, ArgsErrorException {
+      throws IOException, ArgsErrorException {
     timeZoneID = commandLine.getOptionValue(TIME_ZONE_ARGS);
   }
 
   public static void importCsvFromFile(String ip, String port, String username,
-                                       String password, String filename,
-                                       String timeZone) throws SQLException {
+      String password, String filename,
+      String timeZone) throws SQLException {
     String property = System.getProperty("IOTDB_HOME");
     if (property == null) {
       errorInsertInfo = ERROR_INFO_STR;
@@ -383,8 +380,8 @@ public class ImportCsv extends AbstractCsvTool {
     try {
       Class.forName(Config.JDBC_DRIVER_NAME);
       connection = (IoTDBConnection) DriverManager.getConnection(Config.IOTDB_URL_PREFIX
-                      + ip + ":" + port + "/",
-              username, password);
+              + ip + ":" + port + "/",
+          username, password);
       timeZoneID = timeZone;
       setTimeZone();
 
@@ -394,8 +391,8 @@ public class ImportCsv extends AbstractCsvTool {
           loadDataFromCSV(file, 1);
         } else {
           System.out.println(
-                  "[WARN] File " + file.getName() + " should ends with '.csv' "
-                          + "if you want to import");
+              "[WARN] File " + file.getName() + " should ends with '.csv' "
+                  + "if you want to import");
         }
       } else if (file.isDirectory()) {
         int i = 1;
@@ -406,20 +403,20 @@ public class ImportCsv extends AbstractCsvTool {
               i++;
             } else {
               System.out.println(
-                      "[WARN] File " + f.getName() + " should ends with '.csv' "
-                              + "if you want to import");
+                  "[WARN] File " + f.getName() + " should ends with '.csv' "
+                      + "if you want to import");
             }
           }
         }
       }
     } catch (ClassNotFoundException e) {
       System.out.println(
-              "[ERROR] Failed to dump data because cannot find TsFile JDBC Driver, "
-                      + "please check whether you have imported driver or not");
+          "[ERROR] Failed to dump data because cannot find TsFile JDBC Driver, "
+              + "please check whether you have imported driver or not");
     } catch (TException e) {
       System.out.println(
-              String.format("[ERROR] Encounter an error when connecting to server, because %s",
-                      e.getMessage()));
+          String.format("[ERROR] Encounter an error when connecting to server, because %s",
+              e.getMessage()));
     } catch (Exception e) {
       System.out.println(String.format("[ERROR] Encounter an error, because %s", e.getMessage()));
     } finally {

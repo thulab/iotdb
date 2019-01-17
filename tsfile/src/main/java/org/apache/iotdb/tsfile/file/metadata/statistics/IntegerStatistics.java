@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.tsfile.file.metadata.statistics;
@@ -19,7 +17,6 @@ package org.apache.iotdb.tsfile.file.metadata.statistics;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-
 import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
@@ -29,6 +26,7 @@ import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
  * @author kangrong
  */
 public class IntegerStatistics extends Statistics<Integer> {
+
   private int max;
   private int min;
   private int first;
@@ -53,7 +51,7 @@ public class IntegerStatistics extends Statistics<Integer> {
   }
 
   private void updateStats(int minValue, int maxValue,
-                           int firstValue, double sumValue, int lastValue) {
+      int firstValue, double sumValue, int lastValue) {
     // TODO: unused parameter
     if (minValue < min) {
       min = minValue;
@@ -95,11 +93,11 @@ public class IntegerStatistics extends Statistics<Integer> {
     IntegerStatistics intStats = (IntegerStatistics) stats;
     if (isEmpty) {
       initializeStats(intStats.getMin(), intStats.getMax(), intStats.getFirst(), intStats.getSum(),
-              intStats.getLast());
+          intStats.getLast());
       isEmpty = false;
     } else {
       updateStats(intStats.getMin(), intStats.getMax(), intStats.getFirst(), intStats.getSum(),
-              intStats.getLast());
+          intStats.getLast());
     }
 
   }
@@ -170,7 +168,7 @@ public class IntegerStatistics extends Statistics<Integer> {
   @Override
   public String toString() {
     return "[max:" + max + ",min:" + min + ",first:"
-            + first + ",sum:" + sum + ",last:" + last + "]";
+        + first + ",sum:" + sum + ",last:" + last + "]";
   }
 
   @Override

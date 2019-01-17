@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.query.externalsort.serialize.impl;
@@ -21,7 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.apache.iotdb.db.query.externalsort.serialize.TimeValuePairDeserializer;
 import org.apache.iotdb.db.utils.TimeValuePair;
 import org.apache.iotdb.db.utils.TsPrimitiveType;
@@ -96,15 +93,17 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         break;
       default:
         throw new RuntimeException("Unknown TSDataType in FixLengthTimeValuePairSerializer:"
-                + type);
+            + type);
     }
   }
 
   private abstract static class TimeValuePairReader {
+
     public abstract TimeValuePair read(InputStream inputStream) throws IOException;
 
     private static class BooleanReader
-            extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+        extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+
       byte[] timestampBytes = new byte[8];
       byte[] valueBytes = new byte[1];
 
@@ -113,11 +112,12 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         inputStream.read(timestampBytes);
         inputStream.read(valueBytes);
         return new TimeValuePair(BytesUtils.bytesToLong(timestampBytes),
-                new TsPrimitiveType.TsBoolean(BytesUtils.bytesToBool(valueBytes)));
+            new TsPrimitiveType.TsBoolean(BytesUtils.bytesToBool(valueBytes)));
       }
     }
 
     private static class IntReader extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+
       byte[] timestampBytes = new byte[8];
       byte[] valueBytes = new byte[4];
 
@@ -126,11 +126,12 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         inputStream.read(timestampBytes);
         inputStream.read(valueBytes);
         return new TimeValuePair(BytesUtils.bytesToLong(timestampBytes),
-                new TsPrimitiveType.TsInt(BytesUtils.bytesToInt(valueBytes)));
+            new TsPrimitiveType.TsInt(BytesUtils.bytesToInt(valueBytes)));
       }
     }
 
     private static class LongReader extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+
       byte[] timestampBytes = new byte[8];
       byte[] valueBytes = new byte[8];
 
@@ -139,12 +140,13 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         inputStream.read(timestampBytes);
         inputStream.read(valueBytes);
         return new TimeValuePair(BytesUtils.bytesToLong(timestampBytes),
-                new TsPrimitiveType.TsLong(BytesUtils.bytesToLong(valueBytes)));
+            new TsPrimitiveType.TsLong(BytesUtils.bytesToLong(valueBytes)));
       }
     }
 
     private static class FloatReader
-            extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+        extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+
       byte[] timestampBytes = new byte[8];
       byte[] valueBytes = new byte[4];
 
@@ -153,12 +155,13 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         inputStream.read(timestampBytes);
         inputStream.read(valueBytes);
         return new TimeValuePair(BytesUtils.bytesToLong(timestampBytes),
-                new TsPrimitiveType.TsFloat(BytesUtils.bytesToFloat(valueBytes)));
+            new TsPrimitiveType.TsFloat(BytesUtils.bytesToFloat(valueBytes)));
       }
     }
 
     private static class DoubleReader
-            extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+        extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+
       byte[] timestampBytes = new byte[8];
       byte[] valueBytes = new byte[8];
 
@@ -167,12 +170,13 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         inputStream.read(timestampBytes);
         inputStream.read(valueBytes);
         return new TimeValuePair(BytesUtils.bytesToLong(timestampBytes),
-                new TsPrimitiveType.TsDouble(BytesUtils.bytesToDouble(valueBytes)));
+            new TsPrimitiveType.TsDouble(BytesUtils.bytesToDouble(valueBytes)));
       }
     }
 
     private static class BinaryReader
-            extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+        extends FixLengthTimeValuePairDeserializer.TimeValuePairReader {
+
       byte[] timestampBytes = new byte[8];
       byte[] valueLength = new byte[4];
       byte[] valueBytes;
@@ -185,7 +189,7 @@ public class FixLengthTimeValuePairDeserializer implements TimeValuePairDeserial
         valueBytes = new byte[length];
         inputStream.read(valueBytes);
         return new TimeValuePair(BytesUtils.bytesToLong(timestampBytes),
-                new TsPrimitiveType.TsBinary(new Binary(BytesUtils.bytesToString(valueBytes))));
+            new TsPrimitiveType.TsBinary(new Binary(BytesUtils.bytesToString(valueBytes))));
       }
     }
   }

@@ -34,7 +34,7 @@ public class RandomNum {
 
   /**
    * get random float between min and max.
-   * */
+   */
   public static float getRandomFloat(float min, float max) {
 
     Random random = new Random();
@@ -43,7 +43,7 @@ public class RandomNum {
 
   /**
    * get random int between 0 and frequency.
-   * */
+   */
   public static int getAbnormalData(int frequency) {
     Random random = new Random();
     return (Math.abs(random.nextInt()) % frequency);
@@ -53,7 +53,7 @@ public class RandomNum {
    * get random text consisting of lowercase letters and numbers.
    *
    * @param length -the length of random text
-   * */
+   */
   public static String getRandomText(int length) {
 
     String base = "abcdefghijklmnopqrstuvwxyz0123456789";

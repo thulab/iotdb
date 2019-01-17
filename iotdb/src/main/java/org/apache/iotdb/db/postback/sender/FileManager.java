@@ -39,18 +39,12 @@ import org.slf4j.LoggerFactory;
  */
 public class FileManager {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileManager.class);
   private Map<String, Set<String>> sendingFiles = new HashMap<>();
   private Set<String> lastLocalFiles = new HashSet<>();
   private Map<String, Set<String>> nowLocalFiles = new HashMap<>();
   private PostBackSenderConfig postbackConfig = PostBackSenderDescriptor.getInstance().getConfig();
   private IoTDBConfig tsfileConfig = IoTDBDescriptor.getInstance().getConfig();
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileManager.class);
-
-  private static class FileManagerHolder {
-
-    private static final FileManager INSTANCE = new FileManager();
-  }
 
   private FileManager() {
   }
@@ -93,6 +87,7 @@ public class FileManager {
 
   /**
    * get last local file list.
+   *
    * @param path path
    */
   public void getLastLocalFileList(String path) {
@@ -130,6 +125,7 @@ public class FileManager {
 
   /**
    * get current local file list.
+   *
    * @param paths paths in String[] structure
    */
   public void getNowLocalFileList(String[] paths) {
@@ -161,6 +157,7 @@ public class FileManager {
 
   /**
    * backup current local file information.
+   *
    * @param backupFile backup file path
    */
   public void backupNowLocalFileInfo(String backupFile) {
@@ -202,5 +199,10 @@ public class FileManager {
 
   public void setNowLocalFiles(Map<String, Set<String>> newNowLocalFiles) {
     nowLocalFiles = newNowLocalFiles;
+  }
+
+  private static class FileManagerHolder {
+
+    private static final FileManager INSTANCE = new FileManager();
   }
 }

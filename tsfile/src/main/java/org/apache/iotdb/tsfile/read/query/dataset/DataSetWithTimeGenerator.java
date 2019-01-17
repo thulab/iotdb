@@ -26,9 +26,8 @@ import org.apache.iotdb.tsfile.read.reader.series.SeriesReaderByTimestamp;
 import org.apache.iotdb.tsfile.utils.Binary;
 
 /**
- * query processing:
- * (1) generate time by series that has filter (2) get value of series that does not have filter (3)
- * construct RowRecord.
+ * query processing: (1) generate time by series that has filter (2) get value of series that does
+ * not have filter (3) construct RowRecord.
  */
 public class DataSetWithTimeGenerator extends QueryDataSet {
 
@@ -38,6 +37,7 @@ public class DataSetWithTimeGenerator extends QueryDataSet {
 
   /**
    * constructor of DataSetWithTimeGenerator.
+   *
    * @param paths paths in List structure
    * @param cached cached boolean in List(boolean) structure
    * @param dataTypes TSDataTypes in List structure

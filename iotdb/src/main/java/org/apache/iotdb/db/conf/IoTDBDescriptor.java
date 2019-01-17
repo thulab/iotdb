@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.conf;
@@ -23,17 +21,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZoneId;
 import java.util.Properties;
-
 import org.apache.iotdb.db.engine.memcontrol.BasicMemController.ControllerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class IoTDBDescriptor {
-  private static final Logger LOGGER = LoggerFactory.getLogger(IoTDBDescriptor.class);
 
-  private static class TsfileDBDescriptorHolder {
-    private static final IoTDBDescriptor INSTANCE = new IoTDBDescriptor();
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(IoTDBDescriptor.class);
+  private IoTDBConfig conf = new IoTDBConfig();
 
   private IoTDBDescriptor() {
     loadProps();
@@ -46,8 +41,6 @@ public class IoTDBDescriptor {
   public IoTDBConfig getConfig() {
     return conf;
   }
-
-  private IoTDBConfig conf = new IoTDBConfig();
 
   /**
    * load an property file and set TsfileDBConfig variables.
@@ -62,9 +55,9 @@ public class IoTDBDescriptor {
         url = url + File.separatorChar + "conf" + File.separatorChar + IoTDBConfig.CONFIG_NAME;
       } else {
         LOGGER.warn(
-                "Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading "
-                        + "config file {}, use default configuration",
-                IoTDBConfig.CONFIG_NAME);
+            "Cannot find IOTDB_HOME or IOTDB_CONF environment variable when loading "
+                + "config file {}, use default configuration",
+            IoTDBConfig.CONFIG_NAME);
         // update all data seriesPath
         conf.updatePath();
         return;
@@ -87,117 +80,117 @@ public class IoTDBDescriptor {
     try {
       properties.load(inputStream);
       conf.enableStatMonitor = Boolean
-              .parseBoolean(properties.getProperty("enable_stat_monitor",
-                      conf.enableStatMonitor + ""));
+          .parseBoolean(properties.getProperty("enable_stat_monitor",
+              conf.enableStatMonitor + ""));
       conf.backLoopPeriodSec = Integer
-              .parseInt(properties.getProperty("back_loop_period_sec",
-                      conf.backLoopPeriodSec + ""));
+          .parseInt(properties.getProperty("back_loop_period_sec",
+              conf.backLoopPeriodSec + ""));
       int statMonitorDetectFreqSec = Integer.parseInt(
-              properties.getProperty("stat_monitor_detect_freq_sec",
-                      conf.statMonitorDetectFreqSec + ""));
+          properties.getProperty("stat_monitor_detect_freq_sec",
+              conf.statMonitorDetectFreqSec + ""));
       int statMonitorRetainIntervalSec = Integer.parseInt(
-              properties.getProperty("stat_monitor_retain_interval_sec",
-                      conf.statMonitorRetainIntervalSec + ""));
+          properties.getProperty("stat_monitor_retain_interval_sec",
+              conf.statMonitorRetainIntervalSec + ""));
       // the conf value must > default value, or may cause system unstable
       if (conf.statMonitorDetectFreqSec < statMonitorDetectFreqSec) {
         conf.statMonitorDetectFreqSec = statMonitorDetectFreqSec;
       } else {
         LOGGER.info("The stat_monitor_detect_freq_sec value is smaller than default,"
-                + " use default value");
+            + " use default value");
       }
 
       if (conf.statMonitorRetainIntervalSec < statMonitorRetainIntervalSec) {
         conf.statMonitorRetainIntervalSec = statMonitorRetainIntervalSec;
       } else {
         LOGGER.info("The stat_monitor_retain_interval_sec value is smaller than default,"
-                + " use default value");
+            + " use default value");
       }
 
       conf.rpcPort = Integer.parseInt(properties.getProperty("rpc_port",
-              conf.rpcPort + ""));
+          conf.rpcPort + ""));
 
       conf.enableWal = Boolean.parseBoolean(properties.getProperty("enable_wal",
-              conf.enableWal + ""));
+          conf.enableWal + ""));
 
       conf.flushWalThreshold = Integer
-              .parseInt(properties.getProperty("flush_wal_threshold",
-                      conf.flushWalThreshold + ""));
+          .parseInt(properties.getProperty("flush_wal_threshold",
+              conf.flushWalThreshold + ""));
       conf.flushWalPeriodInMs = Integer
-              .parseInt(properties.getProperty("flush_wal_period_in_ms",
-                      conf.flushWalPeriodInMs + ""));
+          .parseInt(properties.getProperty("flush_wal_period_in_ms",
+              conf.flushWalPeriodInMs + ""));
 
       conf.dataDir = properties.getProperty("data_dir", conf.dataDir);
       conf.bufferWriteDirs = properties.getProperty("tsfile_dir", conf.default_tsfile_dir)
-              .split(",");
+          .split(",");
       conf.sysDir = properties.getProperty("sys_dir", conf.sysDir);
       conf.walDir = properties.getProperty("wal_dir", conf.walDir);
 
       conf.multDirStrategyClassName = properties.getProperty("mult_dir_strategy",
-              conf.multDirStrategyClassName);
+          conf.multDirStrategyClassName);
 
       conf.maxOpenFolder = Integer.parseInt(properties.getProperty("max_opened_folder",
-              conf.maxOpenFolder + ""));
+          conf.maxOpenFolder + ""));
       conf.mergeConcurrentThreads = Integer
-              .parseInt(properties.getProperty("merge_concurrent_threads",
-                      conf.mergeConcurrentThreads + ""));
+          .parseInt(properties.getProperty("merge_concurrent_threads",
+              conf.mergeConcurrentThreads + ""));
       if (conf.mergeConcurrentThreads <= 0
-              || conf.mergeConcurrentThreads > Runtime.getRuntime().availableProcessors()) {
+          || conf.mergeConcurrentThreads > Runtime.getRuntime().availableProcessors()) {
         conf.mergeConcurrentThreads = Runtime.getRuntime().availableProcessors();
       }
 
       conf.fetchSize = Integer.parseInt(properties.getProperty("fetch_size",
-              conf.fetchSize + ""));
+          conf.fetchSize + ""));
 
       conf.periodTimeForFlush = Long.parseLong(
-              properties.getProperty("period_time_for_flush_in_second",
-                      conf.periodTimeForFlush + "").trim());
+          properties.getProperty("period_time_for_flush_in_second",
+              conf.periodTimeForFlush + "").trim());
       conf.periodTimeForMerge = Long.parseLong(
-              properties.getProperty("period_time_for_merge_in_second",
-                      conf.periodTimeForMerge + "").trim());
+          properties.getProperty("period_time_for_merge_in_second",
+              conf.periodTimeForMerge + "").trim());
       conf.enableTimingCloseAndMerge = Boolean.parseBoolean(properties
-              .getProperty("enable_timing_close_and_Merge",
-                      conf.enableTimingCloseAndMerge + "").trim());
+          .getProperty("enable_timing_close_and_Merge",
+              conf.enableTimingCloseAndMerge + "").trim());
 
       conf.memThresholdWarning = (long) (Runtime.getRuntime().maxMemory() * Double.parseDouble(
-              properties.getProperty("mem_threshold_warning",
-                      conf.memThresholdWarning + "").trim()));
+          properties.getProperty("mem_threshold_warning",
+              conf.memThresholdWarning + "").trim()));
       conf.memThresholdDangerous = (long) (Runtime.getRuntime().maxMemory() * Double.parseDouble(
-              properties.getProperty("mem_threshold_dangerous",
-                      conf.memThresholdDangerous + "").trim()));
+          properties.getProperty("mem_threshold_dangerous",
+              conf.memThresholdDangerous + "").trim()));
 
       conf.memMonitorInterval = Long
-              .parseLong(properties.getProperty("mem_monitor_interval",
-                      conf.memMonitorInterval + "").trim());
+          .parseLong(properties.getProperty("mem_monitor_interval",
+              conf.memMonitorInterval + "").trim());
 
       conf.memControllerType = Integer
-              .parseInt(properties.getProperty("mem_controller_type",
-                      conf.memControllerType + "").trim());
+          .parseInt(properties.getProperty("mem_controller_type",
+              conf.memControllerType + "").trim());
       conf.memControllerType = conf.memControllerType >= ControllerType.values().length ? 0
-              : conf.memControllerType;
+          : conf.memControllerType;
 
       conf.bufferwriteMetaSizeThreshold = Long.parseLong(properties
-              .getProperty("bufferwrite_meta_size_threshold",
-                      conf.bufferwriteMetaSizeThreshold + "").trim());
+          .getProperty("bufferwrite_meta_size_threshold",
+              conf.bufferwriteMetaSizeThreshold + "").trim());
       conf.bufferwriteFileSizeThreshold = Long.parseLong(properties
-              .getProperty("bufferwrite_file_size_threshold",
-                      conf.bufferwriteFileSizeThreshold + "").trim());
+          .getProperty("bufferwrite_file_size_threshold",
+              conf.bufferwriteFileSizeThreshold + "").trim());
 
       conf.overflowMetaSizeThreshold = Long.parseLong(
-              properties.getProperty("overflow_meta_size_threshold",
-                      conf.overflowMetaSizeThreshold + "").trim());
+          properties.getProperty("overflow_meta_size_threshold",
+              conf.overflowMetaSizeThreshold + "").trim());
       conf.overflowFileSizeThreshold = Long.parseLong(
-              properties.getProperty("overflow_file_size_threshold",
-                      conf.overflowFileSizeThreshold + "").trim());
+          properties.getProperty("overflow_file_size_threshold",
+              conf.overflowFileSizeThreshold + "").trim());
 
       conf.isPostbackEnable = Boolean
-              .parseBoolean(properties.getProperty("is_postback_enable",
-                      conf.isPostbackEnable + ""));
+          .parseBoolean(properties.getProperty("is_postback_enable",
+              conf.isPostbackEnable + ""));
       conf.postbackServerPort = Integer
-              .parseInt(properties.getProperty("postback_server_port",
-                      conf.postbackServerPort + "").trim());
+          .parseInt(properties.getProperty("postback_server_port",
+              conf.postbackServerPort + "").trim());
       conf.update_historical_data_possibility = Boolean.parseBoolean(
-              properties.getProperty("update_historical_data_possibility",
-                      conf.isPostbackEnable + ""));
+          properties.getProperty("update_historical_data_possibility",
+              conf.isPostbackEnable + ""));
       conf.ipWhiteList = properties.getProperty("IP_white_list", conf.ipWhiteList);
 
       if (conf.memThresholdWarning <= 0) {
@@ -205,40 +198,40 @@ public class IoTDBDescriptor {
       }
       if (conf.memThresholdDangerous < conf.memThresholdWarning) {
         conf.memThresholdDangerous = Math.max(conf.memThresholdWarning,
-                IoTDBConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
+            IoTDBConstant.MEM_THRESHOLD_DANGEROUS_DEFAULT);
       }
 
       conf.concurrentFlushThread = Integer
-              .parseInt(properties.getProperty("concurrent_flush_thread",
-                      conf.concurrentFlushThread + ""));
+          .parseInt(properties.getProperty("concurrent_flush_thread",
+              conf.concurrentFlushThread + ""));
       if (conf.concurrentFlushThread <= 0) {
         conf.concurrentFlushThread = Runtime.getRuntime().availableProcessors();
       }
 
       conf.enableMemMonitor = Boolean
-              .parseBoolean(properties.getProperty("enable_mem_monitor",
-                      conf.enableMemMonitor + "").trim());
+          .parseBoolean(properties.getProperty("enable_mem_monitor",
+              conf.enableMemMonitor + "").trim());
       conf.enableSmallFlush = Boolean
-              .parseBoolean(properties.getProperty("enable_small_flush",
-                      conf.enableSmallFlush + "").trim());
+          .parseBoolean(properties.getProperty("enable_small_flush",
+              conf.enableSmallFlush + "").trim());
       conf.smallFlushInterval = Long
-              .parseLong(properties.getProperty("small_flush_interval",
-                      conf.smallFlushInterval + "").trim());
+          .parseLong(properties.getProperty("small_flush_interval",
+              conf.smallFlushInterval + "").trim());
       conf.externalSortThreshold = Integer.parseInt(
-              properties.getProperty("external_sort_threshold",
-                      conf.externalSortThreshold + "").trim());
+          properties.getProperty("external_sort_threshold",
+              conf.externalSortThreshold + "").trim());
       conf.mManagerCacheSize = Integer
-              .parseInt(properties.getProperty("schema_manager_cache_size",
-                      conf.mManagerCacheSize + "").trim());
+          .parseInt(properties.getProperty("schema_manager_cache_size",
+              conf.mManagerCacheSize + "").trim());
 
       int maxLogEntrySize = Integer
-              .parseInt(properties.getProperty("max_log_entry_size",
-                      conf.maxLogEntrySize + "").trim());
+          .parseInt(properties.getProperty("max_log_entry_size",
+              conf.maxLogEntrySize + "").trim());
       conf.maxLogEntrySize = maxLogEntrySize > 0 ? maxLogEntrySize :
-              conf.maxLogEntrySize;
+          conf.maxLogEntrySize;
 
       conf.languageVersion = properties.getProperty("language_version",
-              conf.languageVersion).trim();
+          conf.languageVersion).trim();
 
       String tmpTimeZone = properties.getProperty("time_zone", conf.zoneID.toString());
       try {
@@ -246,14 +239,14 @@ public class IoTDBDescriptor {
         LOGGER.info("Time zone has been set to {}", conf.zoneID);
       } catch (Exception e) {
         LOGGER.error("Time zone foramt error {}, use default configuration {}", tmpTimeZone,
-                conf.zoneID);
+            conf.zoneID);
       }
 
     } catch (IOException e) {
       LOGGER.warn("Cannot load config file because {}, use default configuration", e.getMessage());
     } catch (Exception e) {
       LOGGER.warn("Error format in config file because {}, use default configuration",
-              e.getMessage());
+          e.getMessage());
     } finally {
       // update all data seriesPath
       conf.updatePath();
@@ -265,5 +258,10 @@ public class IoTDBDescriptor {
         }
       }
     }
+  }
+
+  private static class TsfileDBDescriptorHolder {
+
+    private static final IoTDBDescriptor INSTANCE = new IoTDBDescriptor();
   }
 }

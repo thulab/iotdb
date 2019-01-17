@@ -42,6 +42,26 @@ public class OFSeriesListMetadata {
   }
 
   /**
+   * function for deserializing data from input stream.
+   */
+  public static OFSeriesListMetadata deserializeFrom(InputStream inputStream) throws IOException {
+    OFSeriesListMetadata ofSeriesListMetadata = new OFSeriesListMetadata();
+    ofSeriesListMetadata.measurementId = ReadWriteIOUtils.readString(inputStream);
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    List<ChunkMetaData> list = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ChunkMetaData chunkMetaData = ChunkMetaData.deserializeFrom(inputStream);
+      list.add(chunkMetaData);
+    }
+    ofSeriesListMetadata.timeSeriesList = list;
+    return ofSeriesListMetadata;
+  }
+
+  public static OFSeriesListMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
+    throw new NotImplementedException();
+  }
+
+  /**
    * add TimeSeriesChunkMetaData to timeSeriesList.
    */
   public void addSeriesMetaData(ChunkMetaData timeSeries) {
@@ -79,26 +99,6 @@ public class OFSeriesListMetadata {
   }
 
   public int serializeTo(ByteBuffer buffer) throws IOException {
-    throw new NotImplementedException();
-  }
-
-  /**
-   * function for deserializing data from input stream.
-   */
-  public static OFSeriesListMetadata deserializeFrom(InputStream inputStream) throws IOException {
-    OFSeriesListMetadata ofSeriesListMetadata = new OFSeriesListMetadata();
-    ofSeriesListMetadata.measurementId = ReadWriteIOUtils.readString(inputStream);
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    List<ChunkMetaData> list = new ArrayList<>();
-    for (int i = 0; i < size; i++) {
-      ChunkMetaData chunkMetaData = ChunkMetaData.deserializeFrom(inputStream);
-      list.add(chunkMetaData);
-    }
-    ofSeriesListMetadata.timeSeriesList = list;
-    return ofSeriesListMetadata;
-  }
-
-  public static OFSeriesListMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
     throw new NotImplementedException();
   }
 }

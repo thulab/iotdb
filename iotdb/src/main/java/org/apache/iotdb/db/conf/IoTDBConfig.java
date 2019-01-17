@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.conf;
@@ -20,7 +18,6 @@ import java.io.File;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.iotdb.db.metadata.MManager;
 
 public class IoTDBConfig {
@@ -30,7 +27,7 @@ public class IoTDBConfig {
   public static final String default_sys_dir = "system";
   public static final String default_tsfile_dir = "settled";
   public static final String mult_dir_strategy_prefix =
-          "org.apache.iotdb.db.conf.directories.strategy.";
+      "org.apache.iotdb.db.conf.directories.strategy.";
   public static final String default_mult_dir_strategy = "MaxDiskUsableSpaceFirstStrategy";
 
   /**
@@ -158,6 +155,112 @@ public class IoTDBConfig {
   public int concurrentFlushThread = Runtime.getRuntime().availableProcessors();
 
   public ZoneId zoneID = ZoneId.systemDefault();
+  /**
+   * BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
+   */
+  public long memThresholdWarning = (long) (0.5 * Runtime.getRuntime().maxMemory());
+  /**
+   * No more insert is allowed if this threshold is reached.
+   */
+  public long memThresholdDangerous = (long) (0.6 * Runtime.getRuntime().maxMemory());
+  /**
+   * MemMonitorThread will check every such interval(in ms). If memThresholdWarning is reached,
+   * MemMonitorThread will inform FileNodeManager to flush.
+   */
+  public long memMonitorInterval = 1000;
+  /**
+   * Decide how to control memory usage of inserting data. 0 is RecordMemController, which sums the
+   * size of each record (tuple). 1 is JVMMemController, which uses the JVM heap memory as
+   * the memory usage indicator.
+   */
+  public int memControllerType = 1;
+  /**
+   * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
+   */
+  public long bufferwriteMetaSizeThreshold = 200 * 1024 * 1024L;
+  /**
+   * When a bufferwrite's file size (in byte) exceed this, the bufferwrite is forced closed.
+   */
+  public long bufferwriteFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
+  /**
+   * When a overflow's metadata size (in byte) exceed this, the overflow is forced closed.
+   */
+  public long overflowMetaSizeThreshold = 20 * 1024 * 1024L;
+  /**
+   * When a overflow's file size (in byte) exceed this, the overflow is forced closed.
+   */
+  public long overflowFileSizeThreshold = 200 * 1024 * 1024L;
+  /**
+   * If set false, MemMonitorThread and MemStatisticThread will not be created.
+   */
+  public boolean enableMemMonitor = false;
+  /**
+   * When set to true, small flushes will be triggered periodically even if the memory threshold
+   * is not exceeded.
+   */
+  public boolean enableSmallFlush = false;
+  /**
+   * The interval of small flush in ms.
+   */
+  public long smallFlushInterval = 60 * 1000;
+  /**
+   * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec secs.
+   * The default value is 5s.
+   */
+  public int backLoopPeriodSec = 5;
+  /**
+   * Set true to enable statistics monitor service, false to disable statistics service.
+   */
+  public boolean enableStatMonitor = false;
+  /**
+   * Set the time interval when StatMonitor performs delete detection. The default value is 600s.
+   */
+  public int statMonitorDetectFreqSec = 60 * 10;
+  /**
+   * Set the maximum time to keep monitor statistics information in IoTDB.
+   * The default value is 600s.
+   */
+  public int statMonitorRetainIntervalSec = 60 * 10;
+  /**
+   * Threshold for external sort. When using multi-line merging sort, if the count of lines exceed
+   * {@code externalSortThreshold}, it will trigger external sort.
+   */
+  public int externalSortThreshold = 50;
+  /**
+   * Cache size of {@code checkAndGetDataTypeCache} in {@link MManager}.
+   */
+  public int mManagerCacheSize = 400000;
+  /**
+   * The maximum size of a single log in byte. If a log exceeds this size,
+   * it cannot be written to the WAL file and an exception is thrown.
+   */
+  public int maxLogEntrySize = 4 * 1024 * 1024;
+  /**
+   * Is this IoTDB instance a receiver of postback or not.
+   */
+  public boolean isPostbackEnable = true;
+  /**
+   * If this IoTDB instance is a receiver of postback, set the server port.
+   */
+  public int postbackServerPort = 5555;
+  /*
+   * Set the language version when loading file including error information, default value is "EN"
+   */
+  public String languageVersion = "EN";
+  /**
+   * Choose a postBack strategy of merging historical data:
+   * 1. It's more likely to update historical data, choose "true".
+   * 2. It's more likely not to update historical data or you don't know exactly, choose "false".
+   */
+  public boolean update_historical_data_possibility = false;
+  public String ipWhiteList = "0.0.0.0/0";
+  /**
+   * Examining period of cache file reader : 100 seconds.
+   */
+  public long cacheFileReaderClearPeriod = 100000;
+
+  public IoTDBConfig() {
+  }
 
   public ZoneId getZoneID() {
     return zoneID;
@@ -165,136 +268,6 @@ public class IoTDBConfig {
 
   public String getZoneIDString() {
     return zoneID.toString();
-  }
-
-  /**
-   * BufferWriteProcessor and OverflowProcessor will immediately flush if this threshold is reached.
-   */
-  public long memThresholdWarning = (long) (0.5 * Runtime.getRuntime().maxMemory());
-
-  /**
-   * No more insert is allowed if this threshold is reached.
-   */
-  public long memThresholdDangerous = (long) (0.6 * Runtime.getRuntime().maxMemory());
-
-  /**
-   * MemMonitorThread will check every such interval(in ms). If memThresholdWarning is reached,
-   * MemMonitorThread will inform FileNodeManager to flush.
-   */
-  public long memMonitorInterval = 1000;
-
-  /**
-   * Decide how to control memory usage of inserting data. 0 is RecordMemController, which sums the
-   * size of each record (tuple). 1 is JVMMemController, which uses the JVM heap memory as
-   * the memory usage indicator.
-   */
-  public int memControllerType = 1;
-
-  /**
-   * When a bufferwrite's metadata size (in byte) exceed this, the bufferwrite is forced closed.
-   */
-  public long bufferwriteMetaSizeThreshold = 200 * 1024 * 1024L;
-
-  /**
-   * When a bufferwrite's file size (in byte) exceed this, the bufferwrite is forced closed.
-   */
-  public long bufferwriteFileSizeThreshold = 2 * 1024 * 1024 * 1024L;
-
-  /**
-   * When a overflow's metadata size (in byte) exceed this, the overflow is forced closed.
-   */
-  public long overflowMetaSizeThreshold = 20 * 1024 * 1024L;
-
-  /**
-   * When a overflow's file size (in byte) exceed this, the overflow is forced closed.
-   */
-  public long overflowFileSizeThreshold = 200 * 1024 * 1024L;
-
-  /**
-   * If set false, MemMonitorThread and MemStatisticThread will not be created.
-   */
-  public boolean enableMemMonitor = false;
-
-  /**
-   * When set to true, small flushes will be triggered periodically even if the memory threshold
-   * is not exceeded.
-   */
-  public boolean enableSmallFlush = false;
-
-  /**
-   * The interval of small flush in ms.
-   */
-  public long smallFlushInterval = 60 * 1000;
-
-  /**
-   * The statMonitor writes statistics info into IoTDB every backLoopPeriodSec secs.
-   * The default value is 5s.
-   */
-  public int backLoopPeriodSec = 5;
-
-  /**
-   * Set true to enable statistics monitor service, false to disable statistics service.
-   */
-  public boolean enableStatMonitor = false;
-
-  /**
-   * Set the time interval when StatMonitor performs delete detection. The default value is 600s.
-   */
-  public int statMonitorDetectFreqSec = 60 * 10;
-
-  /**
-   * Set the maximum time to keep monitor statistics information in IoTDB.
-   * The default value is 600s.
-   */
-  public int statMonitorRetainIntervalSec = 60 * 10;
-
-  /**
-   * Threshold for external sort. When using multi-line merging sort, if the count of lines exceed
-   * {@code externalSortThreshold}, it will trigger external sort.
-   */
-  public int externalSortThreshold = 50;
-
-  /**
-   * Cache size of {@code checkAndGetDataTypeCache} in {@link MManager}.
-   */
-  public int mManagerCacheSize = 400000;
-
-  /**
-   * The maximum size of a single log in byte. If a log exceeds this size,
-   * it cannot be written to the WAL file and an exception is thrown.
-   */
-  public int maxLogEntrySize = 4 * 1024 * 1024;
-
-  /**
-   * Is this IoTDB instance a receiver of postback or not.
-   */
-  public boolean isPostbackEnable = true;
-
-  /**
-   * If this IoTDB instance is a receiver of postback, set the server port.
-   */
-  public int postbackServerPort = 5555;
-
-  /*
-   * Set the language version when loading file including error information, default value is "EN"
-   */
-  public String languageVersion = "EN";
-
-  /**
-   * Choose a postBack strategy of merging historical data:
-   * 1. It's more likely to update historical data, choose "true".
-   * 2. It's more likely not to update historical data or you don't know exactly, choose "false".
-   */
-  public boolean update_historical_data_possibility = false;
-
-  public String ipWhiteList = "0.0.0.0/0";
-
-  /**
-   * Examining period of cache file reader : 100 seconds.
-   */
-  public long cacheFileReaderClearPeriod = 100000;
-
-  public IoTDBConfig() {
   }
 
   public void updatePath() {
@@ -361,7 +334,7 @@ public class IoTDBConfig {
    * First, if walDir is null, walDir will be assigned the default
    * value(i.e.,"data"+File.separatorChar+"data". Then,
    * if walDir is absolute, leave walDir as it is. If walDir is relative,
-    * walDir will be converted to the complete
+   * walDir will be converted to the complete
    * version using non-empty %IOTDB_HOME%. e.g. for windows platform,
    * | IOTDB_HOME | walDir before | walDir after |
    * |-----------------|--------------------|-----------------------------|

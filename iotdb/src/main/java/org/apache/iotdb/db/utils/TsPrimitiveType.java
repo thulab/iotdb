@@ -21,6 +21,31 @@ import org.apache.iotdb.tsfile.utils.Binary;
 
 public abstract class TsPrimitiveType implements Serializable {
 
+  /**
+   * get tsPrimitiveType by dataType.
+   *
+   * @param dataType -given TsDataType
+   * @param v -
+   */
+  public static TsPrimitiveType getByType(TSDataType dataType, Object v) {
+    switch (dataType) {
+      case BOOLEAN:
+        return new TsPrimitiveType.TsBoolean((boolean) v);
+      case INT32:
+        return new TsPrimitiveType.TsInt((int) v);
+      case INT64:
+        return new TsPrimitiveType.TsLong((long) v);
+      case FLOAT:
+        return new TsPrimitiveType.TsFloat((float) v);
+      case DOUBLE:
+        return new TsPrimitiveType.TsDouble((double) v);
+      case TEXT:
+        return new TsPrimitiveType.TsBinary((Binary) v);
+      default:
+        throw new UnSupportedDataTypeException("Unsupported data type:" + dataType);
+    }
+  }
+
   public boolean getBoolean() {
     throw new UnsupportedOperationException("getBoolean() is not supported for current sub-class");
   }
@@ -47,6 +72,7 @@ public abstract class TsPrimitiveType implements Serializable {
 
   /**
    * get the size of one instance of current class.
+   *
    * @return size of one instance of current class
    */
   public abstract int getSize();
@@ -269,31 +295,6 @@ public abstract class TsPrimitiveType implements Serializable {
     @Override
     public TSDataType getDataType() {
       return TSDataType.TEXT;
-    }
-  }
-
-  /**
-   * get tsPrimitiveType by dataType.
-   * @param dataType -given TsDataType
-   * @param v -
-   * @return
-   */
-  public static TsPrimitiveType getByType(TSDataType dataType, Object v) {
-    switch (dataType) {
-      case BOOLEAN:
-        return new TsPrimitiveType.TsBoolean((boolean) v);
-      case INT32:
-        return new TsPrimitiveType.TsInt((int) v);
-      case INT64:
-        return new TsPrimitiveType.TsLong((long) v);
-      case FLOAT:
-        return new TsPrimitiveType.TsFloat((float) v);
-      case DOUBLE:
-        return new TsPrimitiveType.TsDouble((double) v);
-      case TEXT:
-        return new TsPrimitiveType.TsBinary((Binary) v);
-      default:
-        throw new UnSupportedDataTypeException("Unsupported data type:" + dataType);
     }
   }
 }

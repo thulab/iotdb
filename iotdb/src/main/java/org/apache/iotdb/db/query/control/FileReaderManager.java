@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.query.control;
@@ -22,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.iotdb.db.concurrent.IoTDBThreadPoolFactory;
 import org.apache.iotdb.db.conf.IoTDBDescriptor;
 import org.apache.iotdb.db.exception.StartupException;
@@ -64,9 +61,13 @@ public class FileReaderManager implements IService {
     fileReaderMap = new ConcurrentHashMap<>();
     referenceMap = new ConcurrentHashMap<>();
     executorService = IoTDBThreadPoolFactory.newScheduledThreadPool(1,
-            "opended-files-manager");
+        "opended-files-manager");
 
     clearUnUsedFilesInFixTime();
+  }
+
+  public static FileReaderManager getInstance() {
+    return FileReaderManagerHelper.INSTANCE;
   }
 
   private void clearUnUsedFilesInFixTime() {
@@ -102,7 +103,7 @@ public class FileReaderManager implements IService {
    * @throws IOException when reader cannot be created.
    */
   public synchronized TsFileSequenceReader get(String filePath, boolean isUnClosed)
-          throws IOException {
+      throws IOException {
 
     if (!fileReaderMap.containsKey(filePath)) {
 
@@ -111,7 +112,7 @@ public class FileReaderManager implements IService {
       }
 
       TsFileSequenceReader tsFileReader = isUnClosed ? new UnClosedTsFileReader(filePath)
-              : new TsFileSequenceReader(filePath);
+          : new TsFileSequenceReader(filePath);
 
       fileReaderMap.put(filePath, tsFileReader);
       return tsFileReader;
@@ -191,10 +192,7 @@ public class FileReaderManager implements IService {
   }
 
   private static class FileReaderManagerHelper {
-    public static FileReaderManager INSTANCE = new FileReaderManager();
-  }
 
-  public static FileReaderManager getInstance() {
-    return FileReaderManagerHelper.INSTANCE;
+    public static FileReaderManager INSTANCE = new FileReaderManager();
   }
 }

@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.engine.memcontrol;
@@ -27,6 +25,7 @@ import org.slf4j.LoggerFactory;
  * This class only gives a hint to FilenodeManager that it may flush some data to avoid rush hour.
  */
 public class FlushPartialPolicy implements Policy {
+
   private static final Logger logger = LoggerFactory.getLogger(FlushPartialPolicy.class);
   private Thread workerThread;
   private long sleepInterval = IoTDBDescriptor.getInstance().getConfig().smallFlushInterval;
@@ -34,10 +33,10 @@ public class FlushPartialPolicy implements Policy {
   @Override
   public void execute() {
     logger.debug("Memory reaches {}, current memory size is {}, JVM memory is {}, flushing.",
-            BasicMemController.getInstance().getCurrLevel(),
-            MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()),
-            MemUtils.bytesCntToStr(Runtime.getRuntime().totalMemory()
-                    - Runtime.getRuntime().freeMemory()));
+        BasicMemController.getInstance().getCurrLevel(),
+        MemUtils.bytesCntToStr(BasicMemController.getInstance().getTotalUsage()),
+        MemUtils.bytesCntToStr(Runtime.getRuntime().totalMemory()
+            - Runtime.getRuntime().freeMemory()));
     // use a thread to avoid blocking
     if (workerThread == null) {
       workerThread = createWorkerThread();

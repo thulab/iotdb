@@ -32,6 +32,7 @@ public class DeletePlan extends PhysicalPlan {
 
   /**
    * constructor of DeletePlan with single path.
+   *
    * @param deleteTime delete time
    * @param path time series path
    */
@@ -43,6 +44,7 @@ public class DeletePlan extends PhysicalPlan {
 
   /**
    * constructor of DeletePlan with multiple paths.
+   *
    * @param deleteTime delete time
    * @param paths time series paths in List structure
    */
@@ -64,13 +66,13 @@ public class DeletePlan extends PhysicalPlan {
     this.paths.add(path);
   }
 
-  public void setPaths(List<Path> paths) {
-    this.paths = paths;
-  }
-
   @Override
   public List<Path> getPaths() {
     return paths;
+  }
+
+  public void setPaths(List<Path> paths) {
+    this.paths = paths;
   }
 
   @Override

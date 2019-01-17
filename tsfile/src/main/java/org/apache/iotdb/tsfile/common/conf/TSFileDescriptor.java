@@ -35,12 +35,6 @@ import org.slf4j.LoggerFactory;
 public class TSFileDescriptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TSFileDescriptor.class);
-
-  private static class TsfileDescriptorHolder {
-
-    private static final TSFileDescriptor INSTANCE = new TSFileDescriptor();
-  }
-
   private TSFileConfig conf = new TSFileConfig();
 
   private TSFileDescriptor() {
@@ -138,5 +132,10 @@ public class TSFileDescriptor {
         }
       }
     }
+  }
+
+  private static class TsfileDescriptorHolder {
+
+    private static final TSFileDescriptor INSTANCE = new TSFileDescriptor();
   }
 }

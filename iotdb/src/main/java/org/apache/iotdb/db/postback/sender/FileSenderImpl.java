@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.postback.sender;
@@ -42,7 +40,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.iotdb.db.postback.conf.PostBackSenderConfig;
 import org.apache.iotdb.db.postback.conf.PostBackSenderDescriptor;
 import org.apache.iotdb.db.postback.receiver.ServerService;
@@ -62,8 +59,9 @@ import org.slf4j.LoggerFactory;
  * @author lta
  */
 public class FileSenderImpl implements FileSender {
-  private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.IoTDBDriver";
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(FileSenderImpl.class);
+  private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.IoTDBDriver";
   private TTransport transport;
   private ServerService.Client clientOfServer;
   private List<String> schema = new ArrayList<>();
@@ -81,17 +79,30 @@ public class FileSenderImpl implements FileSender {
   private boolean clearOrNot = config.isClearEnable;
   private Map<String, Set<String>> sendingFileSnapshotList = new HashMap<>();
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FileSenderImpl.class);
-
-  private static class TransferHolder {
-    private static final FileSenderImpl INSTANCE = new FileSenderImpl();
-  }
-
   private FileSenderImpl() {
   }
 
   public static final FileSenderImpl getInstance() {
     return TransferHolder.INSTANCE;
+  }
+
+  /**
+   * Create a sender and send files to the receiver.
+   * @param args not used
+   */
+  public static void main(String[] args) {
+    /* TODO: is this a test method? If so, better put it somewhere else. Or the arguements should be
+      adjustable and some instructions should be added.
+    */
+    FileSenderImpl fileSenderImpl = new FileSenderImpl();
+    fileSenderImpl.verifyPort();
+    Thread monitor = new Thread(new Runnable() {
+      public void run() {
+        fileSenderImpl.monitorPostbackStatus();
+      }
+    });
+    monitor.start();
+    fileSenderImpl.timedTask();
   }
 
   public void setConfig(PostBackSenderConfig config) {
@@ -103,8 +114,8 @@ public class FileSenderImpl implements FileSender {
     if (connectionOrElse) {
       if (!transferUUID(config.uuidPath)) {
         LOGGER.error(
-                "IoTDB post back sender: Sorry! You do not have the permission to "
-                        + "connect to postback receiver!");
+            "IoTDB post back sender: Sorry! You do not have the permission to "
+                + "connect to postback receiver!");
         connectionOrElse = false;
       }
     }
@@ -126,7 +137,7 @@ public class FileSenderImpl implements FileSender {
       transport.open();
     } catch (TTransportException e) {
       LOGGER.error("IoTDB post back sender: cannot connect to server because {}",
-              e.getMessage());
+          e.getMessage());
       connectionOrElse = false;
     }
   }
@@ -151,7 +162,7 @@ public class FileSenderImpl implements FileSender {
         out.close();
       } catch (Exception e) {
         LOGGER.error("IoTDB post back sender: cannot write UUID to file because {}",
-                e.getMessage());
+            e.getMessage());
         connectionOrElse = false;
       }
     } else {
@@ -161,17 +172,17 @@ public class FileSenderImpl implements FileSender {
         bf.close();
       } catch (IOException e) {
         LOGGER.error("IoTDB post back sender: cannot read UUID from file because {}",
-                e.getMessage());
+            e.getMessage());
         connectionOrElse = false;
       }
     }
     boolean legalConnectionOrNot = true;
     try {
       legalConnectionOrNot = clientOfServer.getUUID(uuid,
-              InetAddress.getLocalHost().getHostAddress());
+          InetAddress.getLocalHost().getHostAddress());
     } catch (TException e) {
       LOGGER.error("IoTDB post back sender: cannot send UUID to receiver because {}",
-              e.getMessage());
+          e.getMessage());
       connectionOrElse = false;
     } catch (UnknownHostException e) {
       LOGGER.error("IoTDB post back sender: unable to get local host because {}", e.getMessage());
@@ -261,14 +272,14 @@ public class FileSenderImpl implements FileSender {
           // the file is sent successfully
           String md5OfSender = (new BigInteger(1, md.digest())).toString(16);
           String md5OfReceiver = clientOfServer.startReceiving(md5OfSender, filePathSplit,
-                  null, 0);
+              null, 0);
           if (md5OfSender.equals(md5OfReceiver)) {
             LOGGER.info("IoTDB sender: receiver has received {} successfully.", snapshotFilePath);
             break;
           }
         }
         LOGGER.info("IoTDB sender : Task of sending files to receiver has completed " + num + "/"
-                + fileSnapshotList.size() + ".");
+            + fileSnapshotList.size() + ".");
       }
     } catch (TException e) {
       LOGGER.error("IoTDB post back sender: cannot sending data because receiver has broken down.");
@@ -306,7 +317,7 @@ public class FileSenderImpl implements FileSender {
       clientOfServer.getSchema(null, 0);
     } catch (Exception e) {
       LOGGER.error("IoTDB post back sender : cannot send schema from mlog.txt because {}",
-              e.getMessage());
+          e.getMessage());
       connectionOrElse = false;
     }
   }
@@ -318,8 +329,8 @@ public class FileSenderImpl implements FileSender {
       successOrNot = clientOfServer.merge();
     } catch (TException e) {
       LOGGER.error(
-              "IoTDB post back sender : can not finish postback process because postback "
-                      + "receiver has broken down.");
+          "IoTDB post back sender : can not finish postback process because postback "
+              + "receiver has broken down.");
       transport.close();
     }
     return successOrNot;
@@ -392,25 +403,6 @@ public class FileSenderImpl implements FileSender {
   }
 
   /**
-   * Create a sender and send files to the receiver.
-   * @param args not used
-   */
-  public static void main(String[] args) {
-    /* TODO: is this a test method? If so, better put it somewhere else. Or the arguements should be
-      adjustable and some instructions should be added.
-    */
-    FileSenderImpl fileSenderImpl = new FileSenderImpl();
-    fileSenderImpl.verifyPort();
-    Thread monitor = new Thread(new Runnable() {
-      public void run() {
-        fileSenderImpl.monitorPostbackStatus();
-      }
-    });
-    monitor.start();
-    fileSenderImpl.timedTask();
-  }
-
-  /**
    * The method is to verify whether the client port is bind or not, ensuring that only one client
    * is running.
    */
@@ -430,7 +422,7 @@ public class FileSenderImpl implements FileSender {
                 listenerSocket.accept();
               } catch (IOException e) {
                 LOGGER.error("IoTDB post back sender: unable to  listen to port{}, because {}",
-                        config.clientPort, e.getMessage());
+                    config.clientPort, e.getMessage());
               }
             }
           }
@@ -438,7 +430,7 @@ public class FileSenderImpl implements FileSender {
         listener.start();
       } catch (IOException e1) {
         LOGGER.error("IoTDB post back sender: unable to listen to port{}, because {}",
-                config.clientPort, e1.getMessage());
+            config.clientPort, e1.getMessage());
       }
     }
   }
@@ -454,7 +446,7 @@ public class FileSenderImpl implements FileSender {
         continue;
       }
       if ((currentTime.getTime() - lastPostBackTime.getTime())
-              % (config.uploadCycleInSeconds * 1000) == 0) {
+          % (config.uploadCycleInSeconds * 1000) == 0) {
         oldTime = currentTime;
         if (postBackStatus) {
           LOGGER.info("IoTDB post back sender : postback process is in execution!");
@@ -475,7 +467,7 @@ public class FileSenderImpl implements FileSender {
         Thread.sleep(2000);
       } catch (InterruptedException e) {
         LOGGER.error("IoTDB post back sender : Thread {} cannot sleep.",
-                Thread.currentThread().getName());
+            Thread.currentThread().getName());
       }
       currentTime = new Date();
       if (currentTime.getTime() - lastPostBackTime.getTime() > config.uploadCycleInSeconds * 1000) {
@@ -539,13 +531,13 @@ public class FileSenderImpl implements FileSender {
         continue;
       }
       LOGGER.info("IoTDB post back sender : postback process starts to transfer data of "
-                      + "storage group {}.", entry.getKey());
+          + "storage group {}.", entry.getKey());
       try {
         clientOfServer.init(entry.getKey());
       } catch (TException e) {
         connectionOrElse = false;
         LOGGER.error("IoTDB post back sender : unable to connect to receiver because {}",
-                e.getMessage());
+            e.getMessage());
       }
       if (!connectionOrElse) {
         transport.close();
@@ -568,7 +560,7 @@ public class FileSenderImpl implements FileSender {
           deleteData(sendingSnapshotList);
         }
         LOGGER.info("IoTDB post back sender : the postBack has finished storage group {}.",
-                entry.getKey());
+            entry.getKey());
       } else {
         LOGGER.info("IoTDB post back sender : postback process has failed!");
         postBackStatus = false;
@@ -583,7 +575,7 @@ public class FileSenderImpl implements FileSender {
     } catch (TException e) {
       connectionOrElse = false;
       LOGGER.error("IoTDB post back sender : unable to connect to receiver because {}",
-              e.getMessage());
+          e.getMessage());
     }
     if (!connectionOrElse) {
       transport.close();
@@ -595,5 +587,10 @@ public class FileSenderImpl implements FileSender {
     LOGGER.info("IoTDB post back sender : postback process has finished!");
     postBackStatus = false;
     return;
+  }
+
+  private static class TransferHolder {
+
+    private static final FileSenderImpl INSTANCE = new FileSenderImpl();
   }
 }

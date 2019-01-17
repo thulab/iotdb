@@ -20,6 +20,7 @@ public enum TSFreqType {
 
   /**
    * return deserialize type.
+   *
    * @param i -param for deserialize
    * @return -ts frequency type
    */
@@ -38,6 +39,7 @@ public enum TSFreqType {
 
   /**
    * return deserialize type.
+   *
    * @return -ts frequency type
    */
   public short serialize() {

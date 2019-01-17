@@ -34,9 +34,21 @@ public abstract class SFWOperator extends RootOperator {
     operatorType = OperatorType.SFW;
   }
 
+  public FromOperator getFromOperator() {
+    return fromOperator;
+  }
+
+  public void setFromOperator(FromOperator from) {
+    this.fromOperator = from;
+  }
+
+  public SelectOperator getSelectOperator() {
+    return selectOperator;
+  }
+
   /**
    * set selectOperator, then init hasAggregation according to selectOperator.
-   * */
+   */
   public void setSelectOperator(SelectOperator sel) {
     this.selectOperator = sel;
     if (!sel.getAggregations().isEmpty()) {
@@ -44,24 +56,12 @@ public abstract class SFWOperator extends RootOperator {
     }
   }
 
-  public void setFromOperator(FromOperator from) {
-    this.fromOperator = from;
+  public FilterOperator getFilterOperator() {
+    return filterOperator;
   }
 
   public void setFilterOperator(FilterOperator filter) {
     this.filterOperator = filter;
-  }
-
-  public FromOperator getFromOperator() {
-    return fromOperator;
-  }
-
-  public SelectOperator getSelectOperator() {
-    return selectOperator;
-  }
-
-  public FilterOperator getFilterOperator() {
-    return filterOperator;
   }
 
   /**

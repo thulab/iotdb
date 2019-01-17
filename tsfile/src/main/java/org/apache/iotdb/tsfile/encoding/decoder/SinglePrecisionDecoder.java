@@ -68,10 +68,8 @@ public class SinglePrecisionDecoder extends GorillaDecoder {
   /**
    * check whether there is any value to encode left.
    *
-   * @param buffer
-   *            stream to read
-   * @throws IOException
-   *             cannot read from stream
+   * @param buffer stream to read
+   * @throws IOException cannot read from stream
    */
   private void getNextValue(ByteBuffer buffer) throws IOException {
     nextFlag1 = readBit(buffer);

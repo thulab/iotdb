@@ -20,6 +20,14 @@ import org.apache.iotdb.tsfile.read.expression.IExpression;
 
 public abstract class BinaryExpression implements IBinaryExpression {
 
+  public static AndExpression and(IExpression left, IExpression right) {
+    return new AndExpression(left, right);
+  }
+
+  public static OrExpression or(IExpression left, IExpression right) {
+    return new OrExpression(left, right);
+  }
+
   protected static class AndExpression extends BinaryExpression {
 
     public IExpression left;
@@ -80,13 +88,5 @@ public abstract class BinaryExpression implements IBinaryExpression {
     public String toString() {
       return "[" + left + " || " + right + "]";
     }
-  }
-
-  public static AndExpression and(IExpression left, IExpression right) {
-    return new AndExpression(left, right);
-  }
-
-  public static OrExpression or(IExpression left, IExpression right) {
-    return new OrExpression(left, right);
   }
 }

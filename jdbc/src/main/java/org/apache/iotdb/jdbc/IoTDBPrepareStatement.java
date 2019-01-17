@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.jdbc;
@@ -44,11 +42,11 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.iotdb.service.rpc.thrift.TSIService.Iface;
 import org.apache.iotdb.service.rpc.thrift.TS_SessionHandle;
 
 public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedStatement {
+
   private final String sql;
   /**
    * save the SQL parameters as (paramLoc,paramValue) pairs.
@@ -56,8 +54,8 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
   private final Map<Integer, String> parameters = new HashMap<Integer, String>();
 
   public IoTDBPrepareStatement(IoTDBConnection connection, Iface client,
-                               TS_SessionHandle sessionHandle, String sql,
-                               ZoneId zoneId) {
+      TS_SessionHandle sessionHandle, String sql,
+      ZoneId zoneId) {
     super(connection, client, sessionHandle, zoneId);
     this.sql = sql;
   }
@@ -149,7 +147,7 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
 
   @Override
   public void setBlob(int parameterIndex, InputStream inputStream, long length)
-          throws SQLException {
+      throws SQLException {
     throw new SQLException("Method not supported");
   }
 
@@ -175,13 +173,13 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
 
   @Override
   public void setCharacterStream(int parameterIndex, Reader reader, int length)
-          throws SQLException {
+      throws SQLException {
     throw new SQLException("Method not supported");
   }
 
   @Override
   public void setCharacterStream(int parameterIndex, Reader reader, long length)
-          throws SQLException {
+      throws SQLException {
     throw new SQLException("Method not supported");
   }
 
@@ -237,7 +235,7 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
 
   @Override
   public void setNCharacterStream(int parameterIndex, Reader value, long length)
-          throws SQLException {
+      throws SQLException {
     throw new SQLException("Method not supported");
   }
 
@@ -290,9 +288,9 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
     } else {
       // Can't infer a type.
       throw new SQLException(String.format(
-              "Can''t infer the SQL type to use for an instance of %s. Use setObject() with"
-                      + " an explicit Types value to specify the type to use.",
-              x.getClass().getName()));
+          "Can''t infer the SQL type to use for an instance of %s. Use setObject() with"
+              + " an explicit Types value to specify the type to use.",
+          x.getClass().getName()));
     }
   }
 
@@ -303,7 +301,7 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
 
   @Override
   public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength)
-          throws SQLException {
+      throws SQLException {
     throw new SQLException("Method not supported");
   }
 
@@ -346,9 +344,9 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
   @Override
   public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
     ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(x.getTime()),
-            super.zoneId);
+        super.zoneId);
     this.parameters.put(parameterIndex, zonedDateTime
-            .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
   }
 
   @Override
@@ -367,7 +365,7 @@ public class IoTDBPrepareStatement extends IoTDBStatement implements PreparedSta
   }
 
   private String createCompleteSql(final String sql, Map<Integer, String> parameters)
-          throws SQLException {
+      throws SQLException {
     List<String> parts = splitSqlStatement(sql);
 
     StringBuilder newSql = new StringBuilder(parts.get(0));

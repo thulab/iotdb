@@ -31,10 +31,6 @@ public class RowRecord {
     return timestamp;
   }
 
-  public void setTimestamp(long timestamp) {
-    this.timestamp = timestamp;
-  }
-
   public void addField(Field f) {
     this.fields.add(f);
   }
@@ -52,6 +48,10 @@ public class RowRecord {
 
   public long getTimestamp() {
     return timestamp;
+  }
+
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
   }
 
   public List<Field> getFields() {

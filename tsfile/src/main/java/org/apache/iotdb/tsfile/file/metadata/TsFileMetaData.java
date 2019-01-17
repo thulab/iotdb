@@ -42,8 +42,8 @@ public class TsFileMetaData {
   private int currentVersion;
 
   /**
-   * String for application that wrote this file. This should be in the format [Application]
-   * version [App Version](build [App Build Hash]). e.g. impala version 1.0 (build SHA-1_hash_code)
+   * String for application that wrote this file. This should be in the format [Application] version
+   * [App Version](build [App Build Hash]). e.g. impala version 1.0 (build SHA-1_hash_code)
    */
   private String createdBy;
 
@@ -52,10 +52,9 @@ public class TsFileMetaData {
 
   /**
    * construct function for TsFileMetaData.
-   * @param measurementSchema
-   *            - time series info list
-   * @param currentVersion
-   *            - current version
+   *
+   * @param measurementSchema - time series info list
+   * @param currentVersion - current version
    */
   public TsFileMetaData(Map<String, TsDeviceMetadataIndex> deviceMap,
       Map<String, MeasurementSchema> measurementSchema, int currentVersion) {
@@ -65,10 +64,95 @@ public class TsFileMetaData {
   }
 
   /**
+   * deserialize data from the inputStream.
+   *
+   * @param inputStream -input stream use to deserialize
+   * @return -a instance of TsFileMetaData
+   */
+  public static TsFileMetaData deserializeFrom(InputStream inputStream) throws IOException {
+    TsFileMetaData fileMetaData = new TsFileMetaData();
+
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    if (size > 0) {
+      Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
+      String key;
+      TsDeviceMetadataIndex value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(inputStream);
+        value = TsDeviceMetadataIndex.deserializeFrom(inputStream);
+        deviceMap.put(key, value);
+      }
+      fileMetaData.deviceIndexMap = deviceMap;
+    }
+
+    size = ReadWriteIOUtils.readInt(inputStream);
+    if (size > 0) {
+      fileMetaData.measurementSchema = new HashMap<>();
+      String key;
+      MeasurementSchema value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(inputStream);
+        value = MeasurementSchema.deserializeFrom(inputStream);
+        fileMetaData.measurementSchema.put(key, value);
+      }
+    }
+
+    fileMetaData.currentVersion = ReadWriteIOUtils.readInt(inputStream);
+
+    if (ReadWriteIOUtils.readIsNull(inputStream)) {
+      fileMetaData.createdBy = ReadWriteIOUtils.readString(inputStream);
+    }
+
+    return fileMetaData;
+  }
+
+  /**
+   * deserialize data from the buffer.
+   *
+   * @param buffer -buffer use to deserialize
+   * @return -a instance of TsFileMetaData
+   */
+  public static TsFileMetaData deserializeFrom(ByteBuffer buffer) throws IOException {
+    TsFileMetaData fileMetaData = new TsFileMetaData();
+
+    int size = ReadWriteIOUtils.readInt(buffer);
+    if (size > 0) {
+      Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
+      String key;
+      TsDeviceMetadataIndex value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(buffer);
+        value = TsDeviceMetadataIndex.deserializeFrom(buffer);
+        deviceMap.put(key, value);
+      }
+      fileMetaData.deviceIndexMap = deviceMap;
+    }
+
+    size = ReadWriteIOUtils.readInt(buffer);
+    if (size > 0) {
+      fileMetaData.measurementSchema = new HashMap<>();
+      String key;
+      MeasurementSchema value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(buffer);
+        value = MeasurementSchema.deserializeFrom(buffer);
+        fileMetaData.measurementSchema.put(key, value);
+      }
+    }
+
+    fileMetaData.currentVersion = ReadWriteIOUtils.readInt(buffer);
+
+    if (ReadWriteIOUtils.readIsNull(buffer)) {
+      fileMetaData.createdBy = ReadWriteIOUtils.readString(buffer);
+    }
+
+    return fileMetaData;
+  }
+
+  /**
    * add time series metadata to list. THREAD NOT SAFE
    *
-   * @param measurementSchema
-   *            series metadata to add
+   * @param measurementSchema series metadata to add
    */
   public void addMeasurementSchema(MeasurementSchema measurementSchema) {
     this.measurementSchema.put(measurementSchema.getMeasurementId(), measurementSchema);
@@ -119,6 +203,7 @@ public class TsFileMetaData {
 
   /**
    * return the type of the measurement.
+   *
    * @param measurement -measurement
    * @return -type of the measurement
    */
@@ -136,6 +221,7 @@ public class TsFileMetaData {
 
   /**
    * use the given outputStream to serialize.
+   *
    * @param outputStream -output stream to determine byte length
    * @return -byte length
    */
@@ -166,6 +252,7 @@ public class TsFileMetaData {
 
   /**
    * use the given buffer to serialize.
+   *
    * @param buffer -buffer to determine byte length
    * @return -byte length
    */
@@ -192,90 +279,6 @@ public class TsFileMetaData {
     }
 
     return byteLen;
-  }
-
-  /**
-   * deserialize data from the inputStream.
-   * @param inputStream -input stream use to deserialize
-   * @return -a instance of TsFileMetaData
-   */
-  public static TsFileMetaData deserializeFrom(InputStream inputStream) throws IOException {
-    TsFileMetaData fileMetaData = new TsFileMetaData();
-
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    if (size > 0) {
-      Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
-      String key;
-      TsDeviceMetadataIndex value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(inputStream);
-        value = TsDeviceMetadataIndex.deserializeFrom(inputStream);
-        deviceMap.put(key, value);
-      }
-      fileMetaData.deviceIndexMap = deviceMap;
-    }
-
-    size = ReadWriteIOUtils.readInt(inputStream);
-    if (size > 0) {
-      fileMetaData.measurementSchema = new HashMap<>();
-      String key;
-      MeasurementSchema value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(inputStream);
-        value = MeasurementSchema.deserializeFrom(inputStream);
-        fileMetaData.measurementSchema.put(key, value);
-      }
-    }
-
-    fileMetaData.currentVersion = ReadWriteIOUtils.readInt(inputStream);
-
-    if (ReadWriteIOUtils.readIsNull(inputStream)) {
-      fileMetaData.createdBy = ReadWriteIOUtils.readString(inputStream);
-    }
-
-    return fileMetaData;
-  }
-
-  /**
-   * deserialize data from the buffer.
-   * @param buffer -buffer use to deserialize
-   * @return -a instance of TsFileMetaData
-   */
-  public static TsFileMetaData deserializeFrom(ByteBuffer buffer) throws IOException {
-    TsFileMetaData fileMetaData = new TsFileMetaData();
-
-    int size = ReadWriteIOUtils.readInt(buffer);
-    if (size > 0) {
-      Map<String, TsDeviceMetadataIndex> deviceMap = new HashMap<>();
-      String key;
-      TsDeviceMetadataIndex value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(buffer);
-        value = TsDeviceMetadataIndex.deserializeFrom(buffer);
-        deviceMap.put(key, value);
-      }
-      fileMetaData.deviceIndexMap = deviceMap;
-    }
-
-    size = ReadWriteIOUtils.readInt(buffer);
-    if (size > 0) {
-      fileMetaData.measurementSchema = new HashMap<>();
-      String key;
-      MeasurementSchema value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(buffer);
-        value = MeasurementSchema.deserializeFrom(buffer);
-        fileMetaData.measurementSchema.put(key, value);
-      }
-    }
-
-    fileMetaData.currentVersion = ReadWriteIOUtils.readInt(buffer);
-
-    if (ReadWriteIOUtils.readIsNull(buffer)) {
-      fileMetaData.createdBy = ReadWriteIOUtils.readString(buffer);
-    }
-
-    return fileMetaData;
   }
 
 }

@@ -37,8 +37,8 @@ public class Utils {
 
   /**
    * convert all schema.
+   *
    * @param allSchema -all schema
-   * @return
    */
   public static Map<String, List<TSColumnSchema>> convertAllSchema(
       Map<String, List<ColumnSchema>> allSchema) {
@@ -70,6 +70,7 @@ public class Utils {
 
   /**
    * convert query data set by fetch size.
+   *
    * @param queryDataSet -query dataset
    * @param fetchsize -fetch size
    * @return -convert query dataset
@@ -92,8 +93,8 @@ public class Utils {
 
   /**
    * convert to tsRecord.
+   *
    * @param rowRecord -row record
-   * @return
    */
   public static TSRowRecord convertToTSRecord(RowRecord rowRecord) {
     TSRowRecord tsRowRecord = new TSRowRecord();

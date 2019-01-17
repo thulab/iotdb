@@ -30,8 +30,7 @@ public abstract class UnCompressor {
   /**
    * get the UnCompressor based on the CompressionType.
    *
-   * @param name
-   *            CompressionType
+   * @param name CompressionType
    * @return the UnCompressor of specified CompressionType
    */
   public static UnCompressor getUnCompressor(CompressionType name) {
@@ -53,23 +52,22 @@ public abstract class UnCompressor {
 
   /**
    * get the uncompressed length.
-   * @param buffer
-   *            MUST be DirectByteBuffer
-   * @return
+   *
+   * @param buffer MUST be DirectByteBuffer
    */
   public abstract int getUncompressedLength(ByteBuffer buffer) throws IOException;
 
   /**
    * uncompress the byte array.
    *
-   * @param byteArray
-   *            to be uncompressed bytes
+   * @param byteArray to be uncompressed bytes
    * @return bytes after uncompressed
    */
   public abstract byte[] uncompress(byte[] byteArray);
 
   /**
    * uncompress the byte array.
+   *
    * @param byteArray -to be uncompressed bytes
    * @param offset -offset
    * @param length -length
@@ -84,11 +82,8 @@ public abstract class UnCompressor {
   /**
    * if the data is large, using this function is better.
    *
-   * @param compressed
-   *            MUST be DirectByteBuffer
-   * @param uncompressed
-   *            MUST be DirectByteBuffer
-   * @return
+   * @param compressed MUST be DirectByteBuffer
+   * @param uncompressed MUST be DirectByteBuffer
    */
   public abstract int uncompress(ByteBuffer compressed, ByteBuffer uncompressed) throws IOException;
 

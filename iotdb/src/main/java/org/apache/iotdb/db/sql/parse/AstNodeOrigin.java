@@ -87,7 +87,7 @@ public class AstNodeOrigin {
    * get usage alias.
    *
    * @return the alias of the object from which an AstNode originated, e.g. "v1" (this can help with
-   *     debugging context-dependent expansions)
+   * debugging context-dependent expansions)
    */
   public String getUsageAlias() {
     return usageAlias;
@@ -97,7 +97,7 @@ public class AstNodeOrigin {
    * get usage node.
    *
    * @return the expression node triggering usage of an object from which an AstNode originated,
-   *     e.g. <code>v as v1</code> (this can help with debugging context-dependent expansions)
+   * e.g. <code>v as v1</code> (this can help with debugging context-dependent expansions)
    */
   public AstNode getUsageNode() {
     return usageNode;

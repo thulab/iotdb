@@ -23,6 +23,13 @@ import org.apache.iotdb.tsfile.read.common.Path;
  */
 public class MetadataOperator extends RootOperator {
 
+  private final NamespaceType namespaceType;
+  private Path path;
+  private String dataType;
+  private String encoding;
+  private String[] encodingArgs;
+  private List<Path> deletePathList;
+
   /**
    * Constructor of MetadataOperator.
    */
@@ -41,14 +48,6 @@ public class MetadataOperator extends RootOperator {
         break;
     }
   }
-
-  private final NamespaceType namespaceType;
-  private Path path;
-  private String dataType;
-  private String encoding;
-  private String[] encodingArgs;
-
-  private List<Path> deletePathList;
 
   public Path getPath() {
     return path;

@@ -78,6 +78,7 @@ public class ChunkWriterImpl implements IChunkWriter {
 
   /**
    * constructor of ChunkWriterImpl.
+   *
    * @param measurementSchema measurement schema
    * @param chunkBuffer chunk in buffer
    * @param pageSizeThreshold page size threshold

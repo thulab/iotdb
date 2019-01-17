@@ -47,27 +47,84 @@ public class ChunkGroupMetaData {
    */
   private List<ChunkMetaData> chunkMetaDataList;
 
-  public int getSerializedSize() {
-    return serializedSize;
-  }
-
   private ChunkGroupMetaData() {
     chunkMetaDataList = new ArrayList<>();
   }
 
   /**
    * constructor of ChunkGroupMetaData.
+   *
    * @param deviceID name of device
    * @param chunkMetaDataList all time series chunks in this chunk group. Can not be Null. notice:
-   *     after constructing a ChunkGroupMetadata instance. Donot use list.add() to modify
-   *     `chunkMetaDataList`. Instead, use addTimeSeriesChunkMetaData() to make sure
-   *     getSerializedSize() is correct.
+   * after constructing a ChunkGroupMetadata instance. Donot use list.add() to modify
+   * `chunkMetaDataList`. Instead, use addTimeSeriesChunkMetaData() to make sure getSerializedSize()
+   * is correct.
    */
   public ChunkGroupMetaData(String deviceID, List<ChunkMetaData> chunkMetaDataList) {
     assert chunkMetaDataList != null;
     this.deviceID = deviceID;
     this.chunkMetaDataList = chunkMetaDataList;
     reCalculateSerializedSize();
+  }
+
+  /**
+   * deserialize from InputStream.
+   *
+   * @param inputStream inputStream
+   * @return ChunkGroupMetaData object
+   * @throws IOException IOException
+   */
+  public static ChunkGroupMetaData deserializeFrom(InputStream inputStream) throws IOException {
+    ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
+
+    chunkGroupMetaData.deviceID = ReadWriteIOUtils.readString(inputStream);
+
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    chunkGroupMetaData.serializedSize =
+        Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
+
+    List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
+
+    for (int i = 0; i < size; i++) {
+      ChunkMetaData metaData = ChunkMetaData.deserializeFrom(inputStream);
+      chunkMetaDataList.add(metaData);
+      chunkGroupMetaData.serializedSize += metaData.getSerializedSize();
+    }
+    chunkGroupMetaData.chunkMetaDataList = chunkMetaDataList;
+
+    return chunkGroupMetaData;
+  }
+
+  /**
+   * deserialize from ByteBuffer.
+   *
+   * @param buffer ByteBuffer
+   * @return ChunkGroupMetaData object
+   * @throws IOException IOException
+   */
+  public static ChunkGroupMetaData deserializeFrom(ByteBuffer buffer) throws IOException {
+    ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
+
+    chunkGroupMetaData.deviceID = (ReadWriteIOUtils.readString(buffer));
+
+    int size = ReadWriteIOUtils.readInt(buffer);
+
+    chunkGroupMetaData.serializedSize =
+        Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
+
+    List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      ChunkMetaData metaData = ChunkMetaData.deserializeFrom(buffer);
+      chunkMetaDataList.add(metaData);
+      chunkGroupMetaData.serializedSize += metaData.getSerializedSize();
+    }
+    chunkGroupMetaData.chunkMetaDataList = chunkMetaDataList;
+
+    return chunkGroupMetaData;
+  }
+
+  public int getSerializedSize() {
+    return serializedSize;
   }
 
   void reCalculateSerializedSize() {
@@ -105,6 +162,7 @@ public class ChunkGroupMetaData {
 
   /**
    * serialize to outputStream.
+   *
    * @param outputStream outputStream
    * @return byte length
    * @throws IOException IOException
@@ -123,6 +181,7 @@ public class ChunkGroupMetaData {
 
   /**
    * serialize to ByteBuffer.
+   *
    * @param buffer ByteBuffer
    * @return byte length
    * @throws IOException IOException
@@ -139,60 +198,6 @@ public class ChunkGroupMetaData {
     assert byteLen == getSerializedSize();
 
     return byteLen;
-  }
-
-  /**
-   * deserialize from InputStream.
-   * @param inputStream inputStream
-   * @return ChunkGroupMetaData object
-   * @throws IOException IOException
-   */
-  public static ChunkGroupMetaData deserializeFrom(InputStream inputStream) throws IOException {
-    ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
-
-    chunkGroupMetaData.deviceID = ReadWriteIOUtils.readString(inputStream);
-
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    chunkGroupMetaData.serializedSize =
-        Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
-
-    List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
-
-    for (int i = 0; i < size; i++) {
-      ChunkMetaData metaData = ChunkMetaData.deserializeFrom(inputStream);
-      chunkMetaDataList.add(metaData);
-      chunkGroupMetaData.serializedSize += metaData.getSerializedSize();
-    }
-    chunkGroupMetaData.chunkMetaDataList = chunkMetaDataList;
-
-    return chunkGroupMetaData;
-  }
-
-  /**
-   * deserialize from ByteBuffer.
-   * @param buffer ByteBuffer
-   * @return ChunkGroupMetaData object
-   * @throws IOException IOException
-   */
-  public static ChunkGroupMetaData deserializeFrom(ByteBuffer buffer) throws IOException {
-    ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
-
-    chunkGroupMetaData.deviceID = (ReadWriteIOUtils.readString(buffer));
-
-    int size = ReadWriteIOUtils.readInt(buffer);
-
-    chunkGroupMetaData.serializedSize =
-        Integer.BYTES + chunkGroupMetaData.deviceID.length() + Integer.BYTES;
-
-    List<ChunkMetaData> chunkMetaDataList = new ArrayList<>();
-    for (int i = 0; i < size; i++) {
-      ChunkMetaData metaData = ChunkMetaData.deserializeFrom(buffer);
-      chunkMetaDataList.add(metaData);
-      chunkGroupMetaData.serializedSize += metaData.getSerializedSize();
-    }
-    chunkGroupMetaData.chunkMetaDataList = chunkMetaDataList;
-
-    return chunkGroupMetaData;
   }
 
 }

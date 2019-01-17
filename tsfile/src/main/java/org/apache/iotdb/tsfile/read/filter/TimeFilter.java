@@ -26,6 +26,34 @@ import org.apache.iotdb.tsfile.read.filter.operator.NotFilter;
 
 public class TimeFilter {
 
+  public static TimeEq eq(long value) {
+    return new TimeEq(value);
+  }
+
+  public static TimeGt gt(long value) {
+    return new TimeGt(value);
+  }
+
+  public static TimeGtEq gtEq(long value) {
+    return new TimeGtEq(value);
+  }
+
+  public static TimeLt lt(long value) {
+    return new TimeLt(value);
+  }
+
+  public static TimeLtEq ltEq(long value) {
+    return new TimeLtEq(value);
+  }
+
+  public static TimeNotFilter not(Filter filter) {
+    return new TimeNotFilter(filter);
+  }
+
+  public static TimeNotEq notEq(long value) {
+    return new TimeNotEq(value);
+  }
+
   public static class TimeEq extends Eq {
 
     private TimeEq(long value) {
@@ -73,34 +101,6 @@ public class TimeFilter {
     private TimeNotFilter(Filter filter) {
       super(filter);
     }
-  }
-
-  public static TimeEq eq(long value) {
-    return new TimeEq(value);
-  }
-
-  public static TimeGt gt(long value) {
-    return new TimeGt(value);
-  }
-
-  public static TimeGtEq gtEq(long value) {
-    return new TimeGtEq(value);
-  }
-
-  public static TimeLt lt(long value) {
-    return new TimeLt(value);
-  }
-
-  public static TimeLtEq ltEq(long value) {
-    return new TimeLtEq(value);
-  }
-
-  public static TimeNotFilter not(Filter filter) {
-    return new TimeNotFilter(filter);
-  }
-
-  public static TimeNotEq notEq(long value) {
-    return new TimeNotEq(value);
   }
 
 }

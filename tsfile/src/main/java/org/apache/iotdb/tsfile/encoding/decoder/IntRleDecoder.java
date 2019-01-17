@@ -1,28 +1,25 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.tsfile.encoding.decoder;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
 import org.apache.iotdb.tsfile.encoding.bitpacking.IntPacker;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
 import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
+import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +27,7 @@ import org.slf4j.LoggerFactory;
  * Decoder for int value using rle or bit-packing.
  */
 public class IntRleDecoder extends RleDecoder {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(IntRleDecoder.class);
 
   /**
@@ -76,9 +74,9 @@ public class IntRleDecoder extends RleDecoder {
         readNext();
       } catch (IOException e) {
         LOGGER.error(
-                "tsfile-encoding IntRleDecoder: error occurs when reading all encoding number,"
-                        + " length is {}, bit width is {}",
-                length, bitWidth, e);
+            "tsfile-encoding IntRleDecoder: error occurs when reading all encoding number,"
+                + " length is {}, bit width is {}",
+            length, bitWidth, e);
       }
     }
     --currentCount;
@@ -92,7 +90,7 @@ public class IntRleDecoder extends RleDecoder {
         break;
       default:
         throw new TsFileDecodingException(
-                String.format("tsfile-encoding IntRleDecoder: not a valid mode %s", mode));
+            String.format("tsfile-encoding IntRleDecoder: not a valid mode %s", mode));
     }
 
     if (!hasNextPackage()) {
@@ -109,7 +107,7 @@ public class IntRleDecoder extends RleDecoder {
   @Override
   protected void readNumberInRle() throws IOException {
     currentValue = ReadWriteForEncodingUtils
-            .readIntLittleEndianPaddedOnBitWidth(byteCache, bitWidth);
+        .readIntLittleEndianPaddedOnBitWidth(byteCache, bitWidth);
   }
 
   @Override

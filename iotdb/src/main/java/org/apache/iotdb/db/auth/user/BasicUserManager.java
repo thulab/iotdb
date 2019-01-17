@@ -42,6 +42,7 @@ public abstract class BasicUserManager implements IUserManager {
 
   /**
    * BasicUserManager Constructor.
+   *
    * @param accessor user accessor
    * @throws AuthException Authentication Exception
    */

@@ -19,12 +19,14 @@ package org.apache.iotdb.tsfile.encoding.bitpacking;
  * guarantee that the length of every given Long in binary mode is less than or equal to the
  * bit-width.
  *
- * <p>e.g., if bit-width is 31, then Long '2147483648'(2^31) is not allowed but '2147483647'(2^31-1)
+ * <p>e.g., if bit-width is 31, then Long '2147483648'(2^31) is not allowed but
+ * '2147483647'(2^31-1)
  * is allowed.
  *
  * <p>For a full example, Width: 3 Input: 5 4 7 3 0 1 3 2
  *
- * <p>Output: <p>+-----------------------+ +-----------------------+ +-----------------------+ |1 |0
+ * <p>Output: <p>+-----------------------+ +-----------------------+ +-----------------------+ |1
+ * |0
  * |1 |1 |0 |0 |1 |1 | |1 |0 |1 |1 |0 |0 |0 |0 | |0 |1 |0 |1 |1 |0 |1 |0 | +-----------------------+
  * +-----------------------+ +-----------------------+ +-----+ +-----+ +---------+ +-----+ +-----+
  * +---------+ +-----+ +-----+ 5 4 7 3 0 1 3 2

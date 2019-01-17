@@ -24,11 +24,11 @@ import org.apache.iotdb.db.utils.OpenFileNumUtil;
 
 public class Monitor implements MonitorMBean, IService {
 
-  private IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
   public static final Monitor INSTANCE = new Monitor();
   private final String mbeanName = String
       .format("%s:%s=%s", IoTDBConstant.IOTDB_PACKAGE, IoTDBConstant.JMX_TYPE,
           getID().getJmxName());
+  private IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
 
   @Override
   public long getDataSizeInByte() {

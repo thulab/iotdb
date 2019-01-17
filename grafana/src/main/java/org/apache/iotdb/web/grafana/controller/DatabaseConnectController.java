@@ -61,6 +61,7 @@ public class DatabaseConnectController {
 
   /**
    * get metrics numbers in JSON string structure.
+   *
    * @param request http request
    * @param response http response
    * @return metrics numbers in JSON string structure
@@ -87,6 +88,7 @@ public class DatabaseConnectController {
 
   /**
    * convert query result data to JSON format.
+   *
    * @param request http request
    * @param response http response
    * @return data in JSON format
@@ -176,6 +178,7 @@ public class DatabaseConnectController {
 
   /**
    * get request body JSON.
+   *
    * @param request http request
    * @return request JSON
    * @throws JSONException JSONException
@@ -197,6 +200,7 @@ public class DatabaseConnectController {
 
   /**
    * get JSON type of input JSON object.
+   *
    * @param jsonObject JSON Object
    * @return type (string)
    * @throws JSONException JSONException

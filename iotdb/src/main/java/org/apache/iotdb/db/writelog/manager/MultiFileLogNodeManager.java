@@ -40,12 +40,6 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
 
   private Thread syncThread;
   private IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
-
-  private static class InstanceHolder {
-
-    private static MultiFileLogNodeManager instance = new MultiFileLogNodeManager();
-  }
-
   private final Runnable syncTask = new Runnable() {
     @Override
     public void run() {
@@ -206,6 +200,11 @@ public class MultiFileLogNodeManager implements WriteLogNodeManager, IService {
   @Override
   public ServiceType getID() {
     return ServiceType.WAL_SERVICE;
+  }
+
+  private static class InstanceHolder {
+
+    private static MultiFileLogNodeManager instance = new MultiFileLogNodeManager();
   }
 
 }

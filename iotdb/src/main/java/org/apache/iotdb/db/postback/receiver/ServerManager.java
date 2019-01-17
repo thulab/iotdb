@@ -28,23 +28,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * receiver server.
+ *
  * @author lta
  */
 public class ServerManager {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerManager.class);
   private TServerSocket serverTransport;
   private Factory protocolFactory;
   private TProcessor processor;
   private TThreadPoolServer.Args poolArgs;
   private TServer poolServer;
   private IoTDBConfig conf = IoTDBDescriptor.getInstance().getConfig();
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServerManager.class);
-
-  private static class ServerManagerHolder {
-
-    private static final ServerManager INSTANCE = new ServerManager();
-  }
 
   private ServerManager() {
   }
@@ -55,7 +50,7 @@ public class ServerManager {
 
   /**
    * start postback receiver's server.
-   * */
+   */
   public void startServer() {
     if (!conf.isPostbackEnable) {
       return;
@@ -91,12 +86,17 @@ public class ServerManager {
 
   /**
    * close postback receiver's server.
-   * */
+   */
   public void closeServer() {
     if (conf.isPostbackEnable && poolServer != null) {
       poolServer.stop();
       serverTransport.close();
       LOGGER.info("Stop postback server.");
     }
+  }
+
+  private static class ServerManagerHolder {
+
+    private static final ServerManager INSTANCE = new ServerManager();
   }
 }

@@ -37,6 +37,7 @@ public class AuthorPlan extends PhysicalPlan {
 
   /**
    * AuthorPlan Constructor.
+   *
    * @param authorType author type
    * @param userName user name
    * @param roleName role name

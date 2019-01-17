@@ -31,6 +31,32 @@ public class MetadataPlan extends PhysicalPlan {
 
   private List<Path> deletePathList;
 
+  /**
+   * Constructor of MetadataPlan.
+   */
+  public MetadataPlan(MetadataOperator.NamespaceType namespaceType, Path path, String dataType,
+      String encoding,
+      String[] encodingArgs, List<Path> deletePathList) {
+    super(false, Operator.OperatorType.METADATA);
+    this.namespaceType = namespaceType;
+    this.path = path;
+    this.dataType = dataType;
+    this.encoding = encoding;
+    this.encodingArgs = encodingArgs;
+    this.deletePathList = deletePathList;
+    switch (namespaceType) {
+      case SET_FILE_LEVEL:
+      case ADD_PATH:
+        setOperatorType(Operator.OperatorType.SET_STORAGE_GROUP);
+        break;
+      case DELETE_PATH:
+        setOperatorType(Operator.OperatorType.DELETE_TIMESERIES);
+        break;
+      default:
+        break;
+    }
+  }
+
   public Path getPath() {
     return path;
   }
@@ -65,32 +91,6 @@ public class MetadataPlan extends PhysicalPlan {
 
   public MetadataOperator.NamespaceType getNamespaceType() {
     return namespaceType;
-  }
-
-  /**
-   * Constructor of MetadataPlan.
-   */
-  public MetadataPlan(MetadataOperator.NamespaceType namespaceType, Path path, String dataType,
-      String encoding,
-      String[] encodingArgs, List<Path> deletePathList) {
-    super(false, Operator.OperatorType.METADATA);
-    this.namespaceType = namespaceType;
-    this.path = path;
-    this.dataType = dataType;
-    this.encoding = encoding;
-    this.encodingArgs = encodingArgs;
-    this.deletePathList = deletePathList;
-    switch (namespaceType) {
-      case SET_FILE_LEVEL:
-      case ADD_PATH:
-        setOperatorType(Operator.OperatorType.SET_STORAGE_GROUP);
-        break;
-      case DELETE_PATH:
-        setOperatorType(Operator.OperatorType.DELETE_TIMESERIES);
-        break;
-      default:
-        break;
-    }
   }
 
   @Override

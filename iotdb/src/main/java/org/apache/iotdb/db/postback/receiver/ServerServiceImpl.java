@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerServiceImpl implements ServerService.Iface {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
+  private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
   private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.IoTDBDriver";
   private ThreadLocal<String> uuid = new ThreadLocal<String>();
   // String means Storage Group,List means the set of new Files(AbsulutePath) in local IoTDB
@@ -65,9 +67,6 @@ public class ServerServiceImpl implements ServerService.Iface {
   // Absolute paths of IoTDB bufferWrite directory
   private String[] bufferWritePaths = tsfileDBconfig.getBufferWriteDirs();
   private IoTDBConfig tsfileDBConfig = IoTDBDescriptor.getInstance().getConfig();
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
-  private static final FileNodeManager fileNodeManager = FileNodeManager.getInstance();
 
   /**
    * Init threadLocal variable
@@ -110,9 +109,8 @@ public class ServerServiceImpl implements ServerService.Iface {
   /**
    * Start receiving tsfile from sender
    *
-   * @param status
-   *            status = 0 : finish receiving one tsfile status = 1 : a tsfile has not received
-   *            completely.
+   * @param status status = 0 : finish receiving one tsfile status = 1 : a tsfile has not received
+   * completely.
    */
   @Override
   public String startReceiving(String md5OfSender, List<String> filePathSplit,
@@ -179,10 +177,8 @@ public class ServerServiceImpl implements ServerService.Iface {
   /**
    * Get schema from sender
    *
-   * @param status:
-   *            0 or 1. status = 0 : finish receiving schema file, start to insert schema to IoTDB
-   *            through jdbc status
-   *            = 1 : the schema file has not received completely.
+   * @param status: 0 or 1. status = 0 : finish receiving schema file, start to insert schema to
+   * IoTDB through jdbc status = 1 : the schema file has not received completely.
    */
   @Override
   public void getSchema(ByteBuffer schema, int status) throws TException {
@@ -457,10 +453,7 @@ public class ServerServiceImpl implements ServerService.Iface {
   /**
    * Insert those valid data in the tsfile into IoTDB
    *
-   * @param filePath
-   * @param overlapFiles:files
-   *            which are conflict with the postback file
-   * @throws TException
+   * @param overlapFiles:files which are conflict with the postback file
    */
   public void mergeOldData(String filePath, List<String> overlapFiles) throws TException {
     // Set<String> timeseries = new HashSet<>();
@@ -623,9 +616,8 @@ public class ServerServiceImpl implements ServerService.Iface {
 
   /**
    * It is to merge data. If data in the tsfile is new, append the tsfile to the storage group
-   * directly. If data in
-   * the tsfile is old, it has two strategy to merge.It depends on the possibility of updating
-   * historical data.
+   * directly. If data in the tsfile is old, it has two strategy to merge.It depends on the
+   * possibility of updating historical data.
    */
   @Override
   public void mergeData() throws TException {

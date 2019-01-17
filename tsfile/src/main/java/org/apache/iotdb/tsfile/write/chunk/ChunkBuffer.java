@@ -54,6 +54,7 @@ public class ChunkBuffer {
 
   /**
    * constructor of ChunkBuffer.
+   *
    * @param schema measurement schema
    */
   public ChunkBuffer(MeasurementSchema schema) {
@@ -212,6 +213,7 @@ public class ChunkBuffer {
 
   /**
    * estimate max page memory size.
+   *
    * @return the max possible allocated size currently
    */
   public long estimateMaxPageMemSize() {
@@ -226,6 +228,7 @@ public class ChunkBuffer {
 
   /**
    * get current data size.
+   *
    * @return current data size that the writer has serialized.
    */
   public long getCurrentDataSize() {

@@ -33,7 +33,7 @@ public class ReadOnlyMemChunk implements TimeValuePairSorter {
 
   /**
    * init by TSDataType and TimeValuePairSorter.
-   * */
+   */
   public ReadOnlyMemChunk(TSDataType dataType, TimeValuePairSorter memSeries) {
     this.dataType = dataType;
     this.memSeries = memSeries;
@@ -53,8 +53,6 @@ public class ReadOnlyMemChunk implements TimeValuePairSorter {
 
   /**
    * only for test now.
-   *
-   * @return
    */
   public TSDataType getDataType() {
     return dataType;
@@ -62,8 +60,6 @@ public class ReadOnlyMemChunk implements TimeValuePairSorter {
 
   /**
    * only for test now.
-   *
-   * @return
    */
   public long getMaxTimestamp() {
     checkInitialized();
@@ -76,8 +72,6 @@ public class ReadOnlyMemChunk implements TimeValuePairSorter {
 
   /**
    * only for test now.
-   *
-   * @return
    */
   public long getMinTimestamp() {
     checkInitialized();
@@ -90,8 +84,6 @@ public class ReadOnlyMemChunk implements TimeValuePairSorter {
 
   /**
    * only for test now.
-   *
-   * @return
    */
   public TsPrimitiveType getValueAtMaxTime() {
     checkInitialized();
@@ -104,8 +96,6 @@ public class ReadOnlyMemChunk implements TimeValuePairSorter {
 
   /**
    * only for test now.
-   *
-   * @return
    */
   public TsPrimitiveType getValueAtMinTime() {
     checkInitialized();

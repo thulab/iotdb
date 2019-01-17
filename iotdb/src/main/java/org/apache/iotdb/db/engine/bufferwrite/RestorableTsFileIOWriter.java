@@ -179,8 +179,8 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
    * This is a private method. (It is default now for Unit Test only)
    *
    * @return a pair, whose left Long value is the tail position of the last complete Chunk Group in
-   *        the unsealed file's position, and the right List value is the ChunkGroupMetadata of all
-   *        complete Chunk Group in the same file.
+   * the unsealed file's position, and the right List value is the ChunkGroupMetadata of all
+   * complete Chunk Group in the same file.
    * @throws IOException if errors when reading restoreFile.
    */
   Pair<Long, List<ChunkGroupMetaData>> readRestoreInfo() throws IOException {

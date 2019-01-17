@@ -57,35 +57,32 @@ public abstract class AbstractClient {
   protected static final String USERNAME_NAME = "username";
 
   protected static final String ISO8601_ARGS = "disableISO8601";
-  protected static String timeFormat = "default";
   // protected static final String TIME_KEY_WORD = "time";
   protected static final List<String> AGGREGRATE_TIME_LIST = new ArrayList<>();
-
   protected static final String MAX_PRINT_ROW_COUNT_ARGS = "maxPRC";
   protected static final String MAX_PRINT_ROW_COUNT_NAME = "maxPrintRowCount";
-
   protected static final String SET_MAX_DISPLAY_NUM = "set max_display_num";
-  protected static int maxPrintRowCount = 1000;
-
   protected static final String SET_TIMESTAMP_DISPLAY = "set time_display_type";
   protected static final String SHOW_TIMESTAMP_DISPLAY = "show time_display_type";
   protected static final String SET_TIME_ZONE = "set time_zone";
   protected static final String SHOW_TIMEZONE = "show time_zone";
-
   protected static final String SET_FETCH_SIZE = "set fetch_size";
   protected static final String SHOW_FETCH_SIZE = "show fetch_size";
-  protected static int fetchSize = 10000;
   protected static final String HELP = "help";
-
   protected static final String IOTDB_CLI_PREFIX = "IoTDB";
   protected static final String SCRIPT_HINT = "./start-client.sh(start-client.bat if Windows)";
   protected static final String QUIT_COMMAND = "quit";
   protected static final String EXIT_COMMAND = "exit";
   protected static final String SHOW_METADATA_COMMAND = "show timeseries";
   protected static final int MAX_HELP_CONSOLE_WIDTH = 88;
-
   protected static final String TIMESTAMP_STR = "Time";
   protected static final int ISO_DATETIME_LEN = 26;
+  protected static final String IMPORT_CMD = "import";
+  protected static final String EXPORT_CMD = "export";
+  private static final String NEED_NOT_TO_PRINT_TIMESTAMP = "AGGREGATION";
+  protected static String timeFormat = "default";
+  protected static int maxPrintRowCount = 1000;
+  protected static int fetchSize = 10000;
   protected static int maxTimeLength = ISO_DATETIME_LEN;
   protected static int maxValueLength = 15;
   /**
@@ -131,14 +128,7 @@ public abstract class AbstractClient {
   protected static int[] maxValueLengthForShow = new int[]{75, 45, 8, 8};
   protected static String formatTime = "%" + maxTimeLength + "s|";
   protected static String formatValue = "%" + maxValueLength + "s|";
-
   protected static int DIVIDING_LINE_LEN = 40;
-
-  protected static final String IMPORT_CMD = "import";
-  protected static final String EXPORT_CMD = "export";
-
-  private static final String NEED_NOT_TO_PRINT_TIMESTAMP = "AGGREGATION";
-
   protected static String host = "127.0.0.1";
   protected static String port = "6667";
   protected static String username;

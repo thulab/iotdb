@@ -92,12 +92,21 @@ import org.slf4j.LoggerFactory;
 
 public class FileNodeProcessor extends Processor implements IStatistic {
 
+  public static final String RESTORE_FILE_SUFFIX = ".restore";
   private static final Logger LOGGER = LoggerFactory.getLogger(FileNodeProcessor.class);
   private static final TSFileConfig TsFileConf = TSFileDescriptor.getInstance().getConfig();
   private static final IoTDBConfig TsFileDBConf = IoTDBDescriptor.getInstance().getConfig();
   private static final MManager mManager = MManager.getInstance();
   private static final Directories directories = Directories.getInstance();
-
+  private final String statStorageDeltaName;
+  private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
+    {
+      for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
+          MonitorConstants.FileNodeProcessorStatConstants.values()) {
+        put(statConstant.name(), new AtomicLong(0));
+      }
+    }
+  };
   /**
    * Used to keep the oldest timestamp for each deviceId. The key is deviceId.
    */
@@ -112,16 +121,12 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   // this is used when work->merge operation
   private int numOfMergeFile = 0;
   private FileNodeProcessorStore fileNodeProcessorStore = null;
-
-  public static final String RESTORE_FILE_SUFFIX = ".restore";
   private String fileNodeRestoreFilePath = null;
   private String baseDirPath;
   // last merge time
   private long lastMergeTime = -1;
-
   private BufferWriteProcessor bufferWriteProcessor = null;
   private OverflowProcessor overflowProcessor = null;
-
   private Set<Integer> oldMultiPassTokenSet = null;
   private Set<Integer> newMultiPassTokenSet = new HashSet<>();
   private ReadWriteLock oldMultiPassLock = null;
@@ -130,65 +135,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   private boolean shouldRecovery = false;
   // statistic monitor parameters
   private Map<String, Action> parameters = null;
-  private final String statStorageDeltaName;
-
   private FileSchema fileSchema;
-
-  private final HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
-    {
-      for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
-          MonitorConstants.FileNodeProcessorStatConstants.values()) {
-        put(statConstant.name(), new AtomicLong(0));
-      }
-    }
-  };
-
-  public HashMap<String, AtomicLong> getStatParamsHashMap() {
-    return statParamsHashMap;
-  }
-
-  @Override
-  public void registStatMetadata() {
-    HashMap<String, String> hashMap = new HashMap<String, String>() {
-      {
-        for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
-            MonitorConstants.FileNodeProcessorStatConstants.values()) {
-          put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(),
-              MonitorConstants.DataType);
-        }
-      }
-    };
-    StatMonitor.getInstance().registStatStorageGroup(hashMap);
-  }
-
-  @Override
-  public List<String> getAllPathForStatistic() {
-    List<String> list = new ArrayList<>();
-    for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
-        MonitorConstants.FileNodeProcessorStatConstants.values()) {
-      list.add(
-          statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
-    }
-    return list;
-  }
-
-  @Override
-  public HashMap<String, TSRecord> getAllStatisticsValue() {
-    Long curTime = System.currentTimeMillis();
-    HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
-    TSRecord tsRecord = new TSRecord(curTime, statStorageDeltaName);
-    HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
-    tsRecord.dataPointList = new ArrayList<DataPoint>() {
-      {
-        for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
-          add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
-        }
-      }
-    };
-    tsRecordHashMap.put(statStorageDeltaName, tsRecord);
-    return tsRecordHashMap;
-  }
-
   private Action flushFileNodeProcessorAction = new Action() {
 
     @Override
@@ -198,7 +145,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       }
     }
   };
-
   private Action bufferwriteFlushAction = new Action() {
 
     @Override
@@ -215,7 +161,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       }
     }
   };
-
   private Action bufferwriteCloseAction = new Action() {
 
     @Override
@@ -228,49 +173,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       }
     }
   };
-
-  private void addLastTimeToIntervalFile() {
-
-    if (!newFileNodes.isEmpty()) {
-      // end time with one start time
-      Map<String, Long> endTimeMap = new HashMap<>();
-      for (Entry<String, Long> startTime : currentIntervalFileNode.getStartTimeMap().entrySet()) {
-        String deviceId = startTime.getKey();
-        endTimeMap.put(deviceId, lastUpdateTimeMap.get(deviceId));
-      }
-      currentIntervalFileNode.setEndTimeMap(endTimeMap);
-    }
-  }
-
-  /**
-   * add interval FileNode.
-   */
-  public void addIntervalFileNode(long startTime, String baseDir, String fileName)
-      throws Exception {
-
-    IntervalFileNode intervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, baseDir,
-        fileName);
-    this.currentIntervalFileNode = intervalFileNode;
-    newFileNodes.add(intervalFileNode);
-    fileNodeProcessorStore.setNewFileNodes(newFileNodes);
-    flushFileNodeProcessorAction.act();
-  }
-
-  /**
-   * set interval filenode start time.
-   *
-   * @param deviceId device ID
-   */
-  public void setIntervalFileNodeStartTime(String deviceId) {
-    if (currentIntervalFileNode.getStartTime(deviceId) == -1) {
-      currentIntervalFileNode.setStartTime(deviceId, flushLastUpdateTimeMap.get(deviceId));
-      if (!invertedindexOfFiles.containsKey(deviceId)) {
-        invertedindexOfFiles.put(deviceId, new ArrayList<>());
-      }
-      invertedindexOfFiles.get(deviceId).add(currentIntervalFileNode);
-    }
-  }
-
   private Action overflowFlushAction = new Action() {
 
     @Override
@@ -285,22 +187,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       }
     }
   };
-
-  /**
-   * clear filenode.
-   */
-  public void clearFileNode() {
-    isOverflowed = false;
-    emptyIntervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, null);
-    newFileNodes = new ArrayList<>();
-    isMerging = FileNodeProcessorStatus.NONE;
-    numOfMergeFile = 0;
-    fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
-    fileNodeProcessorStore.setFileNodeProcessorStatus(isMerging);
-    fileNodeProcessorStore.setNewFileNodes(newFileNodes);
-    fileNodeProcessorStore.setNumOfMergeFile(numOfMergeFile);
-    fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
-  }
+  // Token for query which used to
+  private int multiPassLockToken = 0;
 
   /**
    * constructor of FileNodeProcessor.
@@ -369,6 +257,110 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     }
   }
 
+  public HashMap<String, AtomicLong> getStatParamsHashMap() {
+    return statParamsHashMap;
+  }
+
+  @Override
+  public void registStatMetadata() {
+    HashMap<String, String> hashMap = new HashMap<String, String>() {
+      {
+        for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
+            MonitorConstants.FileNodeProcessorStatConstants.values()) {
+          put(statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name(),
+              MonitorConstants.DataType);
+        }
+      }
+    };
+    StatMonitor.getInstance().registStatStorageGroup(hashMap);
+  }
+
+  @Override
+  public List<String> getAllPathForStatistic() {
+    List<String> list = new ArrayList<>();
+    for (MonitorConstants.FileNodeProcessorStatConstants statConstant :
+        MonitorConstants.FileNodeProcessorStatConstants.values()) {
+      list.add(
+          statStorageDeltaName + MonitorConstants.MONITOR_PATH_SEPERATOR + statConstant.name());
+    }
+    return list;
+  }
+
+  @Override
+  public HashMap<String, TSRecord> getAllStatisticsValue() {
+    Long curTime = System.currentTimeMillis();
+    HashMap<String, TSRecord> tsRecordHashMap = new HashMap<>();
+    TSRecord tsRecord = new TSRecord(curTime, statStorageDeltaName);
+    HashMap<String, AtomicLong> hashMap = getStatParamsHashMap();
+    tsRecord.dataPointList = new ArrayList<DataPoint>() {
+      {
+        for (Map.Entry<String, AtomicLong> entry : hashMap.entrySet()) {
+          add(new LongDataPoint(entry.getKey(), entry.getValue().get()));
+        }
+      }
+    };
+    tsRecordHashMap.put(statStorageDeltaName, tsRecord);
+    return tsRecordHashMap;
+  }
+
+  private void addLastTimeToIntervalFile() {
+
+    if (!newFileNodes.isEmpty()) {
+      // end time with one start time
+      Map<String, Long> endTimeMap = new HashMap<>();
+      for (Entry<String, Long> startTime : currentIntervalFileNode.getStartTimeMap().entrySet()) {
+        String deviceId = startTime.getKey();
+        endTimeMap.put(deviceId, lastUpdateTimeMap.get(deviceId));
+      }
+      currentIntervalFileNode.setEndTimeMap(endTimeMap);
+    }
+  }
+
+  /**
+   * add interval FileNode.
+   */
+  public void addIntervalFileNode(long startTime, String baseDir, String fileName)
+      throws Exception {
+
+    IntervalFileNode intervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, baseDir,
+        fileName);
+    this.currentIntervalFileNode = intervalFileNode;
+    newFileNodes.add(intervalFileNode);
+    fileNodeProcessorStore.setNewFileNodes(newFileNodes);
+    flushFileNodeProcessorAction.act();
+  }
+
+  /**
+   * set interval filenode start time.
+   *
+   * @param deviceId device ID
+   */
+  public void setIntervalFileNodeStartTime(String deviceId) {
+    if (currentIntervalFileNode.getStartTime(deviceId) == -1) {
+      currentIntervalFileNode.setStartTime(deviceId, flushLastUpdateTimeMap.get(deviceId));
+      if (!invertedindexOfFiles.containsKey(deviceId)) {
+        invertedindexOfFiles.put(deviceId, new ArrayList<>());
+      }
+      invertedindexOfFiles.get(deviceId).add(currentIntervalFileNode);
+    }
+  }
+
+  /**
+   * clear filenode.
+   */
+  public void clearFileNode() {
+    isOverflowed = false;
+    emptyIntervalFileNode = new IntervalFileNode(OverflowChangeType.NO_CHANGE, null);
+    newFileNodes = new ArrayList<>();
+    isMerging = FileNodeProcessorStatus.NONE;
+    numOfMergeFile = 0;
+    fileNodeProcessorStore.setLastUpdateTimeMap(lastUpdateTimeMap);
+    fileNodeProcessorStore.setFileNodeProcessorStatus(isMerging);
+    fileNodeProcessorStore.setNewFileNodes(newFileNodes);
+    fileNodeProcessorStore.setNumOfMergeFile(numOfMergeFile);
+    fileNodeProcessorStore.setEmptyIntervalFileNode(emptyIntervalFileNode);
+  }
+
   private void addAllFileIntoIndex(List<IntervalFileNode> fileList) {
     // clear map
     invertedindexOfFiles.clear();
@@ -389,6 +381,10 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     return shouldRecovery;
   }
 
+  public boolean isOverflowed() {
+    return isOverflowed;
+  }
+
   /**
    * if overflow insert, update and delete write into this filenode processor, set
    * <code>isOverflowed</code> to true.
@@ -397,10 +393,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     if (this.isOverflowed != isOverflowed) {
       this.isOverflowed = isOverflowed;
     }
-  }
-
-  public boolean isOverflowed() {
-    return isOverflowed;
   }
 
   public FileNodeProcessorStatus getFileNodeProcessorStatus() {
@@ -684,9 +676,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     return index - 1;
   }
 
-  // Token for query which used to
-  private int multiPassLockToken = 0;
-
   /**
    * add multiple pass lock.
    */
@@ -899,7 +888,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
    * submit the merge task to the <code>MergePool</code>.
    *
    * @return null -can't submit the merge task, because this filenode is not overflowed or it is
-   *     merging now. Future<?> - submit the merge task successfully.
+   * merging now. Future<?> - submit the merge task successfully.
    */
   public Future<?> submitToMerge() {
     if (lastMergeTime > 0) {

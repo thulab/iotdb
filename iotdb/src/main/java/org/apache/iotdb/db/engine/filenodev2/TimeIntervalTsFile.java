@@ -28,15 +28,13 @@ import org.apache.iotdb.db.engine.filenode.OverflowChangeType;
  * This class is used to store the TsFile status.<br>
  *
  * @author liukun
- *
  */
 public class TimeIntervalTsFile implements Serializable {
 
   private static final long serialVersionUID = -4309683416067212549L;
+  public OverflowChangeType overflowChangeType;
   private int baseDirIndex;
   private String relativePath;
-  public OverflowChangeType overflowChangeType;
-
   private Map<String, Long> startTimeMap;
   private Map<String, Long> endTimeMap;
   private Set<String> mergeChanged = new HashSet<>();
@@ -59,7 +57,6 @@ public class TimeIntervalTsFile implements Serializable {
 
   /**
    * This is just used to construct a new TsFile.
-   *
    */
   public TimeIntervalTsFile(OverflowChangeType type, String relativePath) {
 
@@ -77,6 +74,7 @@ public class TimeIntervalTsFile implements Serializable {
 
   /**
    * get start time.
+   *
    * @param deviceId -Map key
    * @return -start time
    */
@@ -99,11 +97,6 @@ public class TimeIntervalTsFile implements Serializable {
     this.startTimeMap = startTimeMap;
   }
 
-  public void setEndTimeMap(Map<String, Long> endTimeMap) {
-
-    this.endTimeMap = endTimeMap;
-  }
-
   public void setEndTime(String deviceId, long timestamp) {
 
     this.endTimeMap.put(deviceId, timestamp);
@@ -111,6 +104,7 @@ public class TimeIntervalTsFile implements Serializable {
 
   /**
    * get end time for given device.
+   *
    * @param deviceId -id of device
    * @return -end time of the device
    */
@@ -127,8 +121,14 @@ public class TimeIntervalTsFile implements Serializable {
     return endTimeMap;
   }
 
+  public void setEndTimeMap(Map<String, Long> endTimeMap) {
+
+    this.endTimeMap = endTimeMap;
+  }
+
   /**
    * remove given device'startTime start time and end time.
+   *
    * @param deviceId -id of the device
    */
   public void removeTime(String deviceId) {
@@ -149,14 +149,14 @@ public class TimeIntervalTsFile implements Serializable {
         .getPath();
   }
 
-  public void setRelativePath(String relativePath) {
-
-    this.relativePath = relativePath;
-  }
-
   public String getRelativePath() {
 
     return relativePath;
+  }
+
+  public void setRelativePath(String relativePath) {
+
+    this.relativePath = relativePath;
   }
 
   public boolean checkEmpty() {

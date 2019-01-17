@@ -67,6 +67,7 @@ public class Client extends AbstractClient {
 
   /**
    * IoTDB CLI main function.
+   *
    * @param args launch arguments
    * @throws ClassNotFoundException ClassNotFoundException
    */

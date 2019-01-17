@@ -26,6 +26,7 @@ public class CommonUtils {
 
   /**
    * get JDK version.
+   *
    * @return JDK version (int type)
    */
   public static int getJdkVersion() {
@@ -39,6 +40,7 @@ public class CommonUtils {
 
   /**
    * clean buffer.
+   *
    * @param byteBuffer Buffer
    * @throws Exception Exception
    */

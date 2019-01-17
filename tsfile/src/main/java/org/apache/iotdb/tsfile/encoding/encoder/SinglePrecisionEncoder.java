@@ -20,7 +20,6 @@ import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 
 /**
  * Encoder for int value using gorilla encoding.
- *
  */
 public class SinglePrecisionEncoder extends GorillaEncoder {
 

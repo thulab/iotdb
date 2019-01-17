@@ -21,8 +21,7 @@ import org.apache.iotdb.tsfile.read.filter.factory.FilterType;
 /**
  * less than.
  *
- * @param <T>
- *            comparable data type
+ * @param <T> comparable data type
  */
 public class Lt<T extends Comparable<T>> extends UnaryFilter<T> {
 

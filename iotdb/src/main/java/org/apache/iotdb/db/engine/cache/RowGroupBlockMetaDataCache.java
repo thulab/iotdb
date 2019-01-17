@@ -30,9 +30,8 @@ import org.slf4j.LoggerFactory;
  */
 public class RowGroupBlockMetaDataCache {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
   private static final int cacheSize = 100;
-
+  private static Logger LOGGER = LoggerFactory.getLogger(RowGroupBlockMetaDataCache.class);
   /**
    * key: the file path + deviceId.
    */
@@ -41,44 +40,12 @@ public class RowGroupBlockMetaDataCache {
   private AtomicLong cacheHintNum = new AtomicLong();
   private AtomicLong cacheRequestNum = new AtomicLong();
 
-  /**
-   * This class is a map used to cache the <code>RowGroupBlockMetaData</code>. The caching strategy
-   * is LRU.
-   *
-   * @author liukun
-   */
-  private class LruLinkedHashMap extends LinkedHashMap<String, TsDeviceMetadata> {
-
-    private static final long serialVersionUID = 1290160928914532649L;
-    private static final float loadFactor = 0.75f;
-    private int maxCapacity;
-
-    public LruLinkedHashMap(int maxCapacity, boolean isLru) {
-      super(maxCapacity, loadFactor, isLru);
-      this.maxCapacity = maxCapacity;
-    }
-
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<String, TsDeviceMetadata> eldest) {
-      return size() > maxCapacity;
-    }
-  }
-
-  /**
-   * the default LRU cache size is 100. The singleton pattern.
-   */
-  private static class RowGroupBlockMetaDataCacheSingleton {
-
-    private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(
-        cacheSize);
+  private RowGroupBlockMetaDataCache(int cacheSize) {
+    lruCache = new LruLinkedHashMap(cacheSize, true);
   }
 
   public static RowGroupBlockMetaDataCache getInstance() {
     return RowGroupBlockMetaDataCacheSingleton.INSTANCE;
-  }
-
-  private RowGroupBlockMetaDataCache(int cacheSize) {
-    lruCache = new LruLinkedHashMap(cacheSize, true);
   }
 
   /**
@@ -125,10 +92,42 @@ public class RowGroupBlockMetaDataCache {
 
   /**
    * clear LRUCache.
-   * */
+   */
   public void clear() {
     synchronized (lruCache) {
       lruCache.clear();
+    }
+  }
+
+  /**
+   * the default LRU cache size is 100. The singleton pattern.
+   */
+  private static class RowGroupBlockMetaDataCacheSingleton {
+
+    private static final RowGroupBlockMetaDataCache INSTANCE = new RowGroupBlockMetaDataCache(
+        cacheSize);
+  }
+
+  /**
+   * This class is a map used to cache the <code>RowGroupBlockMetaData</code>. The caching strategy
+   * is LRU.
+   *
+   * @author liukun
+   */
+  private class LruLinkedHashMap extends LinkedHashMap<String, TsDeviceMetadata> {
+
+    private static final long serialVersionUID = 1290160928914532649L;
+    private static final float loadFactor = 0.75f;
+    private int maxCapacity;
+
+    public LruLinkedHashMap(int maxCapacity, boolean isLru) {
+      super(maxCapacity, loadFactor, isLru);
+      this.maxCapacity = maxCapacity;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<String, TsDeviceMetadata> eldest) {
+      return size() > maxCapacity;
     }
   }
 }

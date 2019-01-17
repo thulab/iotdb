@@ -35,37 +35,35 @@ import org.slf4j.LoggerFactory;
 public class CloseMergeService implements IService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CloseMergeService.class);
-
-  private MergeServiceThread mergeService = new MergeServiceThread();
-  private CloseServiceThread closeService = new CloseServiceThread();
-  private ScheduledExecutorService service;
-  private CloseAndMergeDaemon closeAndMergeDaemon = new CloseAndMergeDaemon();
   private static IoTDBConfig dbConfig = IoTDBDescriptor.getInstance().getConfig();
   private static final long mergeDelay = dbConfig.periodTimeForMerge;
   private static final long closeDelay = dbConfig.periodTimeForFlush;
   private static final long mergePeriod = dbConfig.periodTimeForMerge;
   private static final long closePeriod = dbConfig.periodTimeForFlush;
-
+  private static CloseMergeService CLOSE_MERGE_SERVICE = new CloseMergeService();
+  private MergeServiceThread mergeService = new MergeServiceThread();
+  private CloseServiceThread closeService = new CloseServiceThread();
+  private ScheduledExecutorService service;
+  private CloseAndMergeDaemon closeAndMergeDaemon = new CloseAndMergeDaemon();
   private volatile boolean isStart = false;
   private long closeAllLastTime;
   private long mergeAllLastTime;
 
-  private static CloseMergeService CLOSE_MERGE_SERVICE = new CloseMergeService();
+  private CloseMergeService() {
+    service = IoTDBThreadPoolFactory
+        .newScheduledThreadPool(2, ThreadName.CLOSE_MERGE_SERVICE.getName());
+  }
 
   /**
    * get instance of CloseMergeService.
+   *
    * @return CloseMergeService instance
    */
-  public static synchronized  CloseMergeService getInstance() {
+  public static synchronized CloseMergeService getInstance() {
     if (CLOSE_MERGE_SERVICE == null) {
       CLOSE_MERGE_SERVICE = new CloseMergeService();
     }
     return CLOSE_MERGE_SERVICE;
-  }
-
-  private CloseMergeService() {
-    service = IoTDBThreadPoolFactory
-        .newScheduledThreadPool(2, ThreadName.CLOSE_MERGE_SERVICE.getName());
   }
 
   /**
@@ -105,6 +103,28 @@ public class CloseMergeService implements IService {
         LOGGER.warn("The close and merge service is not running now.");
       }
     }
+  }
+
+  @Override
+  public void start() throws StartupException {
+    try {
+      startService();
+    } catch (Exception e) {
+      String errorMessage = String
+          .format("Failed to start %s because of %s", this.getID().getName(),
+              e.getMessage());
+      throw new StartupException(errorMessage);
+    }
+  }
+
+  @Override
+  public void stop() {
+    closeService();
+  }
+
+  @Override
+  public ServiceType getID() {
+    return ServiceType.CLOSE_MERGE_SERVICE;
   }
 
   private class CloseAndMergeDaemon extends Thread {
@@ -179,27 +199,5 @@ public class CloseMergeService implements IService {
         LOGGER.error("close all error.", e);
       }
     }
-  }
-
-  @Override
-  public void start() throws StartupException {
-    try {
-      startService();
-    } catch (Exception e) {
-      String errorMessage = String
-          .format("Failed to start %s because of %s", this.getID().getName(),
-              e.getMessage());
-      throw new StartupException(errorMessage);
-    }
-  }
-
-  @Override
-  public void stop() {
-    closeService();
-  }
-
-  @Override
-  public ServiceType getID() {
-    return ServiceType.CLOSE_MERGE_SERVICE;
   }
 }

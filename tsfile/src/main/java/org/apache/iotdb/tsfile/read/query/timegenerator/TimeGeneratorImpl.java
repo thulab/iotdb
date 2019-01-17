@@ -44,6 +44,7 @@ public class TimeGeneratorImpl implements TimeGenerator {
 
   /**
    * construct function for TimeGeneratorImpl.
+   *
    * @param iexpression -construct param
    * @param chunkLoader -construct param
    * @param metadataQuerier -construct param

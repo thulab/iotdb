@@ -40,6 +40,7 @@ public class User {
 
   /**
    * construct function for User.
+   *
    * @param name -user name
    * @param password -user password
    */
@@ -64,6 +65,7 @@ public class User {
 
   /**
    * set the privilege.
+   *
    * @param path -path
    * @param privileges -set of integer to determine privilege
    */

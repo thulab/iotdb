@@ -74,10 +74,8 @@ public class TsFileIOWriter {
   /**
    * for writing a new tsfile.
    *
-   * @param file
-   *            be used to output written data
-   * @throws IOException
-   *             if I/O error occurs
+   * @param file be used to output written data
+   * @throws IOException if I/O error occurs
    */
   public TsFileIOWriter(File file) throws IOException {
     this.out = new DefaultTsFileOutput(file);
@@ -88,12 +86,9 @@ public class TsFileIOWriter {
    * for writing data into an existing and incomplete Tsfile. The caller need to guarantee existing
    * data in the TsFileOutput matches the given metadata list
    *
-   * @param out
-   *            the target output
-   * @param chunkGroupMetaDataList
-   *            existing chunkgroups' metadata
-   * @throws IOException
-   *             if I/O error occurs
+   * @param out the target output
+   * @param chunkGroupMetaDataList existing chunkgroups' metadata
+   * @throws IOException if I/O error occurs
    */
   public TsFileIOWriter(TsFileOutput out, List<ChunkGroupMetaData> chunkGroupMetaDataList)
       throws IOException {
@@ -108,10 +103,8 @@ public class TsFileIOWriter {
    * Writes given bytes to output stream. This method is called when total memory size exceeds the
    * chunk group size threshold.
    *
-   * @param bytes
-   *            - data of several pages which has been packed
-   * @throws IOException
-   *             if an I/O error occurs.
+   * @param bytes - data of several pages which has been packed
+   * @throws IOException if an I/O error occurs.
    */
   public void writeBytesToStream(PublicBAOS bytes) throws IOException {
     bytes.writeTo(out.wrapAsStream());
@@ -124,8 +117,7 @@ public class TsFileIOWriter {
   /**
    * start a {@linkplain ChunkGroupMetaData ChunkGroupMetaData}.
    *
-   * @param deviceId
-   *            device id
+   * @param deviceId device id
    */
   public void startFlushChunkGroup(String deviceId) throws IOException {
     LOG.debug("start chunk group:{}, file position {}", deviceId, out.getPosition());
@@ -135,23 +127,15 @@ public class TsFileIOWriter {
   /**
    * start a {@linkplain ChunkMetaData ChunkMetaData}.
    *
-   * @param descriptor
-   *            - measurement of this time series
-   * @param compressionCodecName
-   *            - compression name of this time series
-   * @param tsDataType
-   *            - data type
-   * @param statistics
-   *            - statistic of the whole series
-   * @param maxTime
-   *            - maximum timestamp of the whole series in this stage
-   * @param minTime
-   *            - minimum timestamp of the whole series in this stage
-   * @param datasize
-   *            - the serialized size of all pages
+   * @param descriptor - measurement of this time series
+   * @param compressionCodecName - compression name of this time series
+   * @param tsDataType - data type
+   * @param statistics - statistic of the whole series
+   * @param maxTime - maximum timestamp of the whole series in this stage
+   * @param minTime - minimum timestamp of the whole series in this stage
+   * @param datasize - the serialized size of all pages
    * @return the serialized size of CHunkHeader
-   * @throws IOException
-   *             if I/O error occurs
+   * @throws IOException if I/O error occurs
    */
   public int startFlushChunk(MeasurementSchema descriptor, CompressionType compressionCodecName,
       TSDataType tsDataType, TSEncoding encodingType, Statistics<?> statistics, long maxTime,
@@ -213,10 +197,8 @@ public class TsFileIOWriter {
   /**
    * write {@linkplain TsFileMetaData TSFileMetaData} to output stream and close it.
    *
-   * @param schema
-   *            FileSchema
-   * @throws IOException
-   *             if I/O error occurs
+   * @param schema FileSchema
+   * @throws IOException if I/O error occurs
    */
   public void endFile(FileSchema schema) throws IOException {
 
@@ -255,8 +237,7 @@ public class TsFileIOWriter {
    * 1. group chunkGroupMetaDataList to TsDeviceMetadata 2. flush TsDeviceMetadata 3. get
    * TsDeviceMetadataIndex
    *
-   * @param chunkGroupMetaDataList
-   *            all chunk group metadata in memory
+   * @param chunkGroupMetaDataList all chunk group metadata in memory
    * @return TsDeviceMetadataIndex in TsFileMetaData
    */
   private Map<String, TsDeviceMetadataIndex> flushTsDeviceMetaDataAndGetIndex(
@@ -289,8 +270,7 @@ public class TsFileIOWriter {
   /**
    * group all chunk group metadata by device.
    *
-   * @param chunkGroupMetaDataList
-   *            all chunk group metadata
+   * @param chunkGroupMetaDataList all chunk group metadata
    * @return TsDeviceMetadata of all devices
    */
   private TreeMap<String, TsDeviceMetadata> getAllTsDeviceMetadata(
@@ -314,8 +294,7 @@ public class TsFileIOWriter {
    * get the length of normal OutputStream.
    *
    * @return - length of normal OutputStream
-   * @throws IOException
-   *             if I/O error occurs
+   * @throws IOException if I/O error occurs
    */
   public long getPos() throws IOException {
     return out.getPosition();

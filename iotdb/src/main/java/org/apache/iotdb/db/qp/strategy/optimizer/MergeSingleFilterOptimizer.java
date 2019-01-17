@@ -39,7 +39,7 @@ public class MergeSingleFilterOptimizer implements IFilterOptimizer {
    *
    * @param filter - children is not empty.
    * @return - if all recursive children of this node have same seriesPath, set this node to single
-   *     node, and return the same seriesPath, otherwise, throw exception;
+   * node, and return the same seriesPath, otherwise, throw exception;
    */
   private Path mergeSamePathFilter(FilterOperator filter) throws LogicalOptimizeException {
     if (filter.isLeaf()) {

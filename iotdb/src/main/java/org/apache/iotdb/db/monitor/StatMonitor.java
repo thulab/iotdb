@@ -43,12 +43,10 @@ import org.slf4j.LoggerFactory;
 public class StatMonitor implements IService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StatMonitor.class);
-
-  private long runningTimeMillis = System.currentTimeMillis();
   private final int backLoopPeriod;
   private final int statMonitorDetectFreqSec;
   private final int statMonitorRetainIntervalSec;
-
+  private long runningTimeMillis = System.currentTimeMillis();
   /**
    * key: is the statistics store seriesPath Value: is an interface that implements statistics
    * function.
@@ -214,7 +212,7 @@ public class StatMonitor implements IService {
 
   /**
    * deregist statistics.
-   * */
+   */
   public void deregistStatistics(String path) {
     LOGGER.debug("Deregister {} in StatMonitor for stopping statistics service", path);
     synchronized (statisticMap) {
@@ -254,7 +252,7 @@ public class StatMonitor implements IService {
 
   /**
    * get all statistics.
-   * */
+   */
   public HashMap<String, TSRecord> gatherStatistics() {
     synchronized (statisticMap) {
       long currentTimeMillis = System.currentTimeMillis();
@@ -297,7 +295,7 @@ public class StatMonitor implements IService {
 
   /**
    * close statistic service.
-   * */
+   */
   public void close() {
 
     if (service == null || service.isShutdown()) {
@@ -310,6 +308,32 @@ public class StatMonitor implements IService {
     } catch (InterruptedException e) {
       LOGGER.error("StatMonitor timing service could not be shutdown.", e);
     }
+  }
+
+  @Override
+  public void start() throws StartupException {
+    try {
+      if (IoTDBDescriptor.getInstance().getConfig().enableStatMonitor) {
+        activate();
+      }
+    } catch (Exception e) {
+      String errorMessage = String
+          .format("Failed to start %s because of %s", this.getID().getName(),
+              e.getMessage());
+      throw new StartupException(errorMessage);
+    }
+  }
+
+  @Override
+  public void stop() {
+    if (IoTDBDescriptor.getInstance().getConfig().enableStatMonitor) {
+      close();
+    }
+  }
+
+  @Override
+  public ServiceType getID() {
+    return ServiceType.STAT_MONITOR_SERVICE;
   }
 
   private static class StatMonitorHolder {
@@ -348,31 +372,5 @@ public class StatMonitor implements IService {
         LOGGER.error("Error occurred in Stat Monitor thread", e);
       }
     }
-  }
-
-  @Override
-  public void start() throws StartupException {
-    try {
-      if (IoTDBDescriptor.getInstance().getConfig().enableStatMonitor) {
-        activate();
-      }
-    } catch (Exception e) {
-      String errorMessage = String
-          .format("Failed to start %s because of %s", this.getID().getName(),
-              e.getMessage());
-      throw new StartupException(errorMessage);
-    }
-  }
-
-  @Override
-  public void stop() {
-    if (IoTDBDescriptor.getInstance().getConfig().enableStatMonitor) {
-      close();
-    }
-  }
-
-  @Override
-  public ServiceType getID() {
-    return ServiceType.STAT_MONITOR_SERVICE;
   }
 }

@@ -93,16 +93,76 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     this.compressor = Compressor.getCompressor(compressionType);
   }
 
+  /**
+   * function for deserializing data from input stream.
+   */
+  public static MeasurementSchema deserializeFrom(InputStream inputStream) throws IOException {
+    MeasurementSchema measurementSchema = new MeasurementSchema();
+
+    measurementSchema.measurementId = ReadWriteIOUtils.readString(inputStream);
+
+    measurementSchema.type = ReadWriteIOUtils.readDataType(inputStream);
+
+    measurementSchema.encoding = ReadWriteIOUtils.readEncoding(inputStream);
+
+    CompressionType compressionType = ReadWriteIOUtils.readCompressionType(inputStream);
+    measurementSchema.compressor = Compressor.getCompressor(compressionType);
+
+    int size = ReadWriteIOUtils.readInt(inputStream);
+    if (size > 0) {
+      measurementSchema.props = new HashMap<>();
+      String key;
+      String value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(inputStream);
+        value = ReadWriteIOUtils.readString(inputStream);
+        measurementSchema.props.put(key, value);
+      }
+    }
+
+    return measurementSchema;
+  }
+
+  /**
+   * function for deserializing data from byte buffer.
+   */
+  public static MeasurementSchema deserializeFrom(ByteBuffer buffer) throws IOException {
+    MeasurementSchema measurementSchema = new MeasurementSchema();
+
+    measurementSchema.measurementId = ReadWriteIOUtils.readString(buffer);
+
+    measurementSchema.type = ReadWriteIOUtils.readDataType(buffer);
+
+    measurementSchema.encoding = ReadWriteIOUtils.readEncoding(buffer);
+
+    CompressionType compressionType = ReadWriteIOUtils.readCompressionType(buffer);
+    measurementSchema.compressor = Compressor.getCompressor(compressionType);
+
+    int size = ReadWriteIOUtils.readInt(buffer);
+    if (size > 0) {
+      measurementSchema.props = new HashMap<>();
+      String key;
+      String value;
+      for (int i = 0; i < size; i++) {
+        key = ReadWriteIOUtils.readString(buffer);
+        value = ReadWriteIOUtils.readString(buffer);
+        measurementSchema.props.put(key, value);
+      }
+    }
+
+    return measurementSchema;
+  }
+
   public String getMeasurementId() {
     return measurementId;
   }
 
-  public Map<String, String> getProps() {
-    return props;
-  }
-
   public void setMeasurementId(String measurementId) {
     this.measurementId = measurementId;
+  }
+
+  public Map<String, String> getProps() {
+    return props;
   }
 
   public TSEncoding getEncodingType() {
@@ -214,66 +274,6 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
     }
 
     return byteLen;
-  }
-
-  /**
-   * function for deserializing data from input stream.
-   */
-  public static MeasurementSchema deserializeFrom(InputStream inputStream) throws IOException {
-    MeasurementSchema measurementSchema = new MeasurementSchema();
-
-    measurementSchema.measurementId = ReadWriteIOUtils.readString(inputStream);
-
-    measurementSchema.type = ReadWriteIOUtils.readDataType(inputStream);
-
-    measurementSchema.encoding = ReadWriteIOUtils.readEncoding(inputStream);
-
-    CompressionType compressionType = ReadWriteIOUtils.readCompressionType(inputStream);
-    measurementSchema.compressor = Compressor.getCompressor(compressionType);
-
-    int size = ReadWriteIOUtils.readInt(inputStream);
-    if (size > 0) {
-      measurementSchema.props = new HashMap<>();
-      String key;
-      String value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(inputStream);
-        value = ReadWriteIOUtils.readString(inputStream);
-        measurementSchema.props.put(key, value);
-      }
-    }
-
-    return measurementSchema;
-  }
-
-  /**
-   * function for deserializing data from byte buffer.
-   */
-  public static MeasurementSchema deserializeFrom(ByteBuffer buffer) throws IOException {
-    MeasurementSchema measurementSchema = new MeasurementSchema();
-
-    measurementSchema.measurementId = ReadWriteIOUtils.readString(buffer);
-
-    measurementSchema.type = ReadWriteIOUtils.readDataType(buffer);
-
-    measurementSchema.encoding = ReadWriteIOUtils.readEncoding(buffer);
-
-    CompressionType compressionType = ReadWriteIOUtils.readCompressionType(buffer);
-    measurementSchema.compressor = Compressor.getCompressor(compressionType);
-
-    int size = ReadWriteIOUtils.readInt(buffer);
-    if (size > 0) {
-      measurementSchema.props = new HashMap<>();
-      String key;
-      String value;
-      for (int i = 0; i < size; i++) {
-        key = ReadWriteIOUtils.readString(buffer);
-        value = ReadWriteIOUtils.readString(buffer);
-        measurementSchema.props.put(key, value);
-      }
-    }
-
-    return measurementSchema;
   }
 
   @Override

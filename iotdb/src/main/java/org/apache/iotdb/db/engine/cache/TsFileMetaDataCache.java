@@ -25,12 +25,13 @@ import org.slf4j.LoggerFactory;
  * This class is used to cache <code>TsFileMetaData</code> of tsfile in IoTDB.
  *
  * @author liukun
- *
  */
 public class TsFileMetaDataCache {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TsFileMetaDataCache.class);
-  /** key: The file seriesPath of tsfile. */
+  /**
+   * key: The file seriesPath of tsfile.
+   */
   private ConcurrentHashMap<String, TsFileMetaData> cache;
   private AtomicLong cacheHintNum = new AtomicLong();
   private AtomicLong cacheRequestNum = new AtomicLong();
@@ -39,22 +40,14 @@ public class TsFileMetaDataCache {
     cache = new ConcurrentHashMap<>();
   }
 
-  /*
-   * Singleton pattern
-   */
-  private static class TsFileMetaDataCacheHolder {
-
-    private static final TsFileMetaDataCache INSTANCE = new TsFileMetaDataCache();
-  }
-
   public static TsFileMetaDataCache getInstance() {
     return TsFileMetaDataCacheHolder.INSTANCE;
   }
 
   /**
    * get the TsFileMetaData for the given path.
+   *
    * @param path -given path
-   * @return
    */
   public TsFileMetaData get(String path) throws IOException {
 
@@ -89,5 +82,13 @@ public class TsFileMetaDataCache {
 
   public void clear() {
     cache.clear();
+  }
+
+  /*
+   * Singleton pattern
+   */
+  private static class TsFileMetaDataCacheHolder {
+
+    private static final TsFileMetaDataCache INSTANCE = new TsFileMetaDataCache();
   }
 }

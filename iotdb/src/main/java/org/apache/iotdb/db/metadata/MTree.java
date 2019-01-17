@@ -31,8 +31,8 @@ public class MTree implements Serializable {
 
   private static final long serialVersionUID = -4200394435237291964L;
   private final String space = "    ";
-  private MNode root;
   private final String separator = "\\.";
+  private MNode root;
 
   public MTree(String rootName) {
     this.root = new MNode(rootName, null, false);
@@ -231,7 +231,7 @@ public class MTree implements Serializable {
    * Delete one seriesPath from current Metadata Tree.
    *
    * @param path Format: root.node.(node)* Notice: Path must be a complete Path from root to leaf
-   *     node.
+   * node.
    */
   public String deletePath(String path) throws PathErrorException {
     String[] nodes = path.split(separator);
@@ -578,7 +578,7 @@ public class MTree implements Serializable {
    * Check the prefix of this seriesPath is storage group seriesPath.
    *
    * @return true the prefix of this seriesPath is storage group seriesPath false the prefix of this
-   *     seriesPath is not storage group seriesPath
+   * seriesPath is not storage group seriesPath
    */
   public boolean checkFileNameByPath(String path) {
 
@@ -774,7 +774,7 @@ public class MTree implements Serializable {
   /**
    * Get all ColumnSchemas for the filenode seriesPath.
    *
-   * @return ArrayList< ColumnSchema > The list of the schema
+   * @return ArrayList<  ColumnSchema  > The list of the schema
    */
   public ArrayList<ColumnSchema> getSchemaForOneFileNode(String path) {
 

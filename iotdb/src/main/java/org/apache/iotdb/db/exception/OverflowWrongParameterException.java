@@ -15,8 +15,8 @@
 package org.apache.iotdb.db.exception;
 
 /**
- * Used for IntervalTree pass wrong parameters. <br>
- * e.g. TSDataType inconsistent; e.g. start time is greater than end time.
+ * Used for IntervalTree pass wrong parameters. <br> e.g. TSDataType inconsistent; e.g. start time
+ * is greater than end time.
  *
  * @author CGF
  */

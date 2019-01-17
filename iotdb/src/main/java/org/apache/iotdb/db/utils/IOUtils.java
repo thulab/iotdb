@@ -1,17 +1,15 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.iotdb.db.utils;
@@ -21,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-
 import org.apache.iotdb.db.auth.entity.PathPrivilege;
 
 public class IOUtils {
@@ -38,7 +35,7 @@ public class IOUtils {
    * @throws IOException when an exception raised during operating the stream.
    */
   public static void writeString(OutputStream outputStream, String str, String encoding,
-                                 ThreadLocal<ByteBuffer> encodingBufferLocal) throws IOException {
+      ThreadLocal<ByteBuffer> encodingBufferLocal) throws IOException {
     if (str != null) {
       byte[] strBuffer = str.getBytes(encoding);
       writeInt(outputStream, strBuffer.length, encodingBufferLocal);
@@ -59,8 +56,8 @@ public class IOUtils {
    * @throws IOException when an exception raised during operating the stream.
    */
   public static void writeInt(OutputStream outputStream, int i,
-                              ThreadLocal<ByteBuffer> encodingBufferLocal)
-          throws IOException {
+      ThreadLocal<ByteBuffer> encodingBufferLocal)
+      throws IOException {
     ByteBuffer encodingBuffer;
     if (encodingBufferLocal != null) {
       encodingBuffer = encodingBufferLocal.get();
@@ -89,8 +86,8 @@ public class IOUtils {
    * @throws IOException when an exception raised during operating the stream.
    */
   public static String readString(DataInputStream inputStream, String encoding,
-                                  ThreadLocal<byte[]> strBufferLocal)
-          throws IOException {
+      ThreadLocal<byte[]> strBufferLocal)
+      throws IOException {
     byte[] strBuffer;
     int length = inputStream.readInt();
     if (length > 0) {
@@ -122,8 +119,8 @@ public class IOUtils {
    * @throws IOException when an exception raised during operating the stream.
    */
   public static PathPrivilege readPathPrivilege(DataInputStream inputStream, String encoding,
-                                                ThreadLocal<byte[]> strBufferLocal)
-          throws IOException {
+      ThreadLocal<byte[]> strBufferLocal)
+      throws IOException {
     String path = IOUtils.readString(inputStream, encoding, strBufferLocal);
     int privilegeNum = inputStream.readInt();
     PathPrivilege pathPrivilege = new PathPrivilege(path);
@@ -144,9 +141,9 @@ public class IOUtils {
    * @throws IOException when an exception raised during operating the stream.
    */
   public static void writePathPrivilege(OutputStream outputStream, PathPrivilege pathPrivilege,
-                                        String encoding,
-                                        ThreadLocal<ByteBuffer> encodingBufferLocal)
-          throws IOException {
+      String encoding,
+      ThreadLocal<ByteBuffer> encodingBufferLocal)
+      throws IOException {
     writeString(outputStream, pathPrivilege.path, encoding, encodingBufferLocal);
     writeInt(outputStream, pathPrivilege.privileges.size(), encodingBufferLocal);
     for (Integer i : pathPrivilege.privileges) {
@@ -167,7 +164,7 @@ public class IOUtils {
       oldFile.delete();
       if (!newFile.renameTo(oldFile)) {
         throw new IOException(
-                String.format("Cannot replace old user file with new one : %s", newFile.getPath()));
+            String.format("Cannot replace old user file with new one : %s", newFile.getPath()));
       }
     }
   }

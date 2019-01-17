@@ -66,7 +66,7 @@ public abstract class RleDecoder extends Decoder {
 
   /**
    * a constructor, init with endianType, default encoding is <code>TSEncoding.RLE</code>.
-   * */
+   */
   public RleDecoder(EndianType endianType) {
     super(TSEncoding.RLE);
     this.endianType = endianType;

@@ -87,9 +87,9 @@ public class BasicDaoImpl implements BasicDao {
 
   static class TimeValuesRowMapper implements RowMapper<TimeValues> {
 
-    String columnName;
     static final String TRUE_STR = "true";
     static final String FALSE_STR = "false";
+    String columnName;
 
     TimeValuesRowMapper(String columnName) {
       this.columnName = columnName;

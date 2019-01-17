@@ -52,6 +52,7 @@ public abstract class ChunkReader {
 
   /**
    * constructor of ChunkReader.
+   *
    * @param chunk input Chunk object
    * @param filter filter
    */
@@ -71,6 +72,7 @@ public abstract class ChunkReader {
 
   /**
    * get next data batch.
+   *
    * @return next data batch
    * @throws IOException IOException
    */
@@ -129,12 +131,12 @@ public abstract class ChunkReader {
   public void close() {
   }
 
-  public void setMaxTombstoneTime(long maxTombStoneTime) {
-    this.maxTombstoneTime = maxTombStoneTime;
-  }
-
   public long getMaxTombstoneTime() {
     return this.maxTombstoneTime;
+  }
+
+  public void setMaxTombstoneTime(long maxTombStoneTime) {
+    this.maxTombstoneTime = maxTombStoneTime;
   }
 
 }

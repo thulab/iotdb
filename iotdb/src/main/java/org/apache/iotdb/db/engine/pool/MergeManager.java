@@ -30,11 +30,6 @@ public class MergeManager {
   private ExecutorService pool;
   private int threadCnt;
 
-  private static class InstanceHolder {
-
-    private static MergeManager instance = new MergeManager();
-  }
-
   private MergeManager() {
     IoTDBConfig config = IoTDBDescriptor.getInstance().getConfig();
     this.threadCnt = config.mergeConcurrentThreads;
@@ -62,7 +57,7 @@ public class MergeManager {
    * Refuse new merge submits and exit when all RUNNING THREAD in the pool end.
    *
    * @param block if set block to true, this method will wait for timeOut milliseconds to close the
-   *     merge pool. false, return directly.
+   * merge pool. false, return directly.
    * @param timeOut block time out in milliseconds.
    * @throws ProcessorException if timeOut reach or interrupted while waiting to exit.
    */
@@ -85,7 +80,7 @@ public class MergeManager {
    * Block new merge submits and exit when all RUNNING THREADS AND TASKS IN THE QUEUE end.
    *
    * @param block if set to true, this method will wait for timeOut milliseconds. false, return
-   *     directly. False, return directly.
+   * directly. False, return directly.
    * @param timeOut block time out in milliseconds.
    * @throws ProcessorException if timeOut is reached or being interrupted while waiting to exit.
    */
@@ -114,5 +109,10 @@ public class MergeManager {
 
   public int getThreadCnt() {
     return threadCnt;
+  }
+
+  private static class InstanceHolder {
+
+    private static MergeManager instance = new MergeManager();
   }
 }

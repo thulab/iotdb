@@ -74,6 +74,11 @@ public class FileNodeManager implements IStatistic, IService {
   private static final Directories directories = Directories.getInstance();
   private final String baseDir;
   /**
+   * Stat information.
+   */
+  private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
+      + MonitorConstants.MONITOR_PATH_SEPERATOR + MonitorConstants.fileNodeManagerPath;
+  /**
    * This map is used to manage all filenode processor,<br> the key is filenode name which is
    * storage group seriesPath.
    */
@@ -82,13 +87,6 @@ public class FileNodeManager implements IStatistic, IService {
    * This set is used to store overflowed filenode name.<br> The overflowed filenode will be merge.
    */
   private volatile FileNodeManagerStatus fileNodeManagerStatus = FileNodeManagerStatus.NONE;
-
-  /**
-   * Stat information.
-   */
-  private final String statStorageDeltaName = MonitorConstants.statStorageGroupPrefix
-      + MonitorConstants.MONITOR_PATH_SEPERATOR + MonitorConstants.fileNodeManagerPath;
-
   // There is no need to add concurrently
   private HashMap<String, AtomicLong> statParamsHashMap = new HashMap<String, AtomicLong>() {
     {
@@ -98,6 +96,30 @@ public class FileNodeManager implements IStatistic, IService {
       }
     }
   };
+
+  private FileNodeManager(String baseDir) {
+    processorMap = new ConcurrentHashMap<String, FileNodeProcessor>();
+
+    if (baseDir.charAt(baseDir.length() - 1) != File.separatorChar) {
+      baseDir += File.separatorChar;
+    }
+    this.baseDir = baseDir;
+    File dir = new File(baseDir);
+    if (dir.mkdirs()) {
+      LOGGER.info("{} dir home doesn't exist, create it", dir.getPath());
+    }
+
+    // TsFileConf.duplicateIncompletedPage = true;
+    if (TsFileDBConf.enableStatMonitor) {
+      StatMonitor statMonitor = StatMonitor.getInstance();
+      registStatMetadata();
+      statMonitor.registStatistics(statStorageDeltaName, this);
+    }
+  }
+
+  public static FileNodeManager getInstance() {
+    return FileNodeManagerHolder.INSTANCE;
+  }
 
   private void updateStatHashMapWhenFail(TSRecord tsRecord) {
     statParamsHashMap.get(MonitorConstants.FileNodeManagerStatConstants.TOTAL_REQ_FAIL.name())
@@ -155,15 +177,6 @@ public class FileNodeManager implements IStatistic, IService {
     StatMonitor.getInstance().registStatStorageGroup(hashMap);
   }
 
-  private static class FileNodeManagerHolder {
-
-    private static FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.fileNodeDir);
-  }
-
-  public static FileNodeManager getInstance() {
-    return FileNodeManagerHolder.INSTANCE;
-  }
-
   /**
    * This function is just for unit test.
    */
@@ -172,26 +185,6 @@ public class FileNodeManager implements IStatistic, IService {
       statParamsHashMap.put(key, new AtomicLong());
     }
     processorMap.clear();
-  }
-
-  private FileNodeManager(String baseDir) {
-    processorMap = new ConcurrentHashMap<String, FileNodeProcessor>();
-
-    if (baseDir.charAt(baseDir.length() - 1) != File.separatorChar) {
-      baseDir += File.separatorChar;
-    }
-    this.baseDir = baseDir;
-    File dir = new File(baseDir);
-    if (dir.mkdirs()) {
-      LOGGER.info("{} dir home doesn't exist, create it", dir.getPath());
-    }
-
-    // TsFileConf.duplicateIncompletedPage = true;
-    if (TsFileDBConf.enableStatMonitor) {
-      StatMonitor statMonitor = StatMonitor.getInstance();
-      registStatMetadata();
-      statMonitor.registStatistics(statStorageDeltaName, this);
-    }
   }
 
   private FileNodeProcessor constructNewProcessor(String filenodeName)
@@ -268,7 +261,7 @@ public class FileNodeManager implements IStatistic, IService {
    *
    * @param tsRecord input Data
    * @param isMonitor if true, the insertion is done by StatMonitor and the statistic Info will not
-   *     be recorded. if false, the statParamsHashMap will be updated.
+   * be recorded. if false, the statParamsHashMap will be updated.
    * @return an int value represents the insert type
    */
   public int insert(TSRecord tsRecord, boolean isMonitor) throws FileNodeManagerException {
@@ -1017,10 +1010,6 @@ public class FileNodeManager implements IStatistic, IService {
     }
   }
 
-  private enum FileNodeManagerStatus {
-    NONE, MERGE, CLOSE;
-  }
-
   /**
    * force flush to control memory usage.
    */
@@ -1154,5 +1143,14 @@ public class FileNodeManager implements IStatistic, IService {
     fileNodeProcessor.fileNodeRecovery();
     // add index check sum
     // fileNodeProcessor.rebuildIndex();
+  }
+
+  private enum FileNodeManagerStatus {
+    NONE, MERGE, CLOSE;
+  }
+
+  private static class FileNodeManagerHolder {
+
+    private static FileNodeManager INSTANCE = new FileNodeManager(TsFileDBConf.fileNodeDir);
   }
 }
