@@ -130,7 +130,6 @@ public class AuthUtils {
         case INSERT_TIMESERIES:
         case UPDATE_TIMESERIES:
           validatePath(path);
-          break;
         default:
           return;
       }
