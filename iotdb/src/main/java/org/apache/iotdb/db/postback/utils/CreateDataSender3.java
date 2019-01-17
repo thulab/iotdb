@@ -250,7 +250,7 @@ public class CreateDataSender3 {
     storageGroupList.add("root.range_event2");
 
     try {
-      Class.forName("org.apache.iotdb.jdbc.TsfileDriver");
+      Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
       connection = DriverManager.getConnection("jdbc:iotdb://localhost:6667/", "root", "root");
       statement = connection.createStatement();
       connection1 = DriverManager

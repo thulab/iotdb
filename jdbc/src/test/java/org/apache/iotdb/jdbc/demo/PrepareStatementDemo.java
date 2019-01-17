@@ -26,7 +26,7 @@ import java.sql.Timestamp;
 public class PrepareStatementDemo {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
-        Class.forName("org.apache.iotdb.jdbc.TsfileDriver");
+        Class.forName("org.apache.iotdb.jdbc.IoTDBDriver");
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:iotdb://127.0.0.1:6667/", "root", "root");

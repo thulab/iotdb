@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerServiceImpl implements ServerService.Iface {
 
-  private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.TsfileDriver";
+  private final String JDBC_DRIVER_NAME = "org.apache.iotdb.jdbc.IoTDBDriver";
   private ThreadLocal<String> uuid = new ThreadLocal<String>();
   // String means Storage Group,List means the set of new Files(AbsulutePath) in local IoTDB
   // String means AbsulutePath of new Files
