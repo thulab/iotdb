@@ -21,8 +21,8 @@ import java.nio.ByteBuffer;
 
 import org.apache.iotdb.tsfile.encoding.bitpacking.IntPacker;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
+import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +107,7 @@ public class IntRleDecoder extends RleDecoder {
   }
 
   @Override
-  protected void readNumberInRLE() throws IOException {
+  protected void readNumberInRle() throws IOException {
     currentValue = ReadWriteForEncodingUtils
             .readIntLittleEndianPaddedOnBitWidth(byteCache, bitWidth);
   }

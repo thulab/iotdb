@@ -14,30 +14,30 @@
 
 package org.apache.iotdb.tsfile.exception.encoding;
 
-import org.apache.iotdb.tsfile.exception.TSFileRuntimeException;
+import org.apache.iotdb.tsfile.exception.TsFileRuntimeException;
 
 /**
  * This Exception is used while decoding failed. <br>
- * This Exception extends super class {@link TSFileRuntimeException}
+ * This Exception extends super class {@link TsFileRuntimeException}
  *
  * @author kangrong
  */
-public class TSFileDecodingException extends TSFileRuntimeException {
+public class TsFileDecodingException extends TsFileRuntimeException {
 
   private static final long serialVersionUID = -8632392900655017028L;
 
-  public TSFileDecodingException() {
+  public TsFileDecodingException() {
   }
 
-  public TSFileDecodingException(String message, Throwable cause) {
+  public TsFileDecodingException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public TSFileDecodingException(String message) {
+  public TsFileDecodingException(String message) {
     super(message);
   }
 
-  public TSFileDecodingException(Throwable cause) {
+  public TsFileDecodingException(Throwable cause) {
     super(cause);
   }
 }
