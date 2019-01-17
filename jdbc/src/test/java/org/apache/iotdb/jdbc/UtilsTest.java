@@ -33,7 +33,6 @@ import org.apache.iotdb.service.rpc.thrift.TS_Status;
 import org.apache.iotdb.service.rpc.thrift.TS_StatusCode;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.read.common.Field;
-import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.read.common.RowRecord;
 
 public class UtilsTest {
@@ -55,7 +54,7 @@ public class UtilsTest {
         Properties properties = new Properties();
         properties.setProperty(Config.AUTH_USER, userName);
         properties.setProperty(Config.AUTH_PASSWORD, userPwd);
-        IoTDBConnectionParams params = Utils.parseURL(String.format(Config.IOTDB_URL_PREFIX + "%s:%s/", host, port),
+        IoTDBConnectionParams params = Utils.parseUrl(String.format(Config.IOTDB_URL_PREFIX + "%s:%s/", host, port),
                 properties);
         assertEquals(params.getHost(), host);
         assertEquals(params.getPort(), port);

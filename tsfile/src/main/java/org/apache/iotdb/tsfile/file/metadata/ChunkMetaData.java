@@ -55,6 +55,7 @@ public class ChunkMetaData {
 
   /**
    * get serialized size.
+   *
    * @return serialized size (int type)
    */
   public int getSerializedSize() {
@@ -71,6 +72,7 @@ public class ChunkMetaData {
 
   /**
    * constructor of ChunkMetaData.
+   *
    * @param measurementUid measurement id
    * @param tsDataType time series data type
    * @param fileOffset file offset
@@ -101,6 +103,7 @@ public class ChunkMetaData {
 
   /**
    * get offset of chunk header.
+   *
    * @return Byte offset of header of this chunk (includes the marker)
    */
   public long getOffsetOfChunkHeader() {
@@ -146,6 +149,7 @@ public class ChunkMetaData {
 
   /**
    * serialize to outputStream.
+   *
    * @param outputStream outputStream
    * @return length
    * @throws IOException IOException
@@ -172,6 +176,7 @@ public class ChunkMetaData {
 
   /**
    * serialize to ByteBuffer.
+   *
    * @param buffer ByteBuffer
    * @return length
    */
@@ -197,6 +202,7 @@ public class ChunkMetaData {
 
   /**
    * deserialize from InputStream.
+   *
    * @param inputStream InputStream
    * @return ChunkMetaData object
    * @throws IOException IOException
@@ -221,6 +227,7 @@ public class ChunkMetaData {
 
   /**
    * deserialize from ByteBuffer.
+   *
    * @param buffer ByteBuffer
    * @return ChunkMetaData object
    */

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.iotdb.tsfile.file.metadata.statistics;
 
 import java.io.InputStream;
