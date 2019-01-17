@@ -12,31 +12,32 @@
  * the License.
  */
 
-package org.apache.iotdb.tsfile.exception;
+package org.apache.iotdb.tsfile.exception.encoding;
+
+import org.apache.iotdb.tsfile.exception.TsFileRuntimeException;
 
 /**
- * This Exception is the parent class for all runtime exceptions.<br>
- * This Exception extends super class {@link java.lang.RuntimeException}
+ * This Exception is used while encoding failed. <br>
+ * This Exception extends super class {@link TsFileRuntimeException}
  *
  * @author kangrong
  */
-public abstract class TSFileRuntimeException extends RuntimeException {
+public class TsFileEncodingException extends TsFileRuntimeException {
 
-  private static final long serialVersionUID = 6455048223316780984L;
+  private static final long serialVersionUID = -7225811149696714845L;
 
-  public TSFileRuntimeException() {
-    super();
+  public TsFileEncodingException() {
   }
 
-  public TSFileRuntimeException(String message, Throwable cause) {
+  public TsFileEncodingException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public TSFileRuntimeException(String message) {
+  public TsFileEncodingException(String message) {
     super(message);
   }
 
-  public TSFileRuntimeException(Throwable cause) {
+  public TsFileEncodingException(Throwable cause) {
     super(cause);
   }
 }

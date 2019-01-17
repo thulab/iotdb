@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import org.apache.iotdb.tsfile.encoding.common.EndianType;
-import org.apache.iotdb.tsfile.exception.encoding.TSFileDecodingException;
+import org.apache.iotdb.tsfile.exception.encoding.TsFileDecodingException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.utils.Binary;
@@ -59,41 +59,41 @@ public abstract class Decoder {
     } else if (type == TSEncoding.GORILLA && dataType == TSDataType.DOUBLE) {
       return new DoublePrecisionDecoder();
     } else {
-      throw new TSFileDecodingException(
+      throw new TsFileDecodingException(
           "Decoder not found:" + type + " , DataType is :" + dataType);
     }
   }
 
   public int readInt(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readInt is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readInt is not supproted by Decoder");
   }
 
   public boolean readBoolean(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readBoolean is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readBoolean is not supproted by Decoder");
   }
 
   public short readShort(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readShort is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readShort is not supproted by Decoder");
   }
 
   public long readLong(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readLong is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readLong is not supproted by Decoder");
   }
 
   public float readFloat(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readFloat is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readFloat is not supproted by Decoder");
   }
 
   public double readDouble(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readDouble is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readDouble is not supproted by Decoder");
   }
 
   public Binary readBinary(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readBinary is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readBinary is not supproted by Decoder");
   }
 
   public BigDecimal readBigDecimal(ByteBuffer buffer) {
-    throw new TSFileDecodingException("Method readBigDecimal is not supproted by Decoder");
+    throw new TsFileDecodingException("Method readBigDecimal is not supproted by Decoder");
   }
 
   public abstract boolean hasNext(ByteBuffer buffer) throws IOException;
