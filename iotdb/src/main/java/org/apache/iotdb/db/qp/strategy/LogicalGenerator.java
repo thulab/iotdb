@@ -11,7 +11,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.iotdb.db.qp.strategy;
 
 import static org.apache.iotdb.db.qp.constant.SQLConstant.LESSTHAN;
@@ -60,11 +59,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class receives an AstNode and transform it to an operator which is a logical plan.
+ * This class receives an AstNode and transform it to an operator which is a logical plan
  */
 public class LogicalGenerator {
 
-  private Logger log = LoggerFactory.getLogger(LogicalGenerator.class);
+  private Logger LOG = LoggerFactory.getLogger(LogicalGenerator.class);
   private RootOperator initializedOperator = null;
   private ZoneId zoneId;
 
@@ -81,8 +80,12 @@ public class LogicalGenerator {
   /**
    * input an astNode parsing by {@code antlr} and analyze it.
    *
-   * @throws QueryProcessorException exception in query process
-   * @throws ArgsErrorException args error
+   * @throws QueryProcessorException
+   *             exception in query process
+   *
+   * @throws ArgsErrorException
+   *             args error
+   *
    */
   private void analyze(AstNode astNode) throws QueryProcessorException, ArgsErrorException {
     Token token = astNode.getToken();
@@ -162,8 +165,6 @@ public class LogicalGenerator {
           case TSParser.TOK_USER:
           case TSParser.TOK_ROLE:
             analyzeAuthorDrop(astNode);
-            break;
-          default:
             break;
         }
         return;
@@ -402,8 +403,8 @@ public class LogicalGenerator {
   }
 
   private void analyzeInsert(AstNode astNode) throws QueryProcessorException {
-    InsertOperator insertOp = new InsertOperator(SQLConstant.TOK_INSERT);
-    initializedOperator = insertOp;
+    InsertOperator InsertOp = new InsertOperator(SQLConstant.TOK_INSERT);
+    initializedOperator = InsertOp;
     analyzeSelectedPath(astNode.getChild(0));
     long timestamp;
     AstNode timeChild;
@@ -427,18 +428,18 @@ public class LogicalGenerator {
       throw new QueryProcessorException(
           "number of measurement is NOT EQUAL TO the number of values");
     }
-    insertOp.setTime(timestamp);
+    InsertOp.setTime(timestamp);
     List<String> measurementList = new ArrayList<>();
     for (int i = 1; i < astNode.getChild(1).getChildCount(); i++) {
       measurementList.add(astNode.getChild(1).getChild(i).getText());
     }
-    insertOp.setMeasurementList(measurementList);
+    InsertOp.setMeasurementList(measurementList);
 
     List<String> valueList = new ArrayList<>();
     for (int i = 1; i < astNode.getChild(2).getChildCount(); i++) {
       valueList.add(astNode.getChild(2).getChild(i).getText());
     }
-    insertOp.setValueList(valueList);
+    InsertOp.setValueList(valueList);
   }
 
   private void analyzeUpdate(AstNode astNode) throws QueryProcessorException {
@@ -480,7 +481,8 @@ public class LogicalGenerator {
   /**
    * for delete command, time should only have an end time.
    *
-   * @param operator delete logical plan
+   * @param operator
+   *            delete logical plan
    */
   private long parseDeleteTimeFilter(DeleteOperator operator) throws LogicalOperatorException {
     FilterOperator filterOperator = operator.getFilterOperator();
@@ -667,10 +669,10 @@ public class LogicalGenerator {
   }
 
   /**
-   * analyze fill type clause.
-   *
-   * <p>PreviousClause : PREVIOUS COMMA <'ValidPreviousTime'> LinearClause : LINEAR COMMA
-   * <'ValidPreviousTime'> COMMA <'ValidBehindTime'>
+   * analyze fill type clause
+   * <p>
+   * PreviousClause : PREVIOUS COMMA <ValidPreviousTime> LinearClause : LINEAR COMMA <ValidPreviousTime> COMMA
+   * <ValidBehindTime>
    */
   private void analyzeFill(AstNode node) throws LogicalOperatorException {
     FilterOperator filterOperator = ((SFWOperator) initializedOperator).getFilterOperator();
@@ -710,8 +712,6 @@ public class LogicalGenerator {
                 "Previous fill type must have 0 or 1 valid time range");
           }
           break;
-        default:
-          break;
       }
     }
 
@@ -738,14 +738,11 @@ public class LogicalGenerator {
               String.format("type %s cannot use %s fill function", dataType,
                   TSParser.tokenNames[type]));
         }
-        break;
-      default:
-        break;
     }
   }
 
   /**
-   * parse datatype node.
+   * parse datatype node
    */
   private TSDataType parseTypeNode(AstNode typeNode) throws LogicalOperatorException {
     String type = typeNode.getText().toLowerCase();
@@ -776,19 +773,14 @@ public class LogicalGenerator {
     switch (granu) {
       case "w":
         timeInterval *= 7;
-        break;
       case "d":
         timeInterval *= 24;
-        break;
       case "h":
         timeInterval *= 60;
-        break;
       case "m":
         timeInterval *= 60;
-        break;
       case "s":
         timeInterval *= 1000;
-        break;
       default:
         break;
     }
@@ -829,9 +821,6 @@ public class LogicalGenerator {
     return parseTimeFormat(sc.toString()) + "";
   }
 
-  /**
-   * function for parsing time format.
-   */
   public long parseTimeFormat(String timestampStr) throws LogicalOperatorException {
     if (timestampStr == null || timestampStr.trim().equals("")) {
       throw new LogicalOperatorException("input timestamp cannot be empty");
@@ -1055,11 +1044,11 @@ public class LogicalGenerator {
 
   private void checkMetadataArgs(String dataType, String encoding)
       throws MetadataArgsErrorException {
-    final String rle = "RLE";
-    final String plain = "PLAIN";
-    final String ts2diff = "TS_2DIFF";
-    final String bitmap = "BITMAP";
-    final String gorilla = "GORILLA";
+    final String RLE = "RLE";
+    final String PLAIN = "PLAIN";
+    final String TS_2DIFF = "TS_2DIFF";
+    final String BITMAP = "BITMAP";
+    final String GORILLA = "GORILLA";
     TSDataType tsDataType;
     if (dataType == null) {
       throw new MetadataArgsErrorException("data type cannot be null");
@@ -1075,46 +1064,46 @@ public class LogicalGenerator {
       throw new MetadataArgsErrorException("encoding type cannot be null");
     }
 
-    if (!encoding.equals(rle) && !encoding.equals(plain) && !encoding.equals(ts2diff) && !encoding
-        .equals(bitmap)
-        && !encoding.equals(gorilla)) {
+    if (!encoding.equals(RLE) && !encoding.equals(PLAIN) && !encoding.equals(TS_2DIFF) && !encoding
+        .equals(BITMAP)
+        && !encoding.equals(GORILLA)) {
       throw new MetadataArgsErrorException(String.format("encoding %s is not support", encoding));
     }
     switch (tsDataType) {
       case BOOLEAN:
-        if (!encoding.equals(plain) && !encoding.equals(rle)) {
+        if (!encoding.equals(PLAIN) && !encoding.equals(RLE)) {
           throw new MetadataArgsErrorException(
               String.format("encoding %s does not support %s", encoding, dataType));
         }
         break;
       case INT32:
-        if ((!encoding.equals(plain) && !encoding.equals(rle) && !encoding.equals(ts2diff))) {
+        if ((!encoding.equals(PLAIN) && !encoding.equals(RLE) && !encoding.equals(TS_2DIFF))) {
           throw new MetadataArgsErrorException(
               String.format("encoding %s does not support %s", encoding, dataType));
         }
         break;
       case INT64:
-        if ((!encoding.equals(plain) && !encoding.equals(rle) && !encoding.equals(ts2diff))) {
+        if ((!encoding.equals(PLAIN) && !encoding.equals(RLE) && !encoding.equals(TS_2DIFF))) {
           throw new MetadataArgsErrorException(
               String.format("encoding %s does not support %s", encoding, dataType));
         }
         break;
       case FLOAT:
-        if ((!encoding.equals(plain) && !encoding.equals(rle) && !encoding.equals(ts2diff)
-            && !encoding.equals(gorilla))) {
+        if ((!encoding.equals(PLAIN) && !encoding.equals(RLE) && !encoding.equals(TS_2DIFF)
+            && !encoding.equals(GORILLA))) {
           throw new MetadataArgsErrorException(
               String.format("encoding %s does not support %s", encoding, dataType));
         }
         break;
       case DOUBLE:
-        if ((!encoding.equals(plain) && !encoding.equals(rle) && !encoding.equals(ts2diff)
-            && !encoding.equals(gorilla))) {
+        if ((!encoding.equals(PLAIN) && !encoding.equals(RLE) && !encoding.equals(TS_2DIFF)
+            && !encoding.equals(GORILLA))) {
           throw new MetadataArgsErrorException(
               String.format("encoding %s does not support %s", encoding, dataType));
         }
         break;
       case TEXT:
-        if (!encoding.equals(plain)) {
+        if (!encoding.equals(PLAIN)) {
           throw new MetadataArgsErrorException(
               String.format("encoding %s does not support %s", encoding, dataType));
         }
