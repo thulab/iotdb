@@ -480,26 +480,19 @@ public class FileNodeManager implements IStatistic, IService {
                     timestamp = lastUpdateTime;
                 }
                 String filenodeName = fileNodeProcessor.getProcessorName();
-                // get overflow processor
+                // get processors for wal
                 OverflowProcessor overflowProcessor;
+                BufferWriteProcessor bufferWriteProcessor;
                 try {
                     overflowProcessor = fileNodeProcessor.getOverflowProcessor(filenodeName);
-                } catch (IOException e) {
-                    LOGGER.error("Get the overflow processor failed, the filenode is {}, delete time is {}.",
+                    bufferWriteProcessor = fileNodeProcessor.getBufferWriteProcessor();
+                } catch (IOException | FileNodeProcessorException e) {
+                    LOGGER.error("Getting the processor failed, the filenode is {}, delete time is {}.",
                             filenodeName, timestamp);
                     throw new FileNodeManagerException(e);
                 }
-                overflowProcessor.delete(deviceId, measurementId, timestamp, type);
+                fileNodeProcessor.delete(deviceId, measurementId, timestamp);
                 // change the type of tsfile to overflowed
-                fileNodeProcessor.changeTypeToChangedForDelete(deviceId, timestamp);
-                fileNodeProcessor.setOverflowed(true);
-                // if (shouldMerge) {
-                // LOGGER.info(
-                // "The overflow file or metadata reaches the threshold,
-                // merge the filenode processor {}",
-                // filenodeName);
-                // fileNodeProcessor.submitToMerge();
-                // }
                 fileNodeProcessor.changeTypeToChangedForDelete(deviceId, timestamp);
                 fileNodeProcessor.setOverflowed(true);
 
@@ -507,6 +500,8 @@ public class FileNodeManager implements IStatistic, IService {
                 try {
                     if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
                         overflowProcessor.getLogNode()
+                                .write(new DeletePlan(timestamp, new Path(deviceId + "." + measurementId)));
+                        bufferWriteProcessor.getLogNode()
                                 .write(new DeletePlan(timestamp, new Path(deviceId + "." + measurementId)));
                     }
                 } catch (IOException e) {

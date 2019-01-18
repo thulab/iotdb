@@ -1834,4 +1834,14 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     public String getFileNodeRestoreFilePath() {
         return fileNodeRestoreFilePath;
     }
+
+    /**
+     * Delete data whose timestamp <= 'timestamp' and belong to timeseries deviceId.measurementId.
+     * @param deviceId the deviceId of the timeseries to be deleted.
+     * @param measurementId the measurementId of the timeseries to be deleted.
+     * @param timestamp the delete range is (0, timestamp].
+     */
+    public void delete(String deviceId, String measurementId, long timestamp) {
+
+    }
 }

@@ -228,20 +228,6 @@ public class OverflowProcessor extends Processor {
     }
 
     /**
-     * delete one time-series data which time range is from 0 to time-stamp.
-     *
-     * @param deviceId
-     * @param measurementId
-     * @param timestamp
-     * @param type
-     */
-    @Deprecated
-    public void delete(String deviceId, String measurementId, long timestamp, TSDataType type) {
-        workSupport.delete(deviceId, measurementId, timestamp, type);
-        valueCount++;
-    }
-
-    /**
      * query all overflow data which contain insert data in memory, insert data in file, update/delete data in memory,
      * update/delete data in file.
      * 
