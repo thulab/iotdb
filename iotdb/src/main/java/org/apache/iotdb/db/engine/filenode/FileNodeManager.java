@@ -498,7 +498,7 @@ public class FileNodeManager implements IStatistic, IService {
   /**
    * delete data.
    */
-  public void delete(String deviceId, String measurementId, long timestamp, TSDataType type)
+  public void delete(String deviceId, String measurementId, long timestamp)
           throws FileNodeManagerException {
 
     FileNodeProcessor fileNodeProcessor = getProcessor(deviceId, true);
@@ -510,11 +510,19 @@ public class FileNodeManager implements IStatistic, IService {
                         + "the filenode processor is {}",
                 fileNodeProcessor.getProcessorName());
       } else {
-        if (timestamp > lastUpdateTime) {
-          timestamp = lastUpdateTime;
+        try {
+          fileNodeProcessor.delete(deviceId, measurementId, timestamp);
+        } catch (IOException e) {
+          throw new FileNodeManagerException(e);
         }
-        String filenodeName = fileNodeProcessor.getProcessorName();
+        // change the type of tsfile to overflowed
+        fileNodeProcessor.changeTypeToChangedForDelete(deviceId, timestamp);
+        fileNodeProcessor.setOverflowed(true);
+
+        // TODO: support atomic deletion
+        /*// write wal
         // get processors for wal
+        String filenodeName = fileNodeProcessor.getProcessorName();
         OverflowProcessor overflowProcessor;
         BufferWriteProcessor bufferWriteProcessor;
         try {
@@ -525,12 +533,6 @@ public class FileNodeManager implements IStatistic, IService {
                   filenodeName, timestamp);
           throw new FileNodeManagerException(e);
         }
-        fileNodeProcessor.delete(deviceId, measurementId, timestamp);
-        // change the type of tsfile to overflowed
-        fileNodeProcessor.changeTypeToChangedForDelete(deviceId, timestamp);
-        fileNodeProcessor.setOverflowed(true);
-
-        // write wal
         try {
           if (IoTDBDescriptor.getInstance().getConfig().enableWal) {
             overflowProcessor.getLogNode()
@@ -542,7 +544,7 @@ public class FileNodeManager implements IStatistic, IService {
           }
         } catch (IOException e) {
           throw new FileNodeManagerException(e);
-        }
+        }*/
       }
     } finally {
       fileNodeProcessor.writeUnlock();

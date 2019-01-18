@@ -29,8 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
+import org.apache.iotdb.db.conf.IoTDBConstant;
 import org.apache.iotdb.db.engine.memtable.IMemTable;
 import org.apache.iotdb.db.engine.memtable.MemTableFlushUtil;
+import org.apache.iotdb.db.engine.modification.Deletion;
+import org.apache.iotdb.db.engine.modification.ModificationFile;
 import org.apache.iotdb.db.engine.version.VersionController;
 import org.apache.iotdb.db.utils.MemUtils;
 import org.apache.iotdb.tsfile.file.metadata.ChunkGroupMetaData;
@@ -47,7 +50,6 @@ public class OverflowResource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OverflowResource.class);
   private static final String insertFileName = "unseqTsFile";
-  private static final String updateDeleteFileName = "overflowFile";
   private static final String positionFileName = "positionFile";
   private static final int FOOTER_LENGTH = 4;
   private static final int POS_LENGTH = 8;
@@ -56,11 +58,11 @@ public class OverflowResource {
   private String insertFilePath;
   private String positionFilePath;
   private File insertFile;
-  private File updateFile;
   private OverflowIO insertIO;
   private Map<String, Map<String, List<ChunkMetaData>>> insertMetadatas;
   private List<ChunkGroupMetaData> appendInsertMetadatas;
   private VersionController versionController;
+  private ModificationFile modificationFile;
 
   public OverflowResource(String parentPath, String dataPath, VersionController versionController)
           throws IOException {
@@ -74,7 +76,6 @@ public class OverflowResource {
     }
     insertFile = new File(dataFile, insertFileName);
     insertFilePath = insertFile.getPath();
-    updateFile = new File(dataFile, updateDeleteFileName);
     positionFilePath = new File(dataFile, positionFileName).getPath();
     Pair<Long, Long> position = readPositionInfo();
     try {
@@ -94,6 +95,8 @@ public class OverflowResource {
       throw e;
     }
     this.versionController = versionController;
+    modificationFile = new ModificationFile(insertFilePath + ModificationFile.FILE_SUFFIX
+            + ModificationFile.FILE_SUFFIX);
   }
 
   private Pair<Long, Long> readPositionInfo() {
@@ -113,9 +116,6 @@ public class OverflowResource {
       File insertFile = new File(insertFilePath);
       if (insertFile.exists()) {
         left = insertFile.length();
-      }
-      if (updateFile.exists()) {
-        right = updateFile.length();
       }
       return new Pair<Long, Long>(left, right);
     }
@@ -242,15 +242,12 @@ public class OverflowResource {
     return positionFilePath;
   }
 
-  public File getUpdateDeleteFile() {
-    return updateFile;
-  }
-
   public void close() throws IOException {
     insertMetadatas.clear();
     // updateDeleteMetadatas.clear();
     insertIO.close();
     // updateDeleteIO.close();
+    modificationFile.close();
   }
 
   public void deleteResource() throws IOException {
@@ -281,5 +278,18 @@ public class OverflowResource {
       insertMetadatas.get(deviceId).put(measurementId, new ArrayList<>());
     }
     insertMetadatas.get(deviceId).get(measurementId).add(chunkMetaData);
+  }
+
+  /**
+   * Delete data of a timeseries whose time ranges from 0 to timestamp.
+   *
+   * @param deviceId the deviceId of the timeseries.
+   * @param measurementId the measurementId of the timeseries.
+   * @param timestamp the upper-bound of deletion time.
+   */
+  public void delete(String deviceId, String measurementId, long timestamp, long version)
+          throws IOException {
+    modificationFile.write(new Deletion(deviceId + IoTDBConstant.PATH_SEPARATOR
+            + measurementId, version, timestamp));
   }
 }

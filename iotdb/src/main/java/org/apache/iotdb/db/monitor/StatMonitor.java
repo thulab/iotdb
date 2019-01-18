@@ -360,7 +360,7 @@ public class StatMonitor implements IService {
             for (Map.Entry<String, IStatistic> entry : statisticMap.entrySet()) {
               for (String statParamName : entry.getValue().getStatParamsHashMap().keySet()) {
                 fManager.delete(entry.getKey(), statParamName,
-                    currentTimeMillis - statMonitorRetainIntervalSec * 1000, TSDataType.INT64);
+                    currentTimeMillis - statMonitorRetainIntervalSec * 1000);
               }
             }
           } catch (FileNodeManagerException e) {

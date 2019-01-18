@@ -75,15 +75,13 @@ public class OverflowSupport {
     indexTrees.get(deviceId).get(measurementId).update(startTime, endTime, value);
   }
 
-  @Deprecated
-  public void delete(String deviceId, String measurementId, long timestamp, TSDataType dataType) {
-    if (!indexTrees.containsKey(deviceId)) {
-      indexTrees.put(deviceId, new HashMap<>());
+  public void delete(String deviceId, String measurementId, long timestamp, boolean isFlushing) {
+    if (isFlushing) {
+      memTable = memTable.copy();
+      memTable.delele(deviceId, measurementId, timestamp);
+    } else {
+      memTable.delele(deviceId, measurementId, timestamp);
     }
-    if (!indexTrees.get(deviceId).containsKey(measurementId)) {
-      indexTrees.get(deviceId).put(measurementId, new OverflowSeriesImpl(measurementId, dataType));
-    }
-    indexTrees.get(deviceId).get(measurementId).delete(timestamp);
   }
 
   public TimeValuePairSorter queryOverflowInsertInMemory(String deviceId, String measurementId,

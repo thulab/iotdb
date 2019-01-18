@@ -39,12 +39,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.iotdb.db.conf.IoTDBConfig;
+import org.apache.iotdb.db.conf.IoTDBConstant;
 import org.apache.iotdb.db.conf.IoTDBDescriptor;
 import org.apache.iotdb.db.conf.directories.Directories;
 import org.apache.iotdb.db.engine.Processor;
 import org.apache.iotdb.db.engine.bufferwrite.Action;
 import org.apache.iotdb.db.engine.bufferwrite.BufferWriteProcessor;
 import org.apache.iotdb.db.engine.bufferwrite.FileNodeConstants;
+import org.apache.iotdb.db.engine.modification.Deletion;
 import org.apache.iotdb.db.engine.overflow.ioV2.OverflowProcessor;
 import org.apache.iotdb.db.engine.pool.MergeManager;
 import org.apache.iotdb.db.engine.querycontext.GlobalSortedSeriesDataSource;
@@ -67,6 +69,7 @@ import org.apache.iotdb.db.monitor.MonitorConstants;
 import org.apache.iotdb.db.monitor.StatMonitor;
 import org.apache.iotdb.db.query.factory.SeriesReaderFactory;
 import org.apache.iotdb.db.query.reader.IReader;
+import org.apache.iotdb.db.service.IoTDB;
 import org.apache.iotdb.db.utils.MemUtils;
 import org.apache.iotdb.db.utils.TimeValuePair;
 import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
@@ -1940,7 +1943,6 @@ public class FileNodeProcessor extends Processor implements IStatistic {
                 new IntervalFileNode(OverflowChangeType.NO_CHANGE, null),
                 new ArrayList<IntervalFileNode>(), FileNodeProcessorStatus.NONE, 0));
       } catch (IOException e) {
-        e.printStackTrace();
         throw new FileNodeProcessorException(e);
       }
       return fileNodeProcessorStore;
@@ -1962,7 +1964,26 @@ public class FileNodeProcessor extends Processor implements IStatistic {
      * @param measurementId the measurementId of the timeseries to be deleted.
      * @param timestamp the delete range is (0, timestamp].
      */
-    public void delete(String deviceId, String measurementId, long timestamp) {
-
+    public void delete(String deviceId, String measurementId, long timestamp) throws IOException {
+      // TODO: how to avoid partial deletion?
+      long version = versionController.nextVersion();
+      // delete data in memory
+      if (bufferWriteProcessor != null) {
+        bufferWriteProcessor.delete(deviceId, measurementId, timestamp);
+      }
+      if (overflowProcessor != null) {
+        overflowProcessor.delete(deviceId, measurementId, timestamp, version);
+      }
+      String fullPath = deviceId +
+              IoTDBConstant.PATH_SEPARATOR + measurementId;
+      Deletion deletion = new Deletion(fullPath, version, timestamp);
+      if (currentIntervalFileNode != null) {
+        currentIntervalFileNode.getModFile().write(deletion);
+      }
+      for (IntervalFileNode fileNode : newFileNodes) {
+        if(fileNode != currentIntervalFileNode) {
+          fileNode.getModFile().write(deletion);
+        }
+      }
     }
 }

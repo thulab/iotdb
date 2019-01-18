@@ -121,4 +121,9 @@ public class WritableMemChunk implements IWritableMemChunk {
     return list.size();
   }
 
+  @Override
+  public TSDataType getType() {
+    return dataType;
+  }
+
 }

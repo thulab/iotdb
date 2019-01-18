@@ -234,17 +234,20 @@ public class OverflowProcessor extends Processor {
   }
 
   /**
-   * delete one time-series data which time range is from 0 to time-stamp.
+   * Delete data of a timeseries whose time ranges from 0 to timestamp.
    *
-   * @param deviceId
-   * @param measurementId
-   * @param timestamp
-   * @param type
+   * @param deviceId the deviceId of the timeseries.
+   * @param measurementId the measurementId of the timeseries.
+   * @param timestamp the upper-bound of deletion time.
+   * @param version the version number of this deletion.
    */
-  @Deprecated
-  public void delete(String deviceId, String measurementId, long timestamp, TSDataType type) {
-    workSupport.delete(deviceId, measurementId, timestamp, type);
-    valueCount++;
+  public void delete(String deviceId, String measurementId, long timestamp, long version) throws IOException {
+    workSupport.delete(deviceId, measurementId, timestamp, false);
+    workResource.delete(deviceId, measurementId, timestamp, version);
+    if (flushStatus.isFlushing()) {
+      flushSupport.delete(deviceId, measurementId, timestamp, true);
+      mergeResource.delete(deviceId, measurementId, timestamp, version);
+    }
   }
 
   /**
@@ -616,8 +619,7 @@ public class OverflowProcessor extends Processor {
    * @return The size of overflow file corresponding to this processor.
    */
   public long getFileSize() {
-    return workResource.getInsertFile().length() + workResource.getUpdateDeleteFile().length()
-        + memoryUsage();
+    return workResource.getInsertFile().length() + memoryUsage();
   }
 
   /**
