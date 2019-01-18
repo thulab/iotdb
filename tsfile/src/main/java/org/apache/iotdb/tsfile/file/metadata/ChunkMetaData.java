@@ -58,6 +58,11 @@ public class ChunkMetaData {
 
   private TsDigest valuesStatistics;
 
+  /**
+   * Version is set only during querying according to its belonging ChunkGroup.
+   */
+  private long version;
+
   private ChunkMetaData() {
   }
 

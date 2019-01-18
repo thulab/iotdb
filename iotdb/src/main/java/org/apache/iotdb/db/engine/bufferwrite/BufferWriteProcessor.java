@@ -41,6 +41,7 @@ import org.apache.iotdb.db.engine.memtable.PrimitiveMemTable;
 import org.apache.iotdb.db.engine.pool.FlushManager;
 import org.apache.iotdb.db.engine.querycontext.ReadOnlyMemChunk;
 import org.apache.iotdb.db.engine.utils.FlushStatus;
+import org.apache.iotdb.db.engine.version.VersionController;
 import org.apache.iotdb.db.exception.BufferWriteProcessorException;
 import org.apache.iotdb.db.utils.MemUtils;
 import org.apache.iotdb.db.writelog.manager.MultiFileLogNodeManager;
@@ -81,6 +82,7 @@ public class BufferWriteProcessor extends Processor {
   private String bufferWriteRelativePath;
 
   private WriteLogNode logNode;
+  private VersionController versionController;
 
   /**
    * constructor of BufferWriteProcessor.
@@ -93,7 +95,7 @@ public class BufferWriteProcessor extends Processor {
    * @throws BufferWriteProcessorException BufferWriteProcessorException
    */
   public BufferWriteProcessor(String baseDir, String processorName, String fileName,
-      Map<String, Action> parameters,
+      Map<String, Action> parameters, VersionController versionController,
       FileSchema fileSchema) throws BufferWriteProcessorException {
     super(processorName);
     this.fileSchema = fileSchema;
@@ -133,6 +135,7 @@ public class BufferWriteProcessor extends Processor {
         throw new BufferWriteProcessorException(e);
       }
     }
+    this.versionController = versionController;
   }
 
   /**
@@ -268,7 +271,8 @@ public class BufferWriteProcessor extends Processor {
         long startPos = writer.getPos();
         long startTime = System.currentTimeMillis();
         // flush data
-        MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable);
+        MemTableFlushUtil.flushMemTable(fileSchema, writer, flushMemTable,
+                versionController.nextVersion());
         // write restore information
         writer.flush();
       }

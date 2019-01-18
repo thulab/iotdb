@@ -31,6 +31,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.iotdb.db.engine.memtable.IMemTable;
 import org.apache.iotdb.db.engine.memtable.MemTableFlushUtil;
+import org.apache.iotdb.db.engine.version.VersionController;
 import org.apache.iotdb.db.utils.MemUtils;
 import org.apache.iotdb.tsfile.file.metadata.ChunkGroupMetaData;
 import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
@@ -59,8 +60,10 @@ public class OverflowResource {
   private OverflowIO insertIO;
   private Map<String, Map<String, List<ChunkMetaData>>> insertMetadatas;
   private List<ChunkGroupMetaData> appendInsertMetadatas;
+  private VersionController versionController;
 
-  public OverflowResource(String parentPath, String dataPath) throws IOException {
+  public OverflowResource(String parentPath, String dataPath, VersionController versionController)
+          throws IOException {
     this.insertMetadatas = new HashMap<>();
     this.appendInsertMetadatas = new ArrayList<>();
     this.parentPath = parentPath;
@@ -90,6 +93,7 @@ public class OverflowResource {
       LOGGER.error("Failed to construct the OverflowIO.", e);
       throw e;
     }
+    this.versionController = versionController;
   }
 
   private Pair<Long, Long> readPositionInfo() {
@@ -196,7 +200,8 @@ public class OverflowResource {
     if (memTable != null && !memTable.isEmpty()) {
       insertIO.toTail();
       long lastPosition = insertIO.getPos();
-      MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable);
+      MemTableFlushUtil.flushMemTable(fileSchema, insertIO, memTable,
+              versionController.nextVersion());
       List<ChunkGroupMetaData> rowGroupMetaDatas = insertIO.getChunkGroupMetaDatas();
       appendInsertMetadatas.addAll(rowGroupMetaDatas);
       if (!rowGroupMetaDatas.isEmpty()) {

@@ -52,6 +52,8 @@ import org.apache.iotdb.db.engine.querycontext.OverflowSeriesDataSource;
 import org.apache.iotdb.db.engine.querycontext.QueryDataSource;
 import org.apache.iotdb.db.engine.querycontext.ReadOnlyMemChunk;
 import org.apache.iotdb.db.engine.querycontext.UnsealedTsFile;
+import org.apache.iotdb.db.engine.version.SimpleFileVersionController;
+import org.apache.iotdb.db.engine.version.VersionController;
 import org.apache.iotdb.db.exception.BufferWriteProcessorException;
 import org.apache.iotdb.db.exception.ErrorDebugException;
 import org.apache.iotdb.db.exception.FileNodeProcessorException;
@@ -194,6 +196,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
   };
   // Token for query which used to
   private int multiPassLockToken = 0;
+  private VersionController versionController;
 
   /**
    * constructor of FileNodeProcessor.
@@ -259,6 +262,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       StatMonitor statMonitor = StatMonitor.getInstance();
       registStatMetadata();
       statMonitor.registStatistics(statStorageDeltaName, this);
+    }
+    try {
+      versionController = new SimpleFileVersionController(fileNodeDirPath);
+    } catch (IOException e) {
+      throw new FileNodeProcessorException(e);
     }
   }
 
@@ -432,7 +440,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
           getProcessorName(), fileNames[fileNames.length - 1]);
       try {
         bufferWriteProcessor = new BufferWriteProcessor(baseDir, getProcessorName(),
-            fileNames[fileNames.length - 1], parameters, fileSchema);
+            fileNames[fileNames.length - 1], parameters, versionController, fileSchema);
       } catch (BufferWriteProcessorException e) {
         // unlock
         writeUnlock();
@@ -449,7 +457,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
     parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
     parameters.put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
     try {
-      overflowProcessor = new OverflowProcessor(getProcessorName(), parameters, fileSchema);
+      overflowProcessor = new OverflowProcessor(getProcessorName(), parameters, fileSchema,
+              versionController);
     } catch (IOException e) {
       writeUnlock();
       LOGGER.error("The filenode processor {} failed to recovery the overflow processor.",
@@ -497,7 +506,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       try {
         bufferWriteProcessor = new BufferWriteProcessor(baseDir, processorName,
             insertTime + FileNodeConstants.BUFFERWRITE_FILE_SEPARATOR + System.currentTimeMillis(),
-            parameters, fileSchema);
+            parameters, versionController, fileSchema);
       } catch (BufferWriteProcessorException e) {
         LOGGER.error("The filenode processor {} failed to get the bufferwrite processor.",
             processorName, e);
@@ -528,7 +537,8 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       parameters.put(FileNodeConstants.OVERFLOW_FLUSH_ACTION, overflowFlushAction);
       parameters
           .put(FileNodeConstants.FILENODE_PROCESSOR_FLUSH_ACTION, flushFileNodeProcessorAction);
-      overflowProcessor = new OverflowProcessor(processorName, parameters, fileSchema);
+      overflowProcessor = new OverflowProcessor(processorName, parameters, fileSchema,
+              versionController);
     }
     return overflowProcessor;
   }
@@ -1546,7 +1556,7 @@ public class FileNodeProcessor extends Processor implements IStatistic {
         // end the new rowGroupMetadata
         long size = fileIoWriter.getPos() - startPos;
         footer = new ChunkGroupFooter(deviceId, size, numOfChunk);
-        fileIoWriter.endChunkGroup(footer);
+        fileIoWriter.endChunkGroup(footer, versionController.nextVersion());
       }
     }
     if (fileIoWriter != null) {
