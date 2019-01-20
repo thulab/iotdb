@@ -1971,9 +1971,9 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       if (bufferWriteProcessor != null) {
         bufferWriteProcessor.delete(deviceId, measurementId, timestamp);
       }
-      if (overflowProcessor != null) {
-        overflowProcessor.delete(deviceId, measurementId, timestamp, version);
-      }
+      OverflowProcessor overflowProcessor = getOverflowProcessor(getProcessorName());
+      overflowProcessor.delete(deviceId, measurementId, timestamp, version);
+
       String fullPath = deviceId +
               IoTDBConstant.PATH_SEPARATOR + measurementId;
       Deletion deletion = new Deletion(fullPath, version, timestamp);

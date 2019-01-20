@@ -17,12 +17,11 @@
 package org.apache.iotdb.db.engine.modification;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
+import org.apache.iotdb.db.conf.IoTDBDescriptor;
 import org.apache.iotdb.db.conf.directories.Directories;
 import org.apache.iotdb.db.engine.filenode.FileNodeManager;
 import org.apache.iotdb.db.engine.modification.io.LocalTextModificationAccessor;
@@ -54,9 +53,10 @@ public class DeletionFileNodeTest {
   private String dataType = TSDataType.DOUBLE.toString();
   private String encoding = TSEncoding.PLAIN.toString();
   private String[] args = new String[0];
+
   static {
     for (int i = 0; i < 10; i++) {
-      measurements[i] = "m"+i;
+      measurements[i] = "m" + i;
     }
   }
 
@@ -89,6 +89,9 @@ public class DeletionFileNodeTest {
       FileNodeManager.getInstance().insert(record, false);
     }
 
+    FileNodeManager.getInstance().delete(processorName, measurements[3], 50);
+    FileNodeManager.getInstance().delete(processorName, measurements[4], 50);
+    FileNodeManager.getInstance().delete(processorName, measurements[5], 30);
     FileNodeManager.getInstance().delete(processorName, measurements[5], 50);
 
     SingleSeriesExpression expression = new SingleSeriesExpression(new Path(processorName,
@@ -97,9 +100,9 @@ public class DeletionFileNodeTest {
     Iterator<TimeValuePair> timeValuePairs =
             dataSource.getSeqDataSource().getReadableChunk().getIterator();
     int count = 0;
-    while(timeValuePairs.hasNext()) {
+    while (timeValuePairs.hasNext()) {
       timeValuePairs.next();
-      count ++;
+      count++;
     }
     assertEquals(count, 50);
   }
@@ -137,7 +140,95 @@ public class DeletionFileNodeTest {
     Collection<Modification> modifications = accessor.read();
     assertEquals(modifications.size(), 3);
     int i = 0;
-    for(Modification modification : modifications) {
+    for (Modification modification : modifications) {
+      assertTrue(modification.equals(realModifications[i++]));
+    }
+  }
+
+  @Test
+  public void testDeleteInOverflowCache() throws FileNodeManagerException {
+    // insert into BufferWrite
+    for (int i = 101; i <= 200; i++) {
+      TSRecord record = new TSRecord(i, processorName);
+      for (int j = 0; j < 10; j++) {
+        record.addTuple(new DoubleDataPoint(measurements[j], i * 1.0));
+      }
+      FileNodeManager.getInstance().insert(record, false);
+    }
+    FileNodeManager.getInstance().closeAll();
+
+    // insert into Overflow
+    for (int i = 1; i <= 100; i++) {
+      TSRecord record = new TSRecord(i, processorName);
+      for (int j = 0; j < 10; j++) {
+        record.addTuple(new DoubleDataPoint(measurements[j], i * 1.0));
+      }
+      FileNodeManager.getInstance().insert(record, false);
+    }
+
+    FileNodeManager.getInstance().delete(processorName, measurements[3], 50);
+    FileNodeManager.getInstance().delete(processorName, measurements[4], 50);
+    FileNodeManager.getInstance().delete(processorName, measurements[5], 30);
+    FileNodeManager.getInstance().delete(processorName, measurements[5], 50);
+
+    SingleSeriesExpression expression = new SingleSeriesExpression(new Path(processorName,
+            measurements[5]), null);
+    QueryDataSource dataSource = FileNodeManager.getInstance().query(expression);
+    Iterator<TimeValuePair> timeValuePairs =
+            dataSource.getOverflowSeriesDataSource().getReadableMemChunk().getIterator();
+    int count = 0;
+    while (timeValuePairs.hasNext()) {
+      timeValuePairs.next();
+      count++;
+    }
+    assertEquals(count, 50);
+  }
+
+  @Test
+  public void testDeleteInOverflowFile() throws FileNodeManagerException, IOException {
+    // insert into BufferWrite
+    for (int i = 101; i <= 200; i++) {
+      TSRecord record = new TSRecord(i, processorName);
+      for (int j = 0; j < 10; j++) {
+        record.addTuple(new DoubleDataPoint(measurements[j], i * 1.0));
+      }
+      FileNodeManager.getInstance().insert(record, false);
+    }
+    FileNodeManager.getInstance().closeAll();
+
+    // insert into Overflow
+    for (int i = 1; i <= 100; i++) {
+      TSRecord record = new TSRecord(i, processorName);
+      for (int j = 0; j < 10; j++) {
+        record.addTuple(new DoubleDataPoint(measurements[j], i * 1.0));
+      }
+      FileNodeManager.getInstance().insert(record, false);
+    }
+    FileNodeManager.getInstance().closeAll();
+
+    FileNodeManager.getInstance().delete(processorName, measurements[5], 50);
+    FileNodeManager.getInstance().delete(processorName, measurements[4], 40);
+    FileNodeManager.getInstance().delete(processorName, measurements[3], 30);
+
+    Modification[] realModifications = new Modification[]{
+            new Deletion(processorName + "." + measurements[5], 102, 50),
+            new Deletion(processorName + "." + measurements[4], 103, 40),
+            new Deletion(processorName + "." + measurements[3], 104, 30),
+    };
+
+    String fileNodePath = IoTDBDescriptor.getInstance().getConfig().overflowDataDir + File.separator
+            + processorName + File.separator + "0" + File.separator;
+    File fileNodeDir = new File(fileNodePath);
+    File[] modFiles = fileNodeDir.listFiles((dir, name)
+            -> name.endsWith(ModificationFile.FILE_SUFFIX));
+    assertEquals(modFiles.length, 1);
+
+    LocalTextModificationAccessor accessor =
+            new LocalTextModificationAccessor(modFiles[0].getPath());
+    Collection<Modification> modifications = accessor.read();
+    assertEquals(modifications.size(), 3);
+    int i = 0;
+    for (Modification modification : modifications) {
       assertTrue(modification.equals(realModifications[i++]));
     }
   }

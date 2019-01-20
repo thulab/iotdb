@@ -95,8 +95,7 @@ public class OverflowResource {
       throw e;
     }
     this.versionController = versionController;
-    modificationFile = new ModificationFile(insertFilePath + ModificationFile.FILE_SUFFIX
-            + ModificationFile.FILE_SUFFIX);
+    modificationFile = new ModificationFile(insertFilePath + ModificationFile.FILE_SUFFIX);
   }
 
   private Pair<Long, Long> readPositionInfo() {
