@@ -1977,11 +1977,11 @@ public class FileNodeProcessor extends Processor implements IStatistic {
       String fullPath = deviceId +
               IoTDBConstant.PATH_SEPARATOR + measurementId;
       Deletion deletion = new Deletion(fullPath, version, timestamp);
-      if (currentIntervalFileNode != null) {
+      if (currentIntervalFileNode != null && currentIntervalFileNode.containsDevice(deviceId)) {
         currentIntervalFileNode.getModFile().write(deletion);
       }
       for (IntervalFileNode fileNode : newFileNodes) {
-        if(fileNode != currentIntervalFileNode) {
+        if(fileNode != currentIntervalFileNode && fileNode.containsDevice(deviceId)) {
           fileNode.getModFile().write(deletion);
         }
       }

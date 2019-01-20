@@ -299,4 +299,9 @@ public class IntervalFileNode implements Serializable {
     }
     return modFile;
   }
+
+  public boolean containsDevice(String deviceId) {
+    return endTimeMap.containsKey(deviceId);
+  }
+
 }
