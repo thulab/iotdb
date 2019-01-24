@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.write.schema;
 
@@ -24,8 +23,6 @@ import java.util.Map;
 import org.apache.iotdb.tsfile.exception.write.InvalidJsonSchemaException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * FileSchema stores the schema of the measurements and devices that exist in this file. All
@@ -36,8 +33,6 @@ import org.slf4j.LoggerFactory;
  * @author kangrong
  */
 public class FileSchema {
-
-  private static final Logger LOG = LoggerFactory.getLogger(FileSchema.class);
 
   /**
    * the key is the measurementId.
@@ -52,6 +47,7 @@ public class FileSchema {
   }
 
   /**
+   * @deprecated
    * example: { "measurement_id": "sensor_cpu_50", "data_type": "INT32", "encoding": "RLE" }.
    * {"schema": [ { "measurement_id": "sensor_1", "data_type": "FLOAT", "encoding": "RLE" },
    * { "measurement_id": "sensor_2", "data_type": "INT32", "encoding": "TS_2DIFF" },
@@ -81,11 +77,11 @@ public class FileSchema {
    * @return
    */
   public TSDataType getMeasurementDataType(String measurementId) {
-    MeasurementSchema measurementSchema = this.measurementSchema.get(measurementId);
-    if (measurementSchema == null) {
+    MeasurementSchema mSchema = this.measurementSchema.get(measurementId);
+    if (mSchema == null) {
       return null;
     }
-    return measurementSchema.getType();
+    return mSchema.getType();
 
   }
 

@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.qp.executor;
 
@@ -436,9 +435,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
           msg = new StringBuilder("Privileges are : [ \n");
           role = authorizer.getRole(roleName);
           if (role != null) {
-            for (PathPrivilege pathPrivilege : role.privilegeList) {
+            for (PathPrivilege pathPrivilege : role.getPrivilegeList()) {
               if (nodeName == null || AuthUtils
-                  .pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path)) {
+                  .pathBelongsTo(nodeName.getFullPath(), pathPrivilege.getPath())) {
                 msg.append(pathPrivilege.toString());
               }
             }
@@ -456,7 +455,7 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
           msg.append("From itself : {\n");
           for (PathPrivilege pathPrivilege : user.privilegeList) {
             if (nodeName == null || AuthUtils
-                .pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path)) {
+                .pathBelongsTo(nodeName.getFullPath(), pathPrivilege.getPath())) {
               msg.append(pathPrivilege.toString());
             }
           }
@@ -465,9 +464,9 @@ public class OverflowQPExecutor extends QueryProcessExecutor {
             role = authorizer.getRole(roleN);
             if (role != null) {
               msg.append("From role ").append(roleN).append(" : {\n");
-              for (PathPrivilege pathPrivilege : role.privilegeList) {
+              for (PathPrivilege pathPrivilege : role.getPrivilegeList()) {
                 if (nodeName == null
-                    || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.path)) {
+                    || AuthUtils.pathBelongsTo(nodeName.getFullPath(), pathPrivilege.getPath())) {
                   msg.append(pathPrivilege.toString());
                 }
               }

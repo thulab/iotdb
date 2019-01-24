@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.query.reader.sequence;
 
@@ -38,7 +37,7 @@ import org.apache.iotdb.tsfile.read.reader.series.FileSeriesReaderWithoutFilter;
 public class UnSealedTsFileReader implements IReader {
 
   protected Path seriesPath;
-  private FileSeriesReader unSealedTsFileReader;
+  private FileSeriesReader unSealedReader;
   private BatchData data;
 
   /**
@@ -55,10 +54,10 @@ public class UnSealedTsFileReader implements IReader {
     ChunkLoader chunkLoader = new ChunkLoaderImpl(unClosedTsFileReader);
 
     if (filter == null) {
-      unSealedTsFileReader = new FileSeriesReaderWithoutFilter(chunkLoader,
+      unSealedReader = new FileSeriesReaderWithoutFilter(chunkLoader,
           unsealedTsFile.getChunkMetaDataList());
     } else {
-      unSealedTsFileReader = new FileSeriesReaderWithFilter(chunkLoader,
+      unSealedReader = new FileSeriesReaderWithFilter(chunkLoader,
           unsealedTsFile.getChunkMetaDataList(),
           filter);
     }
@@ -68,10 +67,10 @@ public class UnSealedTsFileReader implements IReader {
   @Override
   public boolean hasNext() throws IOException {
     if (data == null || !data.hasNext()) {
-      if (!unSealedTsFileReader.hasNextBatch()) {
+      if (!unSealedReader.hasNextBatch()) {
         return false;
       }
-      data = unSealedTsFileReader.nextBatch();
+      data = unSealedReader.nextBatch();
     }
 
     return data.hasNext();
@@ -91,8 +90,8 @@ public class UnSealedTsFileReader implements IReader {
 
   @Override
   public void close() throws IOException {
-    if (unSealedTsFileReader != null) {
-      unSealedTsFileReader.close();
+    if (unSealedReader != null) {
+      unSealedReader.close();
     }
   }
 

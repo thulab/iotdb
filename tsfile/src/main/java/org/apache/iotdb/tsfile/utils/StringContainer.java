@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,15 +9,17 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * this class is used to contact String effectively.It contains a StringBuider and initialize it
@@ -81,11 +81,11 @@ public class StringContainer {
     return totalLength;
   }
 
-  public ArrayList<String> getSequenceList() {
+  public List<String> getSequenceList() {
     return sequenceList;
   }
 
-  public ArrayList<String> getReverseList() {
+  public List<String> getReverseList() {
     return reverseList;
   }
 
@@ -132,8 +132,8 @@ public class StringContainer {
    */
   public StringContainer addTail(StringContainer myContainer) {
     isUpdated = true;
-    ArrayList<String> mySeqList = myContainer.getSequenceList();
-    ArrayList<String> myRevList = myContainer.getReverseList();
+    List<String> mySeqList = myContainer.getSequenceList();
+    List<String> myRevList = myContainer.getReverseList();
     count += myRevList.size() + mySeqList.size();
     String temp;
     for (int i = myRevList.size() - 1; i >= 0; i--) {
@@ -175,8 +175,8 @@ public class StringContainer {
    */
   public StringContainer addHead(StringContainer myContainer) {
     isUpdated = true;
-    ArrayList<String> mySeqList = myContainer.getSequenceList();
-    ArrayList<String> myRevList = myContainer.getReverseList();
+    List<String> mySeqList = myContainer.getSequenceList();
+    List<String> myRevList = myContainer.getReverseList();
     count += myRevList.size() + mySeqList.size();
     String temp;
     for (int i = mySeqList.size() - 1; i >= 0; i--) {
@@ -324,6 +324,10 @@ public class StringContainer {
 
   @Override
   public boolean equals(Object sc) {
+    if (sc == null)
+      return false;
+    if (this.getClass() != sc.getClass())
+      return false;
     return this.equals((StringContainer) sc);
   }
 

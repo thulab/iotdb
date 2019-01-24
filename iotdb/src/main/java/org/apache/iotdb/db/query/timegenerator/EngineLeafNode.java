@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.query.timegenerator;
 
@@ -31,39 +30,18 @@ public class EngineLeafNode implements Node {
 
   private BatchData data = null;
 
-  private boolean gotData = false;
-
   public EngineLeafNode(IReader reader) {
     this.reader = reader;
   }
 
   @Override
   public boolean hasNext() throws IOException {
-
     return reader.hasNext();
-
-    // if (gotData) {
-    // data.next();
-    // gotData = false;
-    // }
-    //
-    // if (data == null || !data.hasNext()) {
-    // if (reader.hasNextBatch())
-    // data = reader.nextBatch();
-    // else
-    // return false;
-    // }
-    //
-    // return data.hasNext();
   }
 
   @Override
   public long next() throws IOException {
     return reader.next().getTimestamp();
-
-    // long time = data.currentTime();
-    // gotData = true;
-    // return time;
   }
 
   /**

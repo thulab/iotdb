@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,15 +9,15 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.file.metadata.statistics;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import org.apache.iotdb.tsfile.utils.Binary;
@@ -35,6 +33,7 @@ public class NoStatistics extends Statistics<Long> {
 
   @Override
   public void setMinMaxFromBytes(byte[] minBytes, byte[] maxBytes) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
@@ -49,18 +48,22 @@ public class NoStatistics extends Statistics<Long> {
 
   @Override
   public void updateStats(boolean value) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
   public void updateStats(int value) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
   public void updateStats(long value) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
   public void updateStats(Binary value) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
@@ -70,6 +73,7 @@ public class NoStatistics extends Statistics<Long> {
 
   @Override
   protected void mergeStatisticsValue(Statistics<?> stats) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
@@ -148,11 +152,12 @@ public class NoStatistics extends Statistics<Long> {
   }
 
   @Override
-  void fill(InputStream inputStream) throws IOException {
-    // nothing
+  void fill(InputStream inputStream) {
+    // NoStatistics does not make any statistics
   }
 
   @Override
-  void fill(ByteBuffer byteBuffer) throws IOException {
+  void fill(ByteBuffer byteBuffer) {
+    // NoStatistics does not make any statistics
   }
 }

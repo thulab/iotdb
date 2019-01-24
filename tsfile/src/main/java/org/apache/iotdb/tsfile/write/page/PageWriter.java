@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.write.page;
 
@@ -139,7 +138,7 @@ public class PageWriter {
   public ByteBuffer getUncompressedBytes() throws IOException {
     prepareEndWriteOnePage();
     ByteBuffer buffer = ByteBuffer.allocate(timeOut.size() + valueOut.size() + 4);
-    int length1 = ReadWriteForEncodingUtils.writeUnsignedVarInt(timeOut.size(), buffer);
+    ReadWriteForEncodingUtils.writeUnsignedVarInt(timeOut.size(), buffer);
     buffer.put(timeOut.getBuf(), 0, timeOut.size());
     buffer.put(valueOut.getBuf(), 0, valueOut.size());
     buffer.flip();

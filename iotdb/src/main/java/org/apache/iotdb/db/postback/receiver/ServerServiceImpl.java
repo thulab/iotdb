@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.postback.receiver;
 
@@ -96,7 +95,11 @@ public class ServerServiceImpl implements ServerService.Iface {
     schemaFromSenderPath.set(postbackPath + this.uuid.get() + File.separator + "mlog.txt");
     if (new File(postbackPath + this.uuid.get()).exists()
         && new File(postbackPath + this.uuid.get()).list().length != 0) {
-      PostbackUtils.deleteFile(new File(postbackPath + this.uuid.get()));
+      try {
+        PostbackUtils.deleteFile(new File(postbackPath + this.uuid.get()));
+      } catch (IOException e) {
+        throw new TException(e);
+      }
     }
     for (String bufferWritePath : bufferWritePaths) {
       String backupPath = bufferWritePath + "postback" + File.separator;
@@ -104,7 +107,11 @@ public class ServerServiceImpl implements ServerService.Iface {
           && new File(backupPath + this.uuid.get()).list().length != 0) {
         // if does not exist, it means that the last time postback failed, clear uuid
         // data and receive the data again
-        PostbackUtils.deleteFile(new File(backupPath + this.uuid.get()));
+        try {
+          PostbackUtils.deleteFile(new File(backupPath + this.uuid.get()));
+        } catch (IOException e) {
+          throw new TException(e);
+        }
       }
     }
     boolean legalOrNOt = PostbackUtils.verifyIPSegment(tsfileDBConfig.ipWhiteList, IPaddress);
@@ -273,14 +280,22 @@ public class ServerServiceImpl implements ServerService.Iface {
   public boolean merge() throws TException {
     getFileNodeInfo();
     mergeData();
-    PostbackUtils.deleteFile(new File(postbackPath + this.uuid.get()));
+    try {
+      PostbackUtils.deleteFile(new File(postbackPath + this.uuid.get()));
+    } catch (IOException e) {
+      throw new TException(e);
+    }
     for (String bufferWritePath : bufferWritePaths) {
       String backupPath = bufferWritePath + "postback" + File.separator;
       if (new File(backupPath + this.uuid.get()).exists()
           && new File(backupPath + this.uuid.get()).list().length != 0) {
         // if does not exist, it means that the last time postback process failed, clear
         // uuid data and receive the data again
-        PostbackUtils.deleteFile(new File(backupPath + this.uuid.get()));
+        try {
+          PostbackUtils.deleteFile(new File(backupPath + this.uuid.get()));
+        } catch (IOException e) {
+          throw new TException(e);
+        }
       }
     }
     return true;

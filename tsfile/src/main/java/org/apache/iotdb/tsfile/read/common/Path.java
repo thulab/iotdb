@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.read.common;
 
@@ -33,28 +32,37 @@ public class Path {
   private String measurement = null;
   private String device = null;
   private String fullPath;
+  private String illegalPathArgument = "Path parameter is null";
 
   public Path(StringContainer pathSc) {
-    assert pathSc != null;
+    if (pathSc == null) {
+      throw new IllegalArgumentException("");
+    }
     String[] splits = pathSc.toString().split(SystemConstant.PATH_SEPARATER_NO_REGEX);
     init(splits);
   }
 
   public Path(String pathSc) {
-    assert pathSc != null;
+    if (pathSc == null) {
+      throw new IllegalArgumentException(illegalPathArgument);
+    }
     String[] splits = pathSc.split(SystemConstant.PATH_SEPARATER_NO_REGEX);
     init(splits);
   }
 
   public Path(String[] pathSc) {
-    assert pathSc != null;
+    if (pathSc == null) {
+      throw new IllegalArgumentException(illegalPathArgument);
+    }
     String[] splits = new StringContainer(pathSc, SystemConstant.PATH_SEPARATOR).toString()
         .split(SystemConstant.PATH_SEPARATER_NO_REGEX);
     init(splits);
   }
 
   public Path(String device, String measurement) {
-    assert device != null && measurement != null;
+    if (device == null || measurement == null) {
+      throw new IllegalArgumentException(illegalPathArgument);
+    }
     String[] splits = (device + SystemConstant.PATH_SEPARATOR + measurement)
         .split(SystemConstant.PATH_SEPARATER_NO_REGEX);
     init(splits);

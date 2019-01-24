@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.cli.client;
 
@@ -31,7 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class StartClientScriptTest {
+public class StartClientScriptIT {
 
   @Before
   public void setUp() throws Exception {
@@ -43,6 +42,7 @@ public class StartClientScriptTest {
 
   @Test
   public void test() throws IOException, InterruptedException {
+
     String os = System.getProperty("os.name").toLowerCase();
     if (os.startsWith("windows")) {
       testStartClientOnWindows();
@@ -54,7 +54,7 @@ public class StartClientScriptTest {
   private void testStartClientOnWindows() throws IOException {
     final String[] output = {"````````````````````````", "Starting IoTDB Client",
         "````````````````````````",
-        "IoTDB> Connection Error, please check whether the network is available or the server has started.. Host is 127.0.0.1, port is 6668."};
+        "IoTDB> Connection Error, please check whether the network is available or the server has started. Host is 127.0.0.1, port is 6668."};
     String dir = getCurrentPath("cmd.exe", "/c", "echo %cd%");
     ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c",
         dir + File.separator + "cli" + File.separator + "bin" + File.separator + "start-client.bat",
@@ -66,7 +66,7 @@ public class StartClientScriptTest {
   private void testStartClientOnUnix() throws IOException {
     final String[] output = {"---------------------", "Starting IoTDB Client",
         "---------------------",
-        "IoTDB> Connection Error, please check whether the network is available or the server has started.. Host is 127.0.0.1, port is 6668."};
+        "IoTDB> Connection Error, please check whether the network is available or the server has started. Host is 127.0.0.1, port is 6668."};
     String dir = getCurrentPath("pwd");
     System.out.println(dir);
     ProcessBuilder builder = new ProcessBuilder("sh",

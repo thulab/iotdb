@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.query.control;
 
@@ -27,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.iotdb.db.concurrent.IoTDBThreadPoolFactory;
 import org.apache.iotdb.db.conf.IoTDBDescriptor;
-import org.apache.iotdb.db.exception.StartupException;
 import org.apache.iotdb.db.service.IService;
 import org.apache.iotdb.db.service.ServiceType;
 import org.apache.iotdb.tsfile.read.TsFileSequenceReader;
@@ -146,7 +144,6 @@ public class FileReaderManager implements IService {
    * This method is used when the given file path is deleted.
    */
   public synchronized void closeFileAndRemoveReader(String filePath) throws IOException {
-    System.out.println(fileReaderMap.containsKey(filePath));
     if (fileReaderMap.containsKey(filePath)) {
       referenceMap.remove(filePath);
       fileReaderMap.get(filePath).close();
@@ -174,7 +171,8 @@ public class FileReaderManager implements IService {
   }
 
   @Override
-  public void start() throws StartupException {
+  public void start() {
+    // Do nothing
   }
 
   @Override
@@ -197,7 +195,6 @@ public class FileReaderManager implements IService {
   }
 
   private static class FileReaderManagerHelper {
-
-    public static FileReaderManager INSTANCE = new FileReaderManager();
+    private static final FileReaderManager INSTANCE = new FileReaderManager();
   }
 }

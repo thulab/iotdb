@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.utils;
 
@@ -99,9 +98,14 @@ public abstract class TsPrimitiveType implements Serializable {
         .equals(getValue()));
   }
 
+  @Override
+  public int hashCode(){
+    return getValue().hashCode();
+  }
+
   public static class TsBoolean extends TsPrimitiveType {
 
-    public boolean value;
+    private boolean value;
 
     public TsBoolean(boolean value) {
       this.value = value;
@@ -135,7 +139,7 @@ public abstract class TsPrimitiveType implements Serializable {
 
   public static class TsInt extends TsPrimitiveType {
 
-    public int value;
+    private int value;
 
     public TsInt(int value) {
       this.value = value;
@@ -169,7 +173,7 @@ public abstract class TsPrimitiveType implements Serializable {
 
   public static class TsLong extends TsPrimitiveType {
 
-    public long value;
+    private long value;
 
     public TsLong(long value) {
       this.value = value;
@@ -203,7 +207,7 @@ public abstract class TsPrimitiveType implements Serializable {
 
   public static class TsFloat extends TsPrimitiveType {
 
-    public float value;
+    private float value;
 
     public TsFloat(float value) {
       this.value = value;
@@ -237,7 +241,7 @@ public abstract class TsPrimitiveType implements Serializable {
 
   public static class TsDouble extends TsPrimitiveType {
 
-    public double value;
+    private double value;
 
     public TsDouble(double value) {
       this.value = value;
@@ -271,7 +275,7 @@ public abstract class TsPrimitiveType implements Serializable {
 
   public static class TsBinary extends TsPrimitiveType {
 
-    public Binary value;
+    private Binary value;
 
     public TsBinary(Binary value) {
       this.value = value;
@@ -301,5 +305,16 @@ public abstract class TsPrimitiveType implements Serializable {
     public TSDataType getDataType() {
       return TSDataType.TEXT;
     }
+  }
+
+  public static void main(String[] args){
+    TsPrimitiveType type1 = new TsBoolean(false);
+    TsPrimitiveType type2 = new TsBoolean(true);
+    TsPrimitiveType type3 = new TsBoolean(false);
+    TsPrimitiveType type4 = new TsDouble(1);
+
+    System.out.println(type1.equals(type2));
+    System.out.println(type1.equals(type3));
+    System.out.println(type1.equals(type4));
   }
 }
