@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.cli.tool;
 
@@ -171,14 +170,14 @@ public class ImportCsv extends AbstractCsvTool {
           return;
         }
         headInfo.add(strHeadInfo[i]);
-        String deviceInfo = strHeadInfo[i].substring(0, strHeadInfo[i].lastIndexOf("."));
+        String deviceInfo = strHeadInfo[i].substring(0, strHeadInfo[i].lastIndexOf('.'));
 
         if (!deviceToColumn.containsKey(deviceInfo)) {
           deviceToColumn.put(deviceInfo, new ArrayList<>());
         }
         // storage every device's sensor index info
         deviceToColumn.get(deviceInfo).add(i - 1);
-        colInfo.add(strHeadInfo[i].substring(strHeadInfo[i].lastIndexOf(".") + 1));
+        colInfo.add(strHeadInfo[i].substring(strHeadInfo[i].lastIndexOf('.') + 1));
       }
 
       String line;
@@ -302,10 +301,6 @@ public class ImportCsv extends AbstractCsvTool {
       String timestampsStr = data[0];
       sbd.append(") values(").append(timestampsStr.trim().equals("")
           ? "NO TIMESTAMP" : timestampsStr);
-      // if (timestampsStr.trim().equals("")) {
-      // continue;
-      // }
-      // sbd.append(") values(").append(timestampsStr);
 
       for (int j = 0; j < colIndex.size(); ++j) {
         if (data[entry.getValue().get(j) + 1].equals("")) {
@@ -357,7 +352,7 @@ public class ImportCsv extends AbstractCsvTool {
         hf.printHelp(TSFILEDB_CLI_PREFIX, options, true);
         return;
       }
-      parseSpecialParams(commandLine, reader);
+      parseSpecialParams(commandLine);
       importCsvFromFile(host, port, username, password, filename, timeZoneID);
     } catch (ArgsErrorException e) {
       // ignored
@@ -368,8 +363,7 @@ public class ImportCsv extends AbstractCsvTool {
     }
   }
 
-  private static void parseSpecialParams(CommandLine commandLine, ConsoleReader reader)
-      throws IOException, ArgsErrorException {
+  private static void parseSpecialParams(CommandLine commandLine) {
     timeZoneID = commandLine.getOptionValue(TIME_ZONE_ARGS);
   }
 

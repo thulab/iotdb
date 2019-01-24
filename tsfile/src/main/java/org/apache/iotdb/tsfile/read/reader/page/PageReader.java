@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.read.reader.page;
 
@@ -33,16 +32,16 @@ public class PageReader {
 
   private TSDataType dataType;
 
-  // decoder for value column
+  /** decoder for value column */
   private Decoder valueDecoder;
 
-  // decoder for time column
+  /** decoder for time column */
   private Decoder timeDecoder;
 
-  // time column in memory
+  /** time column in memory */
   private ByteBuffer timeBuffer;
 
-  // value column in memory
+  /** value column in memory */
   private ByteBuffer valueBuffer;
 
   private BatchData data = null;
@@ -69,8 +68,6 @@ public class PageReader {
    *
    * @param pageData
    *            uncompressed bytes size of time column, time column, value column
-   * @throws IOException
-   *             exception in reading data from pageContent
    */
   private void splitDataToTimeStampAndValue(ByteBuffer pageData) {
     int timeBufferLength = ReadWriteForEncodingUtils.readUnsignedVarInt(pageData);
@@ -93,7 +90,7 @@ public class PageReader {
     if (filter == null) {
       data = getAllPageData();
     } else {
-      data = getAllPageData(filter);
+      data = getAllPageDataWithFilter();
     }
 
     return data;
@@ -137,7 +134,7 @@ public class PageReader {
     return pageData;
   }
 
-  private BatchData getAllPageData(Filter filter) throws IOException {
+  private BatchData getAllPageDataWithFilter() throws IOException {
     BatchData pageData = new BatchData(dataType, true);
 
     while (timeDecoder.hasNext(timeBuffer)) {
@@ -145,46 +142,22 @@ public class PageReader {
 
       switch (dataType) {
         case BOOLEAN:
-          boolean aBoolean = valueDecoder.readBoolean(valueBuffer);
-          if (filter.satisfy(timestamp, aBoolean)) {
-            pageData.putTime(timestamp);
-            pageData.putBoolean(aBoolean);
-          }
+          readBoolean(pageData, timestamp);
           break;
         case INT32:
-          int anInt = valueDecoder.readInt(valueBuffer);
-          if (filter.satisfy(timestamp, anInt)) {
-            pageData.putTime(timestamp);
-            pageData.putInt(anInt);
-          }
+          readInt(pageData, timestamp);
           break;
         case INT64:
-          long aLong = valueDecoder.readLong(valueBuffer);
-          if (filter.satisfy(timestamp, aLong)) {
-            pageData.putTime(timestamp);
-            pageData.putLong(aLong);
-          }
+          readLong(pageData, timestamp);
           break;
         case FLOAT:
-          float aFloat = valueDecoder.readFloat(valueBuffer);
-          if (filter.satisfy(timestamp, aFloat)) {
-            pageData.putTime(timestamp);
-            pageData.putFloat(aFloat);
-          }
+          readFloat(pageData, timestamp);
           break;
         case DOUBLE:
-          double aDouble = valueDecoder.readDouble(valueBuffer);
-          if (filter.satisfy(timestamp, aDouble)) {
-            pageData.putTime(timestamp);
-            pageData.putDouble(aDouble);
-          }
+          readDouble(pageData, timestamp);
           break;
         case TEXT:
-          Binary aBinary = valueDecoder.readBinary(valueBuffer);
-          if (filter.satisfy(timestamp, aBinary)) {
-            pageData.putTime(timestamp);
-            pageData.putBinary(aBinary);
-          }
+          readText(pageData, timestamp);
           break;
         default:
           throw new UnSupportedDataTypeException(String.valueOf(dataType));
@@ -192,6 +165,54 @@ public class PageReader {
     }
 
     return pageData;
+  }
+
+  private void readBoolean(BatchData pageData, long timestamp) {
+    boolean aBoolean = valueDecoder.readBoolean(valueBuffer);
+    if (filter.satisfy(timestamp, aBoolean)) {
+      pageData.putTime(timestamp);
+      pageData.putBoolean(aBoolean);
+    }
+  }
+
+  private void readInt(BatchData pageData, long timestamp) {
+    int anInt = valueDecoder.readInt(valueBuffer);
+    if (filter.satisfy(timestamp, anInt)) {
+      pageData.putTime(timestamp);
+      pageData.putInt(anInt);
+    }
+  }
+
+  private void readLong(BatchData pageData, long timestamp) {
+    long aLong = valueDecoder.readLong(valueBuffer);
+    if (filter.satisfy(timestamp, aLong)) {
+      pageData.putTime(timestamp);
+      pageData.putLong(aLong);
+    }
+  }
+
+  private void readFloat(BatchData pageData, long timestamp) {
+    float aFloat = valueDecoder.readFloat(valueBuffer);
+    if (filter.satisfy(timestamp, aFloat)) {
+      pageData.putTime(timestamp);
+      pageData.putFloat(aFloat);
+    }
+  }
+
+  private void readDouble(BatchData pageData, long timestamp) {
+    double aDouble = valueDecoder.readDouble(valueBuffer);
+    if (filter.satisfy(timestamp, aDouble)) {
+      pageData.putTime(timestamp);
+      pageData.putDouble(aDouble);
+    }
+  }
+
+  private void readText(BatchData pageData, long timestamp) {
+    Binary aBinary = valueDecoder.readBinary(valueBuffer);
+    if (filter.satisfy(timestamp, aBinary)) {
+      pageData.putTime(timestamp);
+      pageData.putBinary(aBinary);
+    }
   }
 
   public void close() {

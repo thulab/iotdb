@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.read;
 
@@ -76,14 +75,14 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (count == 0) {
-        assertEquals(r.getTimestamp(), 1480562618010L);
+        assertEquals(1480562618010L, r.getTimestamp());
       }
       if (count == 499) {
-        assertEquals(r.getTimestamp(), 1480562618999L);
+        assertEquals(1480562618999L, r.getTimestamp());
       }
       count++;
     }
-    assertEquals(count, 500);
+    assertEquals(500, count);
   }
 
   @Test
@@ -104,7 +103,7 @@ public class TimePlainEncodeReadTest {
       }
       count++;
     }
-    assertEquals(count, 750);
+    assertEquals(750, count);
   }
 
   @Test
@@ -144,16 +143,16 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (cnt == 1) {
-        assertEquals(r.getTimestamp(), 1480562618970L);
+        assertEquals(1480562618970L, r.getTimestamp());
       } else if (cnt == 2) {
-        assertEquals(r.getTimestamp(), 1480562618971L);
+        assertEquals(1480562618971L, r.getTimestamp());
       } else if (cnt == 3) {
-        assertEquals(r.getTimestamp(), 1480562618973L);
+        assertEquals(1480562618973L, r.getTimestamp());
       }
       // System.out.println(r);
       cnt++;
     }
-    assertEquals(cnt, 7);
+    assertEquals(7, cnt);
   }
 
   @Test
@@ -178,18 +177,18 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (cnt == 1) {
-        assertEquals(r.getTimestamp(), 1480562618973L);
+        assertEquals(1480562618973L, r.getTimestamp());
       } else if (cnt == 2) {
-        assertEquals(r.getTimestamp(), 1480562618974L);
+        assertEquals(1480562618974L, r.getTimestamp());
       } else if (cnt == 3) {
-        assertEquals(r.getTimestamp(), 1480562618975L);
+        assertEquals(1480562618975L, r.getTimestamp());
       } else if (cnt == 4) {
-        assertEquals(r.getTimestamp(), 1480562618976L);
+        assertEquals(1480562618976L, r.getTimestamp());
       }
       // System.out.println(r);
       cnt++;
     }
-    assertEquals(cnt, 5);
+    assertEquals(5, cnt);
 
     pathList.clear();
     pathList.add(new Path("d1.s1"));
@@ -219,13 +218,13 @@ public class TimePlainEncodeReadTest {
       RowRecord r = dataSet.next();
       // System.out.println(r);
       if (cnt == 4) {
-        assertEquals(r.getTimestamp(), 1480562618913L);
+        assertEquals(1480562618913L, r.getTimestamp());
       } else if (cnt == 7) {
-        assertEquals(r.getTimestamp(), 1480562618930L);
+        assertEquals(1480562618930L, r.getTimestamp());
       }
       cnt++;
     }
-    assertEquals(cnt, 9);
+    assertEquals(9, cnt);
   }
 
   @Test
@@ -245,14 +244,14 @@ public class TimePlainEncodeReadTest {
       RowRecord r = dataSet.next();
       System.out.println(r);
       if (cnt == 1) {
-        assertEquals(r.getTimestamp(), 1480562618972L);
+        assertEquals(1480562618972L, r.getTimestamp());
         Field f1 = r.getFields().get(0);
-        assertEquals(f1.getBoolV(), false);
+        assertEquals(false, f1.getBoolV());
       }
       if (cnt == 2) {
-        assertEquals(r.getTimestamp(), 1480562618981L);
+        assertEquals(1480562618981L, r.getTimestamp());
         Field f2 = r.getFields().get(0);
-        assertEquals(f2.getBoolV(), false);
+        assertEquals(false, f2.getBoolV());
       }
       cnt++;
     }
@@ -275,14 +274,14 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (cnt == 0) {
-        assertEquals(r.getTimestamp(), 1480562618976L);
+        assertEquals(1480562618976L, r.getTimestamp());
         Field f1 = r.getFields().get(0);
-        assertEquals(f1.toString(), "dog976");
+        assertEquals("dog976", f1.toString());
       }
       // System.out.println(r);
       cnt++;
     }
-    Assert.assertEquals(cnt, 1);
+    Assert.assertEquals(1, cnt);
 
     pathList = new ArrayList<>();
     pathList.add(new Path("d1.s4"));
@@ -296,14 +295,14 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (cnt == 1) {
-        assertEquals(r.getTimestamp(), 1480562618976L);
+        assertEquals(1480562618976L, r.getTimestamp());
         Field f1 = r.getFields().get(0);
-        assertEquals(f1.getBinaryV(), "dog976");
+        assertEquals("dog976", f1.getBinaryV());
       }
       // System.out.println(r);
       cnt++;
     }
-    Assert.assertEquals(cnt, 0);
+    Assert.assertEquals(0, cnt);
 
   }
 
@@ -323,14 +322,14 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (cnt == 1) {
-        assertEquals(r.getTimestamp(), 1480562618980L);
+        assertEquals(1480562618980L, r.getTimestamp());
         Field f1 = r.getFields().get(0);
-        assertEquals(f1.getFloatV(), 108.0, 0.0);
+        assertEquals(108.0, f1.getFloatV(), 0.0);
       }
       if (cnt == 2) {
-        assertEquals(r.getTimestamp(), 1480562618990L);
+        assertEquals(1480562618990L, r.getTimestamp());
         Field f2 = r.getFields().get(0);
-        assertEquals(f2.getFloatV(), 110.0, 0.0);
+        assertEquals(110.0, f2.getFloatV(), 0.0);
       }
       cnt++;
     }
@@ -352,14 +351,14 @@ public class TimePlainEncodeReadTest {
     while (dataSet.hasNext()) {
       RowRecord r = dataSet.next();
       if (cnt == 1) {
-        assertEquals(r.getTimestamp(), 1480562618022L);
+        assertEquals(1480562618022L, r.getTimestamp());
         Field f1 = r.getFields().get(0);
-        assertEquals(f1.getDoubleV(), 2.0, 0.0);
+        assertEquals(2.0, f1.getDoubleV(), 0.0);
       }
       if (cnt == 2) {
-        assertEquals(r.getTimestamp(), 1480562618033L);
+        assertEquals(1480562618033L, r.getTimestamp());
         Field f1 = r.getFields().get(0);
-        assertEquals(f1.getDoubleV(), 3.0, 0.0);
+        assertEquals(3.0, f1.getDoubleV(), 0.0);
       }
       cnt++;
     }

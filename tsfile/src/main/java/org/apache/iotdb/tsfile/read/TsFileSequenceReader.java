@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.read;
 
@@ -144,10 +143,10 @@ public class TsFileSequenceReader {
   }
 
   /**
-   * read data from current position of the input, and deserialize it to a ChunkGroupFooter. <br>
+   * read data from current position of the input, and deserialize it to a CHUNK_GROUP_FOOTER. <br>
    * This method is not threadsafe.
    *
-   * @return a ChunkGroupFooter
+   * @return a CHUNK_GROUP_FOOTER
    * @throws IOException io error
    */
   public ChunkGroupFooter readChunkGroupFooter() throws IOException {
@@ -155,11 +154,11 @@ public class TsFileSequenceReader {
   }
 
   /**
-   * read data from current position of the input, and deserialize it to a ChunkGroupFooter.
+   * read data from current position of the input, and deserialize it to a CHUNK_GROUP_FOOTER.
    *
    * @param position the offset of the chunk group footer in the file
    * @param markerRead true if the offset does not contains the marker , otherwise false
-   * @return a ChunkGroupFooter
+   * @return a CHUNK_GROUP_FOOTER
    * @throws IOException io error
    */
   public ChunkGroupFooter readChunkGroupFooter(long position, boolean markerRead)
@@ -180,10 +179,10 @@ public class TsFileSequenceReader {
   }
 
   /**
-   * read data from current position of the input, and deserialize it to a ChunkHeader. <br> This
+   * read data from current position of the input, and deserialize it to a CHUNK_HEADER. <br> This
    * method is not threadsafe.
    *
-   * @return a ChunkHeader
+   * @return a CHUNK_HEADER
    * @throws IOException io error
    */
   public ChunkHeader readChunkHeader() throws IOException {

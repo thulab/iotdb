@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.auth;
 
@@ -59,8 +58,8 @@ public class LocalFIleRoleAccessorTest {
       roles[i] = new Role("role" + i);
       for (int j = 0; j <= i; j++) {
         PathPrivilege pathPrivilege = new PathPrivilege("root.a.b.c" + j);
-        pathPrivilege.privileges.add(j);
-        roles[i].privilegeList.add(pathPrivilege);
+        pathPrivilege.getPrivileges().add(j);
+        roles[i].getPrivilegeList().add(pathPrivilege);
       }
     }
 
@@ -71,21 +70,21 @@ public class LocalFIleRoleAccessorTest {
 
     // load
     for (Role role : roles) {
-      Role loadedRole = accessor.loadRole(role.name);
+      Role loadedRole = accessor.loadRole(role.getName());
       assertEquals(role, loadedRole);
     }
     assertEquals(null, accessor.loadRole("not a role"));
 
     // delete
-    assertEquals(true, accessor.deleteRole(roles[roles.length - 1].name));
-    assertEquals(false, accessor.deleteRole(roles[roles.length - 1].name));
-    assertEquals(null, accessor.loadRole(roles[roles.length - 1].name));
+    assertEquals(true, accessor.deleteRole(roles[roles.length - 1].getName()));
+    assertEquals(false, accessor.deleteRole(roles[roles.length - 1].getName()));
+    assertEquals(null, accessor.loadRole(roles[roles.length - 1].getName()));
 
     // list
     List<String> roleNames = accessor.listAllRoles();
     roleNames.sort(null);
     for (int i = 0; i < roleNames.size(); i++) {
-      assertEquals(roles[i].name, roleNames.get(i));
+      assertEquals(roles[i].getName(), roleNames.get(i));
     }
   }
 }

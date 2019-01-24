@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.auth.entity;
 
@@ -30,8 +29,24 @@ import org.apache.iotdb.db.utils.AuthUtils;
  */
 public class Role {
 
-  public String name;
-  public List<PathPrivilege> privilegeList;
+  private String name;
+  private List<PathPrivilege> privilegeList;
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public List<PathPrivilege> getPrivilegeList() {
+    return privilegeList;
+  }
+
+  public void setPrivilegeList(List<PathPrivilege> privilegeList) {
+    this.privilegeList = privilegeList;
+  }
 
   public Role() {
   }
@@ -58,8 +73,8 @@ public class Role {
    */
   public void setPrivileges(String path, Set<Integer> privileges) {
     for (PathPrivilege pathPrivilege : privilegeList) {
-      if (pathPrivilege.path.equals(path)) {
-        pathPrivilege.privileges = privileges;
+      if (pathPrivilege.getPath().equals(path)) {
+        pathPrivilege.setPrivileges(privileges);
       }
     }
   }

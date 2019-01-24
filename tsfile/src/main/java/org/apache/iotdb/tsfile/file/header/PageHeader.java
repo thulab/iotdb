@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.file.header;
 
@@ -34,15 +33,15 @@ public class PageHeader {
   private int compressedSize;
   private int numOfValues;
   private Statistics<?> statistics;
-  private long max_timestamp;
-  private long min_timestamp;
+  private long maxTimestamp;
+  private long minTimestamp;
 
   // this field does not need to be serialized.
   private int serializedSize;
 
   public PageHeader(int uncompressedSize, int compressedSize, int numOfValues,
-      Statistics<?> statistics,
-      long max_timestamp, long min_timestamp) {
+                    Statistics<?> statistics,
+                    long maxTimestamp, long minTimestamp) {
     this.uncompressedSize = uncompressedSize;
     this.compressedSize = compressedSize;
     this.numOfValues = numOfValues;
@@ -50,8 +49,8 @@ public class PageHeader {
       statistics = new NoStatistics();
     }
     this.statistics = statistics;
-    this.max_timestamp = max_timestamp;
-    this.min_timestamp = min_timestamp;
+    this.maxTimestamp = maxTimestamp;
+    this.minTimestamp = minTimestamp;
     serializedSize = calculatePageHeaderSize();
   }
 
@@ -64,11 +63,11 @@ public class PageHeader {
     int uncompressedSize = ReadWriteIOUtils.readInt(inputStream);
     int compressedSize = ReadWriteIOUtils.readInt(inputStream);
     int numOfValues = ReadWriteIOUtils.readInt(inputStream);
-    long max_timestamp = ReadWriteIOUtils.readLong(inputStream);
-    long min_timestamp = ReadWriteIOUtils.readLong(inputStream);
+    long maxTimestamp = ReadWriteIOUtils.readLong(inputStream);
+    long minTimestamp = ReadWriteIOUtils.readLong(inputStream);
     Statistics statistics = Statistics.deserialize(inputStream, dataType);
-    return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, max_timestamp,
-        min_timestamp);
+    return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, maxTimestamp,
+        minTimestamp);
   }
 
   public static PageHeader deserializeFrom(ByteBuffer buffer, TSDataType dataType)
@@ -76,11 +75,11 @@ public class PageHeader {
     int uncompressedSize = ReadWriteIOUtils.readInt(buffer);
     int compressedSize = ReadWriteIOUtils.readInt(buffer);
     int numOfValues = ReadWriteIOUtils.readInt(buffer);
-    long max_timestamp = ReadWriteIOUtils.readLong(buffer);
-    long min_timestamp = ReadWriteIOUtils.readLong(buffer);
+    long maxTimestamp = ReadWriteIOUtils.readLong(buffer);
+    long minTimestamp = ReadWriteIOUtils.readLong(buffer);
     Statistics statistics = Statistics.deserialize(buffer, dataType);
-    return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, max_timestamp,
-        min_timestamp);
+    return new PageHeader(uncompressedSize, compressedSize, numOfValues, statistics, maxTimestamp,
+        minTimestamp);
   }
 
   public int calculatePageHeaderSize() {
@@ -111,11 +110,6 @@ public class PageHeader {
     return numOfValues;
   }
 
-  /*
-   * public void setStatistics(Statistics<?> statistics) { this.statistics = statistics; if(statistics != null)
-   * serializedSize = calculatePageHeaderSize(); }
-   */
-
   public void setNumOfValues(int numOfValues) {
     this.numOfValues = numOfValues;
   }
@@ -124,20 +118,20 @@ public class PageHeader {
     return statistics;
   }
 
-  public long getMax_timestamp() {
-    return max_timestamp;
+  public long getMaxTimestamp() {
+    return maxTimestamp;
   }
 
-  public void setMax_timestamp(long max_timestamp) {
-    this.max_timestamp = max_timestamp;
+  public void setMaxTimestamp(long maxTimestamp) {
+    this.maxTimestamp = maxTimestamp;
   }
 
-  public long getMin_timestamp() {
-    return min_timestamp;
+  public long getMinTimestamp() {
+    return minTimestamp;
   }
 
-  public void setMin_timestamp(long min_timestamp) {
-    this.min_timestamp = min_timestamp;
+  public void setMinTimestamp(long minTimestamp) {
+    this.minTimestamp = minTimestamp;
   }
 
   public int serializeTo(OutputStream outputStream) throws IOException {
@@ -145,8 +139,8 @@ public class PageHeader {
     length += ReadWriteIOUtils.write(uncompressedSize, outputStream);
     length += ReadWriteIOUtils.write(compressedSize, outputStream);
     length += ReadWriteIOUtils.write(numOfValues, outputStream);
-    length += ReadWriteIOUtils.write(max_timestamp, outputStream);
-    length += ReadWriteIOUtils.write(min_timestamp, outputStream);
+    length += ReadWriteIOUtils.write(maxTimestamp, outputStream);
+    length += ReadWriteIOUtils.write(minTimestamp, outputStream);
     length += statistics.serialize(outputStream);
     assert length == getSerializedSize();
     return length;
@@ -156,8 +150,8 @@ public class PageHeader {
   public String toString() {
     return "PageHeader{" + "uncompressedSize=" + uncompressedSize + ", compressedSize="
         + compressedSize
-        + ", numOfValues=" + numOfValues + ", statistics=" + statistics + ", max_timestamp="
-        + max_timestamp
-        + ", min_timestamp=" + min_timestamp + ", serializedSize=" + serializedSize + '}';
+        + ", numOfValues=" + numOfValues + ", statistics=" + statistics + ", maxTimestamp="
+        + maxTimestamp
+        + ", minTimestamp=" + minTimestamp + ", serializedSize=" + serializedSize + '}';
   }
 }

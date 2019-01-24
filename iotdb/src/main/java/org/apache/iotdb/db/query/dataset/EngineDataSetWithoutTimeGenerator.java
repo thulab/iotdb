@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.query.dataset;
 
@@ -29,21 +28,19 @@ import org.apache.iotdb.db.utils.TimeValuePair;
 import org.apache.iotdb.db.utils.TsPrimitiveType;
 import org.apache.iotdb.tsfile.exception.write.UnSupportedDataTypeException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
-import org.apache.iotdb.tsfile.read.common.BatchData;
 import org.apache.iotdb.tsfile.read.common.Field;
 import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.read.common.RowRecord;
 import org.apache.iotdb.tsfile.read.query.dataset.QueryDataSet;
 
+/**
+ * TODO implement this class as TsFile DataSetWithoutTimeGenerator
+ */
 public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
 
   private List<IReader> readers;
 
   private TimeValuePair[] cacheTimeValueList;
-
-  private List<BatchData> batchDataList;
-
-  private List<Boolean> hasDataRemaining;
 
   private PriorityQueue<Long> timeHeap;
 
@@ -81,8 +78,8 @@ public class EngineDataSetWithoutTimeGenerator extends QueryDataSet {
   }
 
   @Override
-  public boolean hasNext() throws IOException {
-    return timeHeap.size() > 0;
+  public boolean hasNext() {
+    return !timeHeap.isEmpty();
   }
 
   @Override

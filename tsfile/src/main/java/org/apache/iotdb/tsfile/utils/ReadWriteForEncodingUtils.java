@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.utils;
 
@@ -29,7 +28,8 @@ import java.util.List;
  * Utils to read/write stream.
  */
 public class ReadWriteForEncodingUtils {
-
+  private static final String TOO_LONG_BYTE_FORMAT = "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes";
+  private ReadWriteForEncodingUtils(){}
   /**
    * check all number in a int list and find max bit width.
    *
@@ -150,7 +150,7 @@ public class ReadWriteForEncodingUtils {
    * @return the number of bytes that the value consume.
    * @throws IOException exception in IO
    */
-  public static int writeUnsignedVarInt(int value, ByteBuffer buffer) throws IOException {
+  public static int writeUnsignedVarInt(int value, ByteBuffer buffer) {
     int position = 1;
     while ((value & 0xFFFFFF80) != 0L) {
       buffer.put((byte) ((value & 0x7F) | 0x80));
@@ -174,8 +174,7 @@ public class ReadWriteForEncodingUtils {
     int paddedByteNum = (bitWidth + 7) / 8;
     if (paddedByteNum > 4) {
       throw new IOException(String.format(
-          "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes",
-          paddedByteNum));
+              TOO_LONG_BYTE_FORMAT, paddedByteNum));
     }
     int offset = 0;
     while (paddedByteNum > 0) {
@@ -199,8 +198,7 @@ public class ReadWriteForEncodingUtils {
     int paddedByteNum = (bitWidth + 7) / 8;
     if (paddedByteNum > 8) {
       throw new IOException(String.format(
-          "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes",
-          paddedByteNum));
+              TOO_LONG_BYTE_FORMAT, paddedByteNum));
     }
     out.write(BytesUtils.longToBytes(value, paddedByteNum));
   }
@@ -218,8 +216,7 @@ public class ReadWriteForEncodingUtils {
     int paddedByteNum = (bitWidth + 7) / 8;
     if (paddedByteNum > 4) {
       throw new IOException(String.format(
-          "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes",
-          paddedByteNum));
+              TOO_LONG_BYTE_FORMAT, paddedByteNum));
     }
     int result = 0;
     int offset = 0;
@@ -245,8 +242,7 @@ public class ReadWriteForEncodingUtils {
     int paddedByteNum = (bitWidth + 7) / 8;
     if (paddedByteNum > 8) {
       throw new IOException(String.format(
-          "tsfile-common BytesUtils: encountered value (%d) that requires more than 4 bytes",
-          paddedByteNum));
+              TOO_LONG_BYTE_FORMAT, paddedByteNum));
     }
     long result = 0;
     for (int i = 0; i < paddedByteNum; i++) {

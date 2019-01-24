@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.cli.tool;
 
@@ -150,7 +149,7 @@ public class ExportCsv extends AbstractCsvTool {
   }
 
   private static void parseSpecialParams(CommandLine commandLine, ConsoleReader reader)
-      throws IOException, ArgsErrorException {
+      throws ArgsErrorException {
     targetDirectory = checkRequiredArg(TARGET_FILE_ARGS, TARGET_FILE_NAME, commandLine);
     timeFormat = commandLine.getOptionValue(TIME_FORMAT_ARGS);
     if (timeFormat == null) {
@@ -217,21 +216,19 @@ public class ExportCsv extends AbstractCsvTool {
     return options;
   }
 
-  private static void dumpFromSqlFile(String filePath) throws ClassNotFoundException, IOException {
-    BufferedReader reader = new BufferedReader(new FileReader(filePath));
-    String sql = null;
-    int index = 0;
-    while ((sql = reader.readLine()) != null) {
-      try {
-        dumpResult(sql, index);
-      } catch (SQLException e) {
-        System.out.println(
-            String.format("[ERROR] Cannot dump data for statment %s, because %s", sql,
-                e.getMessage()));
+  private static void dumpFromSqlFile(String filePath) throws IOException {
+    try (BufferedReader reader = new BufferedReader(new FileReader(filePath));){
+      String sql = null;
+      int index = 0;
+      while ((sql = reader.readLine()) != null) {
+        try {
+          dumpResult(sql, index);
+        } catch (SQLException e) {
+          System.out.println(String.format("[ERROR] Cannot dump data for statment %s, because %s", sql, e.getMessage()));
+        }
+        index++;
       }
-      index++;
     }
-    reader.close();
   }
 
   /**
@@ -239,11 +236,10 @@ public class ExportCsv extends AbstractCsvTool {
    *
    * @param sql export the result of executing the sql
    * @param index use to create dump file name
-   * @throws ClassNotFoundException if cannot find driver
    * @throws SQLException if SQL is not valid
    */
   private static void dumpResult(String sql, int index)
-      throws ClassNotFoundException, SQLException {
+      throws SQLException {
     BufferedWriter writer = null;
     final String path = targetDirectory + DUMP_FILE_NAME + index + ".csv";
     try {

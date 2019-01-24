@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.write.schema;
 
@@ -38,8 +37,6 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 import org.apache.iotdb.tsfile.utils.StringContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class describes a measurement's information registered in {@linkplain FileSchema FilSchema},
@@ -52,7 +49,6 @@ import org.slf4j.LoggerFactory;
  */
 public class MeasurementSchema implements Comparable<MeasurementSchema> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MeasurementSchema.class);
   private TSDataType type;
   private TSEncoding encoding;
   private String measurementId;
@@ -131,7 +127,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
   /**
    * function for deserializing data from byte buffer.
    */
-  public static MeasurementSchema deserializeFrom(ByteBuffer buffer) throws IOException {
+  public static MeasurementSchema deserializeFrom(ByteBuffer buffer) {
     MeasurementSchema measurementSchema = new MeasurementSchema();
 
     measurementSchema.measurementId = ReadWriteIOUtils.readString(buffer);
@@ -208,7 +204,6 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
    * function for getting time encoder.
    */
   public Encoder getTimeEncoder() {
-    TSFileConfig conf = TSFileDescriptor.getInstance().getConfig();
     TSEncoding timeSeriesEncoder = TSEncoding.valueOf(conf.timeSeriesEncoder);
     TSDataType timeType = TSDataType.valueOf(conf.timeSeriesDataType);
     return TSEncodingBuilder.getConverter(timeSeriesEncoder).getEncoder(timeType);
@@ -257,7 +252,7 @@ public class MeasurementSchema implements Comparable<MeasurementSchema> {
   /**
    * function for serializing data to byte buffer.
    */
-  public int serializeTo(ByteBuffer buffer) throws IOException {
+  public int serializeTo(ByteBuffer buffer) {
     int byteLen = 0;
 
     byteLen += ReadWriteIOUtils.write(measurementId, buffer);

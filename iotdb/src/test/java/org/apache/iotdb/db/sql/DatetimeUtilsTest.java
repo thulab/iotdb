@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.sql;
 
@@ -35,33 +34,13 @@ public class DatetimeUtilsTest {
 
   private ZoneOffset zoneOffset;
   private ZoneId zoneId;
-
-  public static void main(String[] args) throws LogicalOperatorException {
-    // ZoneId id = ZoneId.of("+08:00");
-    // Instant instant = Instant.now();
-    // ZoneOffset zoneOffset = id.getRules().getOffset(instant);
-    // System.out.println(currentOffsetForMyZone);
-
-    // DatetimeUtils.convertDatetimeStrToMillisecond("2019.01.02T15:13:27.689[Asia/Shanghai]", zoneOffset);
-    // for(String string : ZoneId.getAvailableZoneIds()) {
-    // ZoneId id = ZoneId.of(string);
-    // Instant instant = Instant.now();
-    // ZoneOffset currentOffsetForMyZone = id.getRules().getOffset(instant);
-    // System.out.println(string+"--"+currentOffsetForMyZone);
-    // }
-    // long timestamp = System.currentTimeMillis();
-    // System.out.println(timestamp);
-    // LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(1546499858912L),
-    // ZoneId.systemDefault());
-    // System.out.println(dateTime);
-    System.out.println(
-        DatetimeUtils.convertDatetimeStrToMillisecond("2018-1-1T13:00:07", ZoneId.systemDefault()));
-  }
+  // 1546413207689
+  // 2019-01-02T15:13:27.689+08:00
+  private final long timestamp = 1546413207689L;
+  private long delta;
 
   @Before
   public void setUp() throws Exception {
-    zoneOffset = ZonedDateTime.now().getOffset();
-    zoneId = ZoneId.systemDefault();
   }
 
   @After
@@ -69,18 +48,35 @@ public class DatetimeUtilsTest {
   }
 
   @Test
-  public void testConvertDatetimeStrToLongWithoutMS() throws LogicalOperatorException {
-    // 1546413207689
-    // 2019-01-02T15:13:27.689+08:00
+  public void test1() throws LogicalOperatorException{
+    zoneOffset = ZonedDateTime.now().getOffset();
+    zoneId = ZoneId.systemDefault();
+    if(zoneOffset.toString().equals("Z")){
+      delta = 8 * 3600000;
+    } else {
+      delta = (8 - Long.parseLong(zoneOffset.toString().split(":")[0])) * 3600000;
+    }
+    testConvertDatetimeStrToLongWithoutMS(zoneOffset, zoneId, timestamp - 689 + delta);
+    testConvertDatetimeStrToLongWithMS(zoneOffset, zoneId, timestamp + delta);
+  }
+
+  @Test
+  public void test2() throws LogicalOperatorException{
+    zoneOffset = ZoneOffset.UTC;
+    zoneId = ZoneId.of("Etc/UTC");
+    delta = 8 * 3600000;
+    testConvertDatetimeStrToLongWithoutMS(zoneOffset, zoneId, timestamp - 689 + delta);
+    testConvertDatetimeStrToLongWithMS(zoneOffset, zoneId, timestamp + delta);
+  }
+
+  public void testConvertDatetimeStrToLongWithoutMS(ZoneOffset zoneOffset, ZoneId zoneId, long res) throws LogicalOperatorException {
     String[] timeFormatWithoutMs = new String[]{"2019-01-02 15:13:27", "2019/01/02 15:13:27",
         "2019.01.02 15:13:27", "2019-01-02T15:13:27", "2019/01/02T15:13:27", "2019.01.02T15:13:27",
         "2019-01-02 15:13:27" + zoneOffset, "2019/01/02 15:13:27" + zoneOffset,
         "2019.01.02 15:13:27" + zoneOffset, "2019-01-02T15:13:27" + zoneOffset,
         "2019/01/02T15:13:27" + zoneOffset, "2019.01.02T15:13:27" + zoneOffset,};
-
-    long res = 1546413207000L;
     for (String str : timeFormatWithoutMs) {
-      Assert.assertEquals(res, DatetimeUtils.convertDatetimeStrToMillisecond(str, zoneOffset));
+      Assert.assertEquals(res, DatetimeUtils.convertDatetimeStrToMillisecond(str, zoneOffset, 0));
     }
 
     for (String str : timeFormatWithoutMs) {
@@ -89,10 +85,7 @@ public class DatetimeUtilsTest {
 
   }
 
-  @Test
-  public void testConvertDatetimeStrToLongWithMS() throws LogicalOperatorException {
-    // 1546413207689
-    // 2019-01-02T15:13:27.689+08:00
+  public void testConvertDatetimeStrToLongWithMS(ZoneOffset zoneOffset, ZoneId zoneId, long res) throws LogicalOperatorException {
     String[] timeFormatWithoutMs = new String[]{"2019-01-02 15:13:27.689",
         "2019/01/02 15:13:27.689",
         "2019.01.02 15:13:27.689", "2019-01-02T15:13:27.689", "2019/01/02T15:13:27.689",
@@ -100,10 +93,8 @@ public class DatetimeUtilsTest {
         "2019/01/02 15:13:27.689" + zoneOffset, "2019.01.02 15:13:27.689" + zoneOffset,
         "2019-01-02T15:13:27.689" + zoneOffset, "2019/01/02T15:13:27.689" + zoneOffset,
         "2019.01.02T15:13:27.689" + zoneOffset,};
-
-    long res = 1546413207689L;
     for (String str : timeFormatWithoutMs) {
-      assertEquals(res, DatetimeUtils.convertDatetimeStrToMillisecond(str, zoneOffset));
+      assertEquals(res, DatetimeUtils.convertDatetimeStrToMillisecond(str, zoneOffset, 0));
     }
 
     for (String str : timeFormatWithoutMs) {
@@ -116,5 +107,13 @@ public class DatetimeUtilsTest {
     // System.out.println(timestamp);
     // ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.of("+08:00"));
     // System.out.println(zonedDateTime);
+  }
+
+  public static void main(String[] args){
+//    System.out.println(DatetimeUtils.toZoneOffset(ZoneId.of("Etc/UTC")));
+    for(String zoneId : ZoneId.getAvailableZoneIds()){
+      System.out.println(zoneId + ": " + DatetimeUtils.toZoneOffset(ZoneId.of(zoneId)));
+    }
+//	  System.out.println(ZoneOffset.of("+00:00"));
   }
 }

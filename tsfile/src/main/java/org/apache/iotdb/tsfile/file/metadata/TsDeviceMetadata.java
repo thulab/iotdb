@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.file.metadata;
 
@@ -52,6 +51,7 @@ public class TsDeviceMetadata {
   private List<ChunkGroupMetaData> chunkGroupMetadataList = new ArrayList<>();
 
   public TsDeviceMetadata() {
+    // allowed to clair an empty TsDeviceMetadata whose fields will be assigned later.
   }
 
   /**
@@ -85,7 +85,7 @@ public class TsDeviceMetadata {
    * @param buffer -buffer to deserialize
    * @return -device meta data
    */
-  public static TsDeviceMetadata deserializeFrom(ByteBuffer buffer) throws IOException {
+  public static TsDeviceMetadata deserializeFrom(ByteBuffer buffer) {
     TsDeviceMetadata deviceMetadata = new TsDeviceMetadata();
 
     deviceMetadata.startTime = ReadWriteIOUtils.readLong(buffer);

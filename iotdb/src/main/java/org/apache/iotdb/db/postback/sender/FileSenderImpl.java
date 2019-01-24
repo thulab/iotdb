@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.postback.sender;
 
@@ -492,7 +491,11 @@ public class FileSenderImpl implements FileSender {
       if (new File(snapshotPath).exists() && new File(snapshotPath).list().length != 0) {
         // it means that the last task of postback does not succeed! Clear the files and
         // start to postback again
-        PostbackUtils.deleteFile(new File(snapshotPath));
+        try {
+          PostbackUtils.deleteFile(new File(snapshotPath));
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
     }
 
@@ -573,7 +576,11 @@ public class FileSenderImpl implements FileSender {
       }
     }
     for (String snapshotPath : config.snapshotPaths) {
-      PostbackUtils.deleteFile(new File(snapshotPath));
+      try {
+        PostbackUtils.deleteFile(new File(snapshotPath));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
     try {
       clientOfServer.afterReceiving();

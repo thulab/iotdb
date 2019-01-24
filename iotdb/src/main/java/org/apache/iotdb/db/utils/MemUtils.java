@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.utils;
 
@@ -51,19 +50,19 @@ public class MemUtils {
   private static long getPointSize(DataPoint dataPoint) {
     switch (dataPoint.getType()) {
       case INT32:
-        return 8 + 4;
+        return 8 + 4L;
       case INT64:
-        return 8 + 8;
+        return 8 + 8L;
       case FLOAT:
-        return 8 + 4;
+        return 8 + 4L;
       case DOUBLE:
-        return 8 + 8;
+        return 8 + 8L;
       case BOOLEAN:
-        return 8 + 1;
+        return 8 + 1L;
       case TEXT:
         return 8 + dataPoint.getValue().toString().length() * 2;
       default:
-        return 8 + 8;
+        return 8 + 8L;
     }
   }
 
@@ -95,7 +94,7 @@ public class MemUtils {
    */
   public static long getStringMem(String str) {
     // wide char (2 bytes each) and 64B String overhead
-    return str.length() * 2 + 64;
+    return str.length() * 2 + 64L;
   }
 
   /**

@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.db.service;
 
@@ -41,10 +40,10 @@ public class CloseMergeService implements IService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CloseMergeService.class);
   private static IoTDBConfig dbConfig = IoTDBDescriptor.getInstance().getConfig();
-  private static final long mergeDelay = dbConfig.periodTimeForMerge;
-  private static final long closeDelay = dbConfig.periodTimeForFlush;
-  private static final long mergePeriod = dbConfig.periodTimeForMerge;
-  private static final long closePeriod = dbConfig.periodTimeForFlush;
+  private static final long MERGE_DELAY = dbConfig.periodTimeForMerge;
+  private static final long CLOSE_DELAY = dbConfig.periodTimeForFlush;
+  private static final long MERGE_PERIOD = dbConfig.periodTimeForMerge;
+  private static final long CLOSE_PERIOD = dbConfig.periodTimeForFlush;
   private static CloseMergeService CLOSE_MERGE_SERVICE = new CloseMergeService();
   private MergeServiceThread mergeService = new MergeServiceThread();
   private CloseServiceThread closeService = new CloseServiceThread();
@@ -100,7 +99,7 @@ public class CloseMergeService implements IService {
         isStart = false;
         synchronized (service) {
           service.shutdown();
-          service.notify();
+          service.notifyAll();
         }
         CLOSE_MERGE_SERVICE = null;
         LOGGER.info("Shutdown close and merge service successfully.");
@@ -140,14 +139,15 @@ public class CloseMergeService implements IService {
 
     @Override
     public void run() {
-      service.scheduleWithFixedDelay(mergeService, mergeDelay, mergePeriod, TimeUnit.SECONDS);
-      service.scheduleWithFixedDelay(closeService, closeDelay, closePeriod, TimeUnit.SECONDS);
+      service.scheduleWithFixedDelay(mergeService, MERGE_DELAY, MERGE_PERIOD, TimeUnit.SECONDS);
+      service.scheduleWithFixedDelay(closeService, CLOSE_DELAY, CLOSE_PERIOD, TimeUnit.SECONDS);
       while (!service.isShutdown()) {
         synchronized (service) {
           try {
             service.wait();
           } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error("CLose and merge error.", e);
+            Thread.currentThread().interrupt();
           }
         }
       }

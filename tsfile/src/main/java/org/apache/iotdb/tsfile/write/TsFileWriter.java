@@ -1,6 +1,4 @@
 /**
- * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -11,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.iotdb.tsfile.write;
 
@@ -66,7 +65,7 @@ public class TsFileWriter {
   /**
    * all IChunkGroupWriters.
    **/
-  private Map<String, IChunkGroupWriter> groupWriters = new HashMap<String, IChunkGroupWriter>();
+  private Map<String, IChunkGroupWriter> groupWriters = new HashMap<>();
 
   /**
    * min value of threshold of data points num check.
@@ -188,16 +187,12 @@ public class TsFileWriter {
    * @throws WriteProcessException exception in write process
    */
   public boolean write(TSRecord record) throws IOException, WriteProcessException {
-
     // make sure the ChunkGroupWriter for this TSRecord exist
-    if (checkIsTimeSeriesExist(record)) {
-
-      // get corresponding ChunkGroupWriter and write this TSRecord
-      groupWriters.get(record.deviceId).write(record.time, record.dataPointList);
-      ++recordCount;
-      return checkMemorySizeAndMayFlushGroup();
-    }
-    return false;
+    checkIsTimeSeriesExist(record);
+    // get corresponding ChunkGroupWriter and write this TSRecord
+    groupWriters.get(record.deviceId).write(record.time, record.dataPointList);
+    ++recordCount;
+    return checkMemorySizeAndMayFlushGroup();
   }
 
   /**
@@ -223,8 +218,9 @@ public class TsFileWriter {
   private boolean checkMemorySizeAndMayFlushGroup() throws IOException {
     if (recordCount >= recordCountForNextMemCheck) {
       long memSize = calculateMemSizeForAllGroup();
+      assert memSize > 0;
       if (memSize > chunkGroupSizeThreshold) {
-        LOG.info("start_flush_row_group, memory space occupy:" + memSize);
+        LOG.info("start_flush_row_group, memory space occupy:{}", memSize);
         recordCountForNextMemCheck = recordCount * chunkGroupSizeThreshold / memSize;
         LOG.debug("current threshold:{}, next check:{}", recordCount, recordCountForNextMemCheck);
         return flushAllChunkGroups();
@@ -250,9 +246,10 @@ public class TsFileWriter {
     if (recordCount > 0) {
       long totalMemStart = fileWriter.getPos();
 
-      for (String deviceId : groupWriters.keySet()) {
+      for (Map.Entry<String, IChunkGroupWriter> entry: groupWriters.entrySet()) {
         long pos = fileWriter.getPos();
-        IChunkGroupWriter groupWriter = groupWriters.get(deviceId);
+        String deviceId = entry.getKey();
+        IChunkGroupWriter groupWriter = entry.getValue();
         fileWriter.startFlushChunkGroup(deviceId);
         ChunkGroupFooter chunkGroupFooter = groupWriter.flushToFileWriter(fileWriter);
         if (fileWriter.getPos() - pos != chunkGroupFooter.getDataSize()) {
