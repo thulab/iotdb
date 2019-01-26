@@ -30,8 +30,13 @@ import org.apache.iotdb.service.rpc.thrift.TSFetchMetadataReq;
 import org.apache.iotdb.service.rpc.thrift.TSFetchMetadataResp;
 import org.apache.iotdb.service.rpc.thrift.TSIService;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IoTDBDatabaseMetadata implements DatabaseMetaData {
+
+  private static final Logger LOGGER = LoggerFactory
+          .getLogger(IoTDBDatabaseMetadata.class);
 
   private IoTDBConnection connection;
   private TSIService.Iface client;
@@ -1186,7 +1191,12 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
-  /*
+
+
+
+
+  /**
+   * @deprecated
    * recommend using getMetadataInJson() instead of toString()
    */
   @Deprecated
@@ -1195,7 +1205,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
     try {
       return getMetadataInJsonFunc();
     } catch (IoTDBSQLException e) {
-      System.out.println("Failed to fetch metadata in json because: " + e);
+      LOGGER.info("Failed to fetch metadata in json because: ", e);
     } catch (TException e) {
       boolean flag = connection.reconnect();
       this.client = connection.client;
@@ -1203,15 +1213,14 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
         try {
           return getMetadataInJsonFunc();
         } catch (TException e2) {
-          System.out.println(
-              "Fail to get all timeseries " + "info after reconnecting."
-                  + " please check server status");
+          LOGGER.info("Fail to get all timeseries " + "info after reconnecting."
+                  + " please check server status", e2);
         } catch (IoTDBSQLException e1) {
           // ignored
         }
       } else {
-        System.out.println("Fail to reconnect to server "
-            + "when getting all timeseries info. please check server status");
+        LOGGER.info("Fail to reconnect to server "
+                + "when getting all timeseries info. please check server status");
       }
     }
     return null;
