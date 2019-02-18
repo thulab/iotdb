@@ -69,6 +69,23 @@ public class TsFileSequenceReader {
     }
   }
 
+  /**
+   * Create a file reader of the given file. The reader will read the tail of the file to get the
+   * file metadata size.Then the reader will skip the first TSFileConfig.MAGIC_STRING.length() bytes
+   * of the file for preparing reading real data.
+   *
+   * @param input given input
+   */
+  public TsFileSequenceReader(TsFileInput input) throws IOException {
+    this(input, true);
+  }
+
+  /**
+   * construct function for TsFileSequenceReader.
+   *
+   * @param input -given input
+   * @param loadMetadataSize -load meta data size
+   */
   public TsFileSequenceReader(TsFileInput input, boolean loadMetadataSize) throws IOException {
     this.tsFileInput = input;
     if (loadMetadataSize) {
@@ -168,7 +185,7 @@ public class TsFileSequenceReader {
    */
   public ChunkGroupFooter readChunkGroupFooter(long position, boolean markerRead)
       throws IOException {
-    return ChunkGroupFooter.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
+    return ChunkGroupFooter.deserializeFrom(tsFileInput, position, markerRead);
   }
 
   /**
@@ -201,7 +218,7 @@ public class TsFileSequenceReader {
    * @param markerRead true if the offset does not contains the marker , otherwise false
    */
   private ChunkHeader readChunkHeader(long position, boolean markerRead) throws IOException {
-    return ChunkHeader.deserializeFrom(tsFileInput.wrapAsFileChannel(), position, markerRead);
+    return ChunkHeader.deserializeFrom(tsFileInput, position, markerRead);
   }
 
   /**
@@ -299,7 +316,7 @@ public class TsFileSequenceReader {
    */
   public byte readMarker() throws IOException {
     markerBuffer.clear();
-    ReadWriteIOUtils.readAsPossible(tsFileInput.wrapAsFileChannel(), markerBuffer);
+    ReadWriteIOUtils.readAsPossible(tsFileInput, markerBuffer);
     markerBuffer.flip();
     return markerBuffer.get();
   }
@@ -343,6 +360,6 @@ public class TsFileSequenceReader {
    */
   public int readRaw(long position, int length, ByteBuffer target) throws IOException {
     return ReadWriteIOUtils
-        .readAsPossible(tsFileInput.wrapAsFileChannel(), target, position, length);
+        .readAsPossible(tsFileInput, target, position, length);
   }
 }

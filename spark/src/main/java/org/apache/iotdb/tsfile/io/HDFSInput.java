@@ -11,22 +11,22 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.iotdb.tsfile.read.reader.TsFileInput;
 
-public class HDFSInputStream implements TsFileInput {
+public class HDFSInput implements TsFileInput {
 
   private FSDataInputStream fsDataInputStream;
   private FileStatus fileStatus;
 
-  public HDFSInputStream(String filePath) throws IOException {
+  public HDFSInput(String filePath) throws IOException {
 
     this(filePath, new Configuration());
   }
 
-  public HDFSInputStream(String filePath, Configuration configuration) throws IOException {
+  public HDFSInput(String filePath, Configuration configuration) throws IOException {
 
     this(new Path(filePath), configuration);
   }
 
-  public HDFSInputStream(Path path, Configuration configuration) throws IOException {
+  public HDFSInput(Path path, Configuration configuration) throws IOException {
     FileSystem fs = FileSystem.get(configuration);
     fsDataInputStream = fs.open(path);
     fileStatus = fs.getFileStatus(path);
@@ -50,7 +50,7 @@ public class HDFSInputStream implements TsFileInput {
 
   @Override
   public int read(ByteBuffer dst) throws IOException {
-    byte[] bytes = new byte[dst.capacity()];
+    byte[] bytes = new byte[dst.remaining()]; //TODO
     int res = fsDataInputStream.read(bytes);
     dst.put(bytes);
     return res;
@@ -58,14 +58,24 @@ public class HDFSInputStream implements TsFileInput {
 
   @Override
   public int read(ByteBuffer dst, long position) throws IOException {
+    if (position < 0) {
+      throw new IllegalArgumentException("position must be non-negative");
+    }
+
+    if (position >= this.size()) {
+      return -1;
+    }
+
     long srcPosition = fsDataInputStream.getPos();
 
     fsDataInputStream.seek(position);
-    byte[] bytes = new byte[dst.capacity()];
+    byte[] bytes = new byte[dst.remaining()]; //TODO 原来capacity会有问题
     int res = fsDataInputStream.read(bytes);
     dst.put(bytes);
 
-    fsDataInputStream.seek(srcPosition);//TODO This method does not modify this TsFileInput's position.
+    fsDataInputStream.seek(srcPosition);
+    //TODO This method does not modify this TsFileInput's position.
+
     return res;
   }
 

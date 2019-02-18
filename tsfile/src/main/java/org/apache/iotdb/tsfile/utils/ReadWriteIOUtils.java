@@ -1,21 +1,18 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements.  See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership.  The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with the License.  You may obtain
+ * a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.iotdb.tsfile.utils;
 
@@ -23,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -544,26 +540,14 @@ public class ReadWriteIOUtils {
   /**
    * read bytes from buffer with offset position to the end of buffer.
    */
-  public static int readAsPossible(FileChannel channel, long position, ByteBuffer buffer)
+  public static int readAsPossible(TsFileInput input, long position, ByteBuffer buffer)
       throws IOException {
     int length = 0;
     int read;
-    while (buffer.hasRemaining() && (read = channel.read(buffer, position)) != -1) {
+    while (buffer.hasRemaining() && (read = input.read(buffer, position)) != -1) {
       length += read;
       position += read;
-      read = channel.read(buffer, position);
-    }
-    return length;
-  }
-
-  /**
-   * read util to the end of buffer.
-   */
-  public static int readAsPossible(FileChannel channel, ByteBuffer buffer) throws IOException {
-    int length = 0;
-    int read;
-    while (buffer.hasRemaining() && (read = channel.read(buffer)) != -1) {
-      length += read;
+//      read = input.read(buffer, position); TODO 这行应该可以删掉
     }
     return length;
   }
@@ -583,7 +567,7 @@ public class ReadWriteIOUtils {
   /**
    * read util to the end of buffer or up to len.
    */
-  public static int readAsPossible(FileChannel channel, ByteBuffer buffer, int len)
+  public static int readAsPossible(TsFileInput input, ByteBuffer buffer, int len)
       throws IOException {
     int length = 0;
     int limit = buffer.limit();
@@ -591,29 +575,10 @@ public class ReadWriteIOUtils {
       buffer.limit(buffer.position() + len);
     }
     int read;
-    while (length < len && buffer.hasRemaining() && (read = channel.read(buffer)) != -1) {
+    while (length < len && buffer.hasRemaining() && (read = input.read(buffer)) != -1) {
       length += read;
     }
     buffer.limit(limit);
-    return length;
-  }
-
-  /**
-   * read bytes from buffer with offset position to the end of buffer or up to len.
-   */
-  public static int readAsPossible(FileChannel channel, ByteBuffer target, long offset, int len)
-      throws IOException {
-    int length = 0;
-    int limit = target.limit();
-    if (target.remaining() > len) {
-      target.limit(target.position() + len);
-    }
-    int read;
-    while (length < len && target.hasRemaining() && (read = channel.read(target, offset)) != -1) {
-      length += read;
-      offset += read;
-    }
-    target.limit(limit);
     return length;
   }
 

@@ -63,12 +63,12 @@
         <thrift.version>0.9.3</thrift.version>
     </properties>
     <!-- if we claim dependencies in dependencyManagement, then we do not claim
-  their version in sub-project's pom, but we have to claim themselves again
-  in sub-projects -->
+their version in sub-project's pom, but we have to claim themselves again
+in sub-projects -->
     <dependencyManagement>
         <dependencies>
             <!-- in the subprojects, you have to claim logback again, because maybe
-  someone in your dependences uses log4j lib. -->
+someone in your dependences uses log4j lib. -->
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
@@ -119,6 +119,29 @@
             <artifactId>jaxb-runtime</artifactId>
             <version>2.4.0-b180725.0644</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.11</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.11</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.11.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.11</artifactId>
+            <version>3.0.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <modules>
         <module>tsfile</module>
@@ -128,7 +151,7 @@
         <module>service-rpc</module>
         <module>iotdb-cli</module>
         <!-- <module>hadoop</module> -->
-        <!-- <module>spark</module> -->
+        <module>spark</module>
     </modules>
     <build>
         <pluginManagement>
@@ -139,17 +162,17 @@
                     <configuration>
                         <excludePackageNames>*thrift*</excludePackageNames>
                         <!--
-              This will suppress the generation of a hidden timestamp at the top of each generated html page
-              and hopefully let the site generation nod to too big updates every time.
-            -->
+  This will suppress the generation of a hidden timestamp at the top of each generated html page
+  and hopefully let the site generation nod to too big updates every time.
+-->
                         <notimestamp>true</notimestamp>
                         <!--Don't fail the build, just because there were issues in the JavaDoc generation.-->
                         <failOnError>false</failOnError>
                     </configuration>
                 </plugin>
                 <!--
-  We need to increase the memory available to tests as we were
-  getting out-of-memory errors when building on windows machines.
+We need to increase the memory available to tests as we were
+getting out-of-memory errors when building on windows machines.
 -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -162,9 +185,9 @@
         </pluginManagement>
         <plugins>
             <!--
-  Strange things usually happen if you run with a too low Java version.
-  This plugin not only checks the minimum java version of 1.8, but also
-  checks all dependencies (and transitive dependencies) for reported CVEs.
+Strange things usually happen if you run with a too low Java version.
+This plugin not only checks the minimum java version of 1.8, but also
+checks all dependencies (and transitive dependencies) for reported CVEs.
 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -202,13 +225,13 @@
                 </dependencies>
             </plugin>
             <!--
-  Even if Maven transitively pulls in dependencies, relying on these can
-  quite often cause hard to find problems. So it's a good practice to make
-  sure everything directly required is also directly added as a dependency.
-  On the other side adding unused dependency only over-complicates the
-  the dependency graph, so the maven-dependency-plugin checks we depend on
-  what we need and only that and that runtime dependencies are correctly
-  imported with runtime scope.
+Even if Maven transitively pulls in dependencies, relying on these can
+quite often cause hard to find problems. So it's a good practice to make
+sure everything directly required is also directly added as a dependency.
+On the other side adding unused dependency only over-complicates the
+the dependency graph, so the maven-dependency-plugin checks we depend on
+what we need and only that and that runtime dependencies are correctly
+imported with runtime scope.
 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -297,44 +320,44 @@
                 </executions>
             </plugin>
             <!--
-  Check if all files contain Apache headers in them.
-  Ignore this plugin, we use license-maven-plugin to check apache header.
+Check if all files contain Apache headers in them.
+Ignore this plugin, we use license-maven-plugin to check apache header.
 -->
             <!-- 			<plugin>
-  <groupId>org.apache.rat</groupId>
-  <artifactId>apache-rat-plugin</artifactId>
-  <executions>
-    <execution>
-      <id>license-check</id>
-      <phase>verify</phase>
-      <goals>
-        <goal>check</goal>
-      </goals>
-    </execution>
-  </executions>
-  <configuration>
-    Should be enabled as soon as the headers are in position
-    <skip>true</skip>
-    <excludes>
-      Git related files
-      <exclude>**/.git/**</exclude>
-      <exclude>**/.gitignore</exclude>
+<groupId>org.apache.rat</groupId>
+<artifactId>apache-rat-plugin</artifactId>
+<executions>
+<execution>
+<id>license-check</id>
+<phase>verify</phase>
+<goals>
+  <goal>check</goal>
+</goals>
+</execution>
+</executions>
+<configuration>
+Should be enabled as soon as the headers are in position
+<skip>true</skip>
+<excludes>
+Git related files
+<exclude>**/.git/**</exclude>
+<exclude>**/.gitignore</exclude>
 
-      Maven related files
-      <exclude>**/target/**</exclude>
+Maven related files
+<exclude>**/target/**</exclude>
 
-      Eclipse related files
-      <exclude>**/.project</exclude>
-      <exclude>**/.settings/**</exclude>
-      <exclude>**/.classpath</exclude>
+Eclipse related files
+<exclude>**/.project</exclude>
+<exclude>**/.settings/**</exclude>
+<exclude>**/.classpath</exclude>
 
-      IntelliJ related files
-      <exclude>**/.idea/**</exclude>
-      <exclude>**/*.iml</exclude>
-      Runtime log
-      <exclude>**/*.log</exclude>
-    </excludes>
-  </configuration>
+IntelliJ related files
+<exclude>**/.idea/**</exclude>
+<exclude>**/*.iml</exclude>
+Runtime log
+<exclude>**/*.log</exclude>
+</excludes>
+</configuration>
 </plugin> -->
             <!--use `mvn cobertura:cobertura` -->
             <plugin>
@@ -380,7 +403,7 @@
                 </executions>
             </plugin>
             <!--
-  Generate the legally required text files in the jars
+Generate the legally required text files in the jars
 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -408,8 +431,8 @@
     </build>
     <profiles>
         <!--
-  A set of profiles defining the different properties needed to download and run thrift
-  They are automatically activated depending on the OS you are using.
+A set of profiles defining the different properties needed to download and run thrift
+They are automatically activated depending on the OS you are using.
 -->
         <profile>
             <id>windows</id>
@@ -458,13 +481,13 @@
             </properties>
         </profile>
         <!--
-  Self activating profile, that activates itself as soon as a "src/main/thrift" directory is found.
-  The different plugins here download the thrift executable matching the current os, make that
-  executable (on mac and unix/linux) and run the code generation.
+Self activating profile, that activates itself as soon as a "src/main/thrift" directory is found.
+The different plugins here download the thrift executable matching the current os, make that
+executable (on mac and unix/linux) and run the code generation.
 
-  Note to the Download: The download-maven-plugin checks if a resource is previously downloaded
-  and only downloads each file once. It caches downloaded files in:
-  {maven local repo}/.cache/download-maven-plugin
+Note to the Download: The download-maven-plugin checks if a resource is previously downloaded
+and only downloads each file once. It caches downloaded files in:
+{maven local repo}/.cache/download-maven-plugin
 -->
         <profile>
             <id>thrift-generation</id>

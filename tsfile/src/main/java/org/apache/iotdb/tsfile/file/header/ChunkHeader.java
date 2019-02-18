@@ -28,6 +28,7 @@ import org.apache.iotdb.tsfile.file.MetaMarker;
 import org.apache.iotdb.tsfile.file.metadata.enums.CompressionType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
+import org.apache.iotdb.tsfile.read.reader.TsFileInput;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
 public class ChunkHeader {
@@ -132,24 +133,24 @@ public class ChunkHeader {
   /**
    * deserialize from FileChannel.
    *
-   * @param channel FileChannel
+   * @param input TsFileInput
    * @param offset offset
    * @param markerRead read marker (boolean type)
    * @return ChunkHeader object
    * @throws IOException IOException
    */
-  public static ChunkHeader deserializeFrom(FileChannel channel, long offset, boolean markerRead)
+  public static ChunkHeader deserializeFrom(TsFileInput input, long offset, boolean markerRead)
       throws IOException {
     if (!markerRead) {
       offset++;
     }
     ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-    channel.read(buffer, offset);
+    input.read(buffer, offset);
     buffer.flip();
     int size = buffer.getInt();
     offset += Integer.BYTES;
     buffer = ByteBuffer.allocate(getSerializedSize(size));
-    ReadWriteIOUtils.readAsPossible(channel, offset, buffer);
+    ReadWriteIOUtils.readAsPossible(input, offset, buffer);
     buffer.flip();
     String measurementID = ReadWriteIOUtils.readStringWithoutLength(buffer, size);
     return deserializePartFrom(measurementID, buffer);

@@ -21,13 +21,16 @@
 package org.apache.iotdb.tsfile
 
 import java.io.{ObjectInputStream, ObjectOutputStream, _}
+import java.net.URI
 import java.util
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileStatus
+import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.hadoop.mapreduce.Job
+import org.apache.iotdb.tsfile.DefaultSource.SerializableConfiguration
+import org.apache.iotdb.tsfile.io.HDFSInput
 import org.apache.iotdb.tsfile.qp.SQLConstant
-import org.apache.iotdb.tsfile.read.common.{Field, RowRecord}
+import org.apache.iotdb.tsfile.read.common.Field
 import org.apache.iotdb.tsfile.read.expression.QueryExpression
 import org.apache.iotdb.tsfile.read.{ReadOnlyTsFile, TsFileSequenceReader}
 import org.apache.spark.TaskContext
@@ -77,26 +80,22 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
                             filters: Seq[Filter],
                             options: Map[String, String],
                             hadoopConf: Configuration): (PartitionedFile) => Iterator[InternalRow] = {
-    //    val broadcastedConf =
-    //      sparkSession.sparkContext.broadcast(new SerializableConfiguration(hadoopConf))
+    val broadcastedConf =
+      sparkSession.sparkContext.broadcast(new SerializableConfiguration(hadoopConf))
 
     (file: PartitionedFile) => {
       // TODO 倒是files之间可以用一个priority queue
       val log = LoggerFactory.getLogger(classOf[DefaultSource])
       log.info(file.toString())
 
-      //      val conf = broadcastedConf.value.value
+      val conf = broadcastedConf.value.value
+      val in = new HDFSInput(new Path(new URI(file.filePath)), conf)
 
-      //      val fs = FileSystem.get(conf)
-      //      val fsDataInputStream = fs.open(new Path(new URI(file.filePath)))
-
-      //      val in = new HDFSInputStream(new Path(new URI(file.filePath)), conf)
-      // TODO 暂时就用file不用HDFSInputStream
-      val reader: TsFileSequenceReader = new TsFileSequenceReader(file.filePath.substring(8)) //TODO 这里没用hdfsinputstream因为没接口
+      val reader: TsFileSequenceReader = new TsFileSequenceReader(in)
       val readTsFile: ReadOnlyTsFile = new ReadOnlyTsFile(reader)
 
       Option(TaskContext.get()).foreach { taskContext => {
-        taskContext.addTaskCompletionListener { _ => reader.close() } //TODO
+        taskContext.addTaskCompletionListener { _ => in.close() }
         log.info("task Id: " + taskContext.taskAttemptId() + " partition Id: " + taskContext.partitionId())
       }
       }
@@ -159,7 +158,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       //        }
       //      }
 
-//      var curRecord: RowRecord = null
+      //      var curRecord: RowRecord = null
 
       new Iterator[InternalRow] {
         private val rowBuffer = Array.fill[Any](requiredSchema.length)(null)

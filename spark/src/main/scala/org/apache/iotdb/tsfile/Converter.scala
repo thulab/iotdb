@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileStatus
 import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor
 import org.apache.iotdb.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
-import org.apache.iotdb.tsfile.io.HDFSInputStream
+import org.apache.iotdb.tsfile.io.HDFSInput
 import org.apache.iotdb.tsfile.qp.SQLConstant
 import org.apache.iotdb.tsfile.read.TsFileSequenceReader
 import org.apache.iotdb.tsfile.read.common.{Field, Path}
@@ -60,10 +60,10 @@ object Converter {
     var seriesSet: mutable.Set[String] = mutable.Set()
 
     files.foreach(f => {
-      val in = new HDFSInputStream(f.getPath, conf)
+      val in = new HDFSInput(f.getPath, conf)
       //            val tsFileMetaData = TsFileMetadataUtils.getTsFileMetaData(f.getPath.toUri.toString)
       //TODO 不知这样直接读file不用那种HDFSInputStream其实好像也是file:///并没用hdfs://
-      val reader = new TsFileSequenceReader(in, true)
+      val reader = new TsFileSequenceReader(in)
       val tsFileMetaData = reader.readFileMetadata
       val devices = tsFileMetaData.getDeviceMap.keySet().iterator()
       val measurements = tsFileMetaData.getMeasurementSchema.iterator
@@ -81,7 +81,7 @@ object Converter {
         }
       }
 
-      //      val in = new HDFSInputStream(f.getPath, conf)
+      //      val in = new HDFSInput(f.getPath, conf)
       //      val queryEngine = new QueryEngine(in)
       //      val series = queryEngine.getAllSeriesSchema
       //      series.foreach(s => {

@@ -33,7 +33,7 @@ public class TsFileRecordWriter extends RecordWriter<NullWritable, TSRecord> {
 
   public TsFileRecordWriter(TaskAttemptContext job, Path file, FileSchema fileSchema)
       throws IOException {
-    HDFSOutputStream hdfsOutputStream = new HDFSOutputStream(file.toString(),
+    HDFSOutput hdfsOutputStream = new HDFSOutput(file.toString(),
         job.getConfiguration(), false);
 
 //    File f = new File(file.toString().substring(6));

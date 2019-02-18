@@ -14,23 +14,23 @@ import org.apache.iotdb.tsfile.write.writer.TsFileOutput;
  * This class is used to wrap the {@link}FSDataOutputStream and implement the interface
  * {@link}TsFileOutput
  */
-public class HDFSOutputStream implements TsFileOutput {
+public class HDFSOutput implements TsFileOutput {
 
   private FSDataOutputStream fsDataOutputStream;
 
-  public HDFSOutputStream(String filePath, boolean overwriter) throws IOException {
+  public HDFSOutput(String filePath, boolean overwriter) throws IOException {
 
     this(filePath, new Configuration(), overwriter);
   }
 
 
-  public HDFSOutputStream(String filePath, Configuration configuration, boolean overwriter)
+  public HDFSOutput(String filePath, Configuration configuration, boolean overwriter)
       throws IOException {
 
     this(new Path(filePath), configuration, overwriter);
   }
 
-  public HDFSOutputStream(Path path, Configuration configuration, boolean overwriter)
+  public HDFSOutput(Path path, Configuration configuration, boolean overwriter)
       throws IOException {
 
     FileSystem fsFileSystem = FileSystem.get(configuration);
