@@ -17,33 +17,19 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-/**
-  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+
 package org.apache.iotdb.tsfile
 
 import java.util
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem}
-import org.apache.iotdb.db.metadata.ColumnSchema
+import org.apache.hadoop.fs.FileStatus
 import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor
-import org.apache.iotdb.tsfile.file.metadata.TsFileMetaData
 import org.apache.iotdb.tsfile.file.metadata.enums.{TSDataType, TSEncoding}
+import org.apache.iotdb.tsfile.io.HDFSInputStream
 import org.apache.iotdb.tsfile.qp.SQLConstant
-import org.apache.iotdb.tsfile.read.common.Field
+import org.apache.iotdb.tsfile.read.TsFileSequenceReader
+import org.apache.iotdb.tsfile.read.common.{Field, Path}
 import org.apache.iotdb.tsfile.write.record.TSRecord
 import org.apache.iotdb.tsfile.write.record.datapoint.DataPoint
 import org.apache.iotdb.tsfile.write.schema.{FileSchema, MeasurementSchema, SchemaBuilder}
@@ -53,7 +39,7 @@ import org.apache.spark.sql.types._
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ListBuffer
 
 /**
   * This object contains methods that are used to convert schema and data between sparkSQL and TSFile.
@@ -69,24 +55,32 @@ object Converter {
     * @param conf  hadoop configuration
     * @return union series
     */
-  def getUnionSeries(files: Seq[FileStatus], conf: Configuration): util.ArrayList[ColumnSchema] = {
-    val unionSeries = new util.ArrayList[ColumnSchema]()
+  def getUnionSeries(files: Seq[FileStatus], conf: Configuration): util.ArrayList[MeasurementSchema] = {
+    val unionSeries = new util.ArrayList[MeasurementSchema]()
     var seriesSet: mutable.Set[String] = mutable.Set()
-    val fs = FileSystem.get(conf)
+
     files.foreach(f => {
-      val fsDataInputStream = fs.open(f.getPath)
-      val tsFileMetaData = TsFileMetaData.deserializeFrom(fsDataInputStream)
-      fsDataInputStream.close() // TODO 要close吗
-      //      val tsFileMetaData = TsFileMetadataUtils.getTsFileMetaData(f.getPath.toUri.toString)
+      val in = new HDFSInputStream(f.getPath, conf)
+      //            val tsFileMetaData = TsFileMetadataUtils.getTsFileMetaData(f.getPath.toUri.toString)
       //TODO 不知这样直接读file不用那种HDFSInputStream其实好像也是file:///并没用hdfs://
-      val series = tsFileMetaData.getMeasurementSchema
-      series.foreach(s => {
-        if (!seriesSet.contains(s._1)) {
-          seriesSet += s._1
-          unionSeries.add(new ColumnSchema(s._2.getMeasurementId, s._2.getType, null.asInstanceOf[TSEncoding])
-          )
+      val reader = new TsFileSequenceReader(in, true)
+      val tsFileMetaData = reader.readFileMetadata
+      val devices = tsFileMetaData.getDeviceMap.keySet().iterator()
+      val measurements = tsFileMetaData.getMeasurementSchema.iterator
+      while (devices.hasNext) {
+        val d = devices.next()
+        while (measurements.hasNext) {
+          val s = measurements.next()
+          val fullPath = d + "." + s._1 //device.measurement
+          if (!seriesSet.contains(fullPath)) {
+            seriesSet += fullPath
+            //            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, null.asInstanceOf[TSEncoding])
+            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, s._2.getEncodingType)
+            )
+          }
         }
-      })
+      }
+
       //      val in = new HDFSInputStream(f.getPath, conf)
       //      val queryEngine = new QueryEngine(in)
       //      val series = queryEngine.getAllSeriesSchema
@@ -105,19 +99,14 @@ object Converter {
     * Convert TSFile columns to sparkSQL schema.
     *
     * @param tsfileSchema all time series information in TSFile
-    * @param columns      e.g. {device:1, board:2} or {delta_object:0}
     * @return sparkSQL table schema
     */
-  def toSqlSchema(tsfileSchema: util.ArrayList[ColumnSchema], columns: ArrayBuffer[String]): Option[StructType] = {
+  def toSqlSchema(tsfileSchema: util.ArrayList[MeasurementSchema]): Option[StructType] = {
     val fields = new ListBuffer[StructField]()
     fields += StructField(SQLConstant.RESERVED_TIME, LongType, nullable = false)
 
-    columns.filter(f => !f.equals("root")) foreach (f => {
-      fields += StructField(f, StringType, nullable = false)
-    })
-
-    tsfileSchema.foreach((series: ColumnSchema) => {
-      fields += StructField(series.name, series.dataType match {
+    tsfileSchema.foreach((series: MeasurementSchema) => {
+      fields += StructField(series.getMeasurementId, series.getType match {
         case TSDataType.BOOLEAN => BooleanType
         case TSDataType.INT32 => IntegerType
         case TSDataType.INT64 => LongType
@@ -143,13 +132,14 @@ object Converter {
     * @param structType given sql schema
     * @return TsFile schema
     */
-  def toTsFileSchema(columnNames: ArrayBuffer[String], structType: StructType, options: Map[String, String]): FileSchema = {
+  def toTsFileSchema(structType: StructType, options: Map[String, String]): FileSchema = {
     val schemaBuilder = new SchemaBuilder()
     structType.fields.filter(f => {
-      !SQLConstant.isReservedPath(f.name) && !columnNames.contains(f.name)
+      !SQLConstant.isReservedPath(f.name)
     }).foreach(f => {
       val seriesSchema = getSeriesSchema(f, options)
       schemaBuilder.addSeries(seriesSchema)
+      //TODO 目前是会有重复且默认假设条件是同一个tsfile文件的同名sensor完全一样属性，不会因为不同device1.sensor1和device2.sensor1而sensor1不同属性
     })
     schemaBuilder.build()
   }
@@ -173,7 +163,9 @@ object Converter {
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
     }
     val encoding = TSEncoding.valueOf(encodingStr)
-    new MeasurementSchema(field.name, dataType, encoding, null)
+    val fullPath = new Path(field.name)
+    val measurement = fullPath.getMeasurement
+    new MeasurementSchema(measurement, dataType, encoding)
   }
 
   //  /**
@@ -267,29 +259,27 @@ object Converter {
   /**
     * convert row to TSRecord
     *
-    * @param columnNames delta_object column names
-    * @param row         given spark sql row
+    * @param row given spark sql row
     * @return TSRecord
     */
-  def toTsRecord(columnNames: ArrayBuffer[String], row: Row): TSRecord = {
+  def toTsRecord(row: Row): List[TSRecord] = {
     val schema = row.schema
     val time = row.getAs[Long](SQLConstant.RESERVED_TIME)
-    val delta_object = {
-      if (columnNames.contains(SQLConstant.RESERVED_DELTA_OBJECT)) {
-        row.getAs[String](SQLConstant.RESERVED_DELTA_OBJECT)
-      } else {
-        var delta_str = "root"
-        columnNames.filter(f => !f.equals("root")) foreach (f => {
-          delta_str += SQLConstant.PATH_SEPARATOR + row.getAs[String](f)
-        })
-        delta_str
-      }
-    }
-    val tsRecord = new TSRecord(time, delta_object)
+    //    val tsRecord = new TSRecord(time, delta_object)
+    val deviceToRecord = scala.collection.mutable.Map[String, TSRecord]()
     schema.fields.filter(f => {
-      !SQLConstant.isReservedPath(f.name) && !columnNames.contains(f.name)
+      !SQLConstant.isReservedPath(f.name)
     }).foreach(f => {
       val name = f.name
+      val fullPath = new Path(name)
+      val device = fullPath.getDevice
+      val measurement = fullPath.getMeasurement
+      if (!deviceToRecord.contains(device)) {
+        deviceToRecord.put(device, new TSRecord(time, device))
+      }
+      val tsRecord: TSRecord = deviceToRecord.getOrElse(device, new TSRecord(time, device))
+      //TODO 直接用get会返回的是option类型
+
       val dataType = getTsDataType(f.dataType)
       val index = row.fieldIndex(name)
       if (!row.isNullAt(index)) {
@@ -301,11 +291,11 @@ object Converter {
           case StringType => row.getAs[String](name)
           case other => throw new UnsupportedOperationException(s"Unsupported type $other")
         }
-        val dataPoint = DataPoint.getDataPoint(dataType, name, value.toString)
+        val dataPoint = DataPoint.getDataPoint(dataType, measurement, value.toString)
         tsRecord.addTuple(dataPoint)
       }
     })
-    tsRecord
+    deviceToRecord.values.toList
   }
 
   /**
@@ -340,163 +330,163 @@ object Converter {
     }
   }
 
-//  /**
-//    * Used in toQueryConfigs() to convert one query plan to one QueryConfig.
-//    *
-//    * @param queryPlan TsFile logical query plan
-//    * @return TsFile physical query plan
-//    */
-//  private def queryToConfig(queryPlan: TSQueryPlan): QueryConfig = {
-//    val selectedColumns = queryPlan.getPaths.toArray
-//    val timeFilter = queryPlan.getTimeFilterOperator
-//    val valueFilter = queryPlan.getValueFilterOperator
-//
-//    var select = ""
-//    var colNum = 0
-//    selectedColumns.foreach(f => {
-//      if (colNum == 0) {
-//        select += f.asInstanceOf[String]
-//      }
-//      else {
-//        select += "|" + f.asInstanceOf[String]
-//      }
-//      colNum += 1
-//    })
-//
-//    var single = false
-//    if (colNum == 1 && valueFilter != null) {
-//      if (select.equals(valueFilter.getSinglePath)) {
-//        single = true
-//      }
-//    }
-//    val timeFilterStr = timeFilterToString(timeFilter)
-//    val valueFilterStr = valueFilterToString(valueFilter, single)
-//    new QueryConfig(select, timeFilterStr, "null", valueFilterStr)
-//  }
+  //  /**
+  //    * Used in toQueryConfigs() to convert one query plan to one QueryConfig.
+  //    *
+  //    * @param queryPlan TsFile logical query plan
+  //    * @return TsFile physical query plan
+  //    */
+  //  private def queryToConfig(queryPlan: TSQueryPlan): QueryConfig = {
+  //    val selectedColumns = queryPlan.getPaths.toArray
+  //    val timeFilter = queryPlan.getTimeFilterOperator
+  //    val valueFilter = queryPlan.getValueFilterOperator
+  //
+  //    var select = ""
+  //    var colNum = 0
+  //    selectedColumns.foreach(f => {
+  //      if (colNum == 0) {
+  //        select += f.asInstanceOf[String]
+  //      }
+  //      else {
+  //        select += "|" + f.asInstanceOf[String]
+  //      }
+  //      colNum += 1
+  //    })
+  //
+  //    var single = false
+  //    if (colNum == 1 && valueFilter != null) {
+  //      if (select.equals(valueFilter.getSinglePath)) {
+  //        single = true
+  //      }
+  //    }
+  //    val timeFilterStr = timeFilterToString(timeFilter)
+  //    val valueFilterStr = valueFilterToString(valueFilter, single)
+  //    new QueryConfig(select, timeFilterStr, "null", valueFilterStr)
+  //  }
 
 
-//  /**
-//    * Convert a time filter to QueryConfig's timeFilter parameter.
-//    *
-//    * @param operator time filter
-//    * @return QueryConfig's timeFilter parameter
-//    */
-//  private def timeFilterToString(operator: FilterOperator): String = {
-//    if (operator == null)
-//      return "null"
-//
-//    "0," + timeFilterToPartString(operator)
-//  }
+  //  /**
+  //    * Convert a time filter to QueryConfig's timeFilter parameter.
+  //    *
+  //    * @param operator time filter
+  //    * @return QueryConfig's timeFilter parameter
+  //    */
+  //  private def timeFilterToString(operator: FilterOperator): String = {
+  //    if (operator == null)
+  //      return "null"
+  //
+  //    "0," + timeFilterToPartString(operator)
+  //  }
 
 
-//  /**
-//    * Used in timeFilterToString to construct specified string format.
-//    *
-//    * @param operator time filter
-//    * @return QueryConfig's partial timeFilter parameter
-//    */
-//  private def timeFilterToPartString(operator: FilterOperator): String = {
-//    val token = operator.getTokenIntType
-//    token match {
-//      case SQLConstant.KW_AND =>
-//        "(" + timeFilterToPartString(operator.getChildren()(0)) + ")&(" +
-//          timeFilterToPartString(operator.getChildren()(1)) + ")"
-//      case SQLConstant.KW_OR =>
-//        "(" + timeFilterToPartString(operator.getChildren()(0)) + ")|(" +
-//          timeFilterToPartString(operator.getChildren()(1)) + ")"
-//      case _ =>
-//        val basicOperator = operator.asInstanceOf[BasicOperator]
-//        basicOperator.getTokenSymbol + basicOperator.getSeriesValue
-//    }
-//  }
+  //  /**
+  //    * Used in timeFilterToString to construct specified string format.
+  //    *
+  //    * @param operator time filter
+  //    * @return QueryConfig's partial timeFilter parameter
+  //    */
+  //  private def timeFilterToPartString(operator: FilterOperator): String = {
+  //    val token = operator.getTokenIntType
+  //    token match {
+  //      case SQLConstant.KW_AND =>
+  //        "(" + timeFilterToPartString(operator.getChildren()(0)) + ")&(" +
+  //          timeFilterToPartString(operator.getChildren()(1)) + ")"
+  //      case SQLConstant.KW_OR =>
+  //        "(" + timeFilterToPartString(operator.getChildren()(0)) + ")|(" +
+  //          timeFilterToPartString(operator.getChildren()(1)) + ")"
+  //      case _ =>
+  //        val basicOperator = operator.asInstanceOf[BasicOperator]
+  //        basicOperator.getTokenSymbol + basicOperator.getSeriesValue
+  //    }
+  //  }
 
 
-//  /**
-//    * Convert a value filter to QueryConfig's valueFilter parameter. Each query is a cross query.
-//    *
-//    * @param operator value filter
-//    * @param single   single series query
-//    * @return QueryConfig's valueFilter parameter
-//    */
-//  private def valueFilterToString(operator: FilterOperator, single: Boolean): String = {
-//    if (operator == null)
-//      return "null"
-//
-//    val token = operator.getTokenIntType
-//    token match {
-//      case SQLConstant.KW_AND =>
-//        "[" + valueFilterToString(operator.getChildren()(0), single = true) + "]&[" +
-//          valueFilterToString(operator.getChildren()(1), single = true) + "]"
-//      case SQLConstant.KW_OR =>
-//        "[" + valueFilterToString(operator.getChildren()(0), single = true) + "]|[" +
-//          valueFilterToString(operator.getChildren()(1), single = true) + "]"
-//      case _ =>
-//        val basicOperator = operator.asInstanceOf[BasicOperator]
-//        val path = basicOperator.getSinglePath
-//        val res = new StringBuilder
-//        if (single) {
-//          res.append("2," + path + "," +
-//            basicOperator.getTokenSymbol + basicOperator.getSeriesValue)
-//        }
-//        else {
-//          res.append("[2," + path + "," +
-//            basicOperator.getTokenSymbol + basicOperator.getSeriesValue + "]")
-//        }
-//        res.toString()
-//    }
-//  }
-//
-//
-//  /**
-//    * Transform sparkSQL's filter binary tree to filterOperator binary tree.
-//    *
-//    * @param node filter tree's node
-//    * @return TSFile filterOperator binary tree
-//    */
-//  private def transformFilter(node: Filter): FilterOperator = {
-//    var operator: FilterOperator = null
-//    node match {
-//      case node: Not =>
-//        operator = new FilterOperator(SQLConstant.KW_NOT)
-//        operator.addChildOPerator(transformFilter(node.child))
-//        operator
-//
-//      case node: And =>
-//        operator = new FilterOperator(SQLConstant.KW_AND)
-//        operator.addChildOPerator(transformFilter(node.left))
-//        operator.addChildOPerator(transformFilter(node.right))
-//        operator
-//
-//      case node: Or =>
-//        operator = new FilterOperator(SQLConstant.KW_OR)
-//        operator.addChildOPerator(transformFilter(node.left))
-//        operator.addChildOPerator(transformFilter(node.right))
-//        operator
-//
-//      case node: EqualTo =>
-//        operator = new BasicOperator(SQLConstant.EQUAL, node.attribute, node.value.toString)
-//        operator
-//
-//      case node: LessThan =>
-//        operator = new BasicOperator(SQLConstant.LESSTHAN, node.attribute, node.value.toString)
-//        operator
-//
-//      case node: LessThanOrEqual =>
-//        operator = new BasicOperator(SQLConstant.LESSTHANOREQUALTO, node.attribute, node.value.toString)
-//        operator
-//
-//      case node: GreaterThan =>
-//        operator = new BasicOperator(SQLConstant.GREATERTHAN, node.attribute, node.value.toString)
-//        operator
-//
-//      case node: GreaterThanOrEqual =>
-//        operator = new BasicOperator(SQLConstant.GREATERTHANOREQUALTO, node.attribute, node.value.toString)
-//        operator
-//
-//      case _ =>
-//        throw new Exception("unsupported filter:" + node.toString)
-//    }
-//  }
+  //  /**
+  //    * Convert a value filter to QueryConfig's valueFilter parameter. Each query is a cross query.
+  //    *
+  //    * @param operator value filter
+  //    * @param single   single series query
+  //    * @return QueryConfig's valueFilter parameter
+  //    */
+  //  private def valueFilterToString(operator: FilterOperator, single: Boolean): String = {
+  //    if (operator == null)
+  //      return "null"
+  //
+  //    val token = operator.getTokenIntType
+  //    token match {
+  //      case SQLConstant.KW_AND =>
+  //        "[" + valueFilterToString(operator.getChildren()(0), single = true) + "]&[" +
+  //          valueFilterToString(operator.getChildren()(1), single = true) + "]"
+  //      case SQLConstant.KW_OR =>
+  //        "[" + valueFilterToString(operator.getChildren()(0), single = true) + "]|[" +
+  //          valueFilterToString(operator.getChildren()(1), single = true) + "]"
+  //      case _ =>
+  //        val basicOperator = operator.asInstanceOf[BasicOperator]
+  //        val path = basicOperator.getSinglePath
+  //        val res = new StringBuilder
+  //        if (single) {
+  //          res.append("2," + path + "," +
+  //            basicOperator.getTokenSymbol + basicOperator.getSeriesValue)
+  //        }
+  //        else {
+  //          res.append("[2," + path + "," +
+  //            basicOperator.getTokenSymbol + basicOperator.getSeriesValue + "]")
+  //        }
+  //        res.toString()
+  //    }
+  //  }
+  //
+  //
+  //  /**
+  //    * Transform sparkSQL's filter binary tree to filterOperator binary tree.
+  //    *
+  //    * @param node filter tree's node
+  //    * @return TSFile filterOperator binary tree
+  //    */
+  //  private def transformFilter(node: Filter): FilterOperator = {
+  //    var operator: FilterOperator = null
+  //    node match {
+  //      case node: Not =>
+  //        operator = new FilterOperator(SQLConstant.KW_NOT)
+  //        operator.addChildOPerator(transformFilter(node.child))
+  //        operator
+  //
+  //      case node: And =>
+  //        operator = new FilterOperator(SQLConstant.KW_AND)
+  //        operator.addChildOPerator(transformFilter(node.left))
+  //        operator.addChildOPerator(transformFilter(node.right))
+  //        operator
+  //
+  //      case node: Or =>
+  //        operator = new FilterOperator(SQLConstant.KW_OR)
+  //        operator.addChildOPerator(transformFilter(node.left))
+  //        operator.addChildOPerator(transformFilter(node.right))
+  //        operator
+  //
+  //      case node: EqualTo =>
+  //        operator = new BasicOperator(SQLConstant.EQUAL, node.attribute, node.value.toString)
+  //        operator
+  //
+  //      case node: LessThan =>
+  //        operator = new BasicOperator(SQLConstant.LESSTHAN, node.attribute, node.value.toString)
+  //        operator
+  //
+  //      case node: LessThanOrEqual =>
+  //        operator = new BasicOperator(SQLConstant.LESSTHANOREQUALTO, node.attribute, node.value.toString)
+  //        operator
+  //
+  //      case node: GreaterThan =>
+  //        operator = new BasicOperator(SQLConstant.GREATERTHAN, node.attribute, node.value.toString)
+  //        operator
+  //
+  //      case node: GreaterThanOrEqual =>
+  //        operator = new BasicOperator(SQLConstant.GREATERTHANOREQUALTO, node.attribute, node.value.toString)
+  //        operator
+  //
+  //      case _ =>
+  //        throw new Exception("unsupported filter:" + node.toString)
+  //    }
+  //  }
 
   class SparkSqlFilterException(message: String, cause: Throwable)
     extends Exception(message, cause) {

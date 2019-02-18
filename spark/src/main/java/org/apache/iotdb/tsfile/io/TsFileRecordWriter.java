@@ -14,9 +14,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.iotdb.tsfile.io;
 
-import java.io.File;
 import java.io.IOException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -33,12 +33,12 @@ public class TsFileRecordWriter extends RecordWriter<NullWritable, TSRecord> {
 
   public TsFileRecordWriter(TaskAttemptContext job, Path file, FileSchema fileSchema)
       throws IOException {
-//    HDFSOutputStream hdfsOutputStream = new HDFSOutputStream(file.toString(),
-//        job.getConfiguration(), false);
-//    tsFile = new TsFile(hdfsOutputStream, fileSchema);
-    File f = new File(file.toString());
+    HDFSOutputStream hdfsOutputStream = new HDFSOutputStream(file.toString(),
+        job.getConfiguration(), false);
+
+//    File f = new File(file.toString().substring(6));
     // TODO 没用HDFSOutputStream 也没考虑是append还是overwrite，似乎原来是overwrite
-    tsFileWriter = new TsFileWriter(f, fileSchema);
+    tsFileWriter = new TsFileWriter(hdfsOutputStream, fileSchema);
   }
 
   @Override
