@@ -30,6 +30,9 @@ import org.apache.iotdb.tsfile.io.HDFSInput
 import org.apache.iotdb.tsfile.qp.SQLConstant
 import org.apache.iotdb.tsfile.read.TsFileSequenceReader
 import org.apache.iotdb.tsfile.read.common.{Field, Path}
+import org.apache.iotdb.tsfile.read.expression.impl.{BinaryExpression, GlobalTimeExpression, SingleSeriesExpression}
+import org.apache.iotdb.tsfile.read.expression.{IExpression, QueryExpression}
+import org.apache.iotdb.tsfile.read.filter.{TimeFilter, ValueFilter}
 import org.apache.iotdb.tsfile.write.record.TSRecord
 import org.apache.iotdb.tsfile.write.record.datapoint.DataPoint
 import org.apache.iotdb.tsfile.write.schema.{FileSchema, MeasurementSchema, SchemaBuilder}
@@ -71,7 +74,7 @@ object Converter {
         val d = devices.next()
         while (measurements.hasNext) {
           val s = measurements.next()
-          val fullPath = d + "." + s._1 //device.measurement
+          val fullPath = d + "__" + s._1 //device.measurement TODO "."会在查询的之后遇到can't resolve问题
           if (!seriesSet.contains(fullPath)) {
             seriesSet += fullPath
             //            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, null.asInstanceOf[TSEncoding])
@@ -168,71 +171,40 @@ object Converter {
     new MeasurementSchema(measurement, dataType, encoding)
   }
 
-  //  /**
-  //    * Use information given by sparkSQL to construct TSFile QueryConfigs for querying data.
-  //    *
-  //    * @param in             file input stream
-  //    * @param requiredSchema The schema of the data that should be output for each row.
-  //    * @param filters        A set of filters than can optionally be used to reduce the number of rows output
-  //    * @param columnNames    e.g. {device:1, board:2}
-  //    * @param start          the start offset in file partition
-  //    * @param end            the end offset in file partition
-  //    * @return TSFile physical query plans
-  //    */
-  //  def toQueryConfigs(
-  //                      in: ITsRandomAccessFileReader,
-  //                      requiredSchema: StructType,
-  //                      filters: Seq[Filter],
-  //                      columnNames: ArrayBuffer[String],
-  //                      start: java.lang.Long,
-  //                      end: java.lang.Long): Array[QueryConfig] = {
-  //
-  //    val queryConfigs = new ArrayBuffer[QueryConfig]()
-  //
-  //    val paths = new ListBuffer[String]()
-  //    requiredSchema.foreach(f => {
-  //      paths.add(f.name)
-  //    })
-  //
-  //    //remove invalid filters
-  //    val validFilters = new ListBuffer[Filter]()
-  //    filters.foreach { f => {
-  //      if (isValidFilter(f))
-  //        validFilters.add(f)
-  //    }
-  //    }
-  //
-  //    if (validFilters.isEmpty) {
-  //
-  //      //generatePlans operatorTree to TSQueryPlan list
-  //      val queryProcessor = new QueryProcessor()
-  //      val queryPlans = queryProcessor.generatePlans(null, paths, columnNames, in, start, end).toArray
-  //
-  //      //construct TSQueryPlan list to QueryConfig list
-  //      queryPlans.foreach(f => {
-  //        queryConfigs.append(queryToConfig(f.asInstanceOf[TSQueryPlan]))
-  //      })
-  //    } else {
-  //      //construct filters to a binary tree
-  //      var filterTree = validFilters.get(0)
-  //      for (i <- 1 until validFilters.length) {
-  //        filterTree = And(filterTree, validFilters.get(i))
-  //      }
-  //
-  //      //convert filterTree to FilterOperator
-  //      val operator = transformFilter(filterTree)
-  //
-  //      //generatePlans operatorTree to TSQueryPlan list
-  //      val queryProcessor = new QueryProcessor()
-  //      val queryPlans = queryProcessor.generatePlans(operator, paths, columnNames, in, start, end).toArray
-  //
-  //      //construct TSQueryPlan list to QueryConfig list
-  //      queryPlans.foreach(f => {
-  //        queryConfigs.append(queryToConfig(f.asInstanceOf[TSQueryPlan]))
-  //      })
-  //    }
-  //    queryConfigs.toArray
-  //  }
+  def toQueryExpression(requiredSchema: StructType, filters: Seq[Filter]): QueryExpression = {
+    //convert requiredSchema to paths //TODO 自动的requiredSchema是会包含select和where后面的所有涉及项
+    val paths = new util.ArrayList[org.apache.iotdb.tsfile.read.common.Path]
+    requiredSchema.foreach(f => {
+      if (!SQLConstant.isReservedPath(f.name)) {
+        paths.add(new org.apache.iotdb.tsfile.read.common.Path(f.name.replaceFirst("__", ".")))
+        // TODO @getUnionSeries中提到的用dot.的问题
+      }
+    })
+
+    //remove invalid filters
+    val validFilters = new ListBuffer[Filter]()
+    filters.foreach { f => {
+      if (isValidFilter(f))
+        validFilters.add(f)
+    }
+    }
+    if (validFilters.isEmpty) {
+      val queryExpression = QueryExpression.create(paths, null)
+      queryExpression
+    } else {
+      //construct filters to a binary tree
+      var filterTree = validFilters.get(0)
+      for (i <- 1 until validFilters.length) {
+        filterTree = And(filterTree, validFilters.get(i))
+      }
+
+      //convert filterTree to FilterOperator
+      val finalFilter = transformFilter(requiredSchema, filterTree)
+
+      val queryExpression = QueryExpression.create(paths, finalFilter)
+      queryExpression
+    }
+  }
 
   /**
     * Convert TSFile data to sparkSQL data.
@@ -330,163 +302,250 @@ object Converter {
     }
   }
 
-  //  /**
-  //    * Used in toQueryConfigs() to convert one query plan to one QueryConfig.
-  //    *
-  //    * @param queryPlan TsFile logical query plan
-  //    * @return TsFile physical query plan
-  //    */
-  //  private def queryToConfig(queryPlan: TSQueryPlan): QueryConfig = {
-  //    val selectedColumns = queryPlan.getPaths.toArray
-  //    val timeFilter = queryPlan.getTimeFilterOperator
-  //    val valueFilter = queryPlan.getValueFilterOperator
-  //
-  //    var select = ""
-  //    var colNum = 0
-  //    selectedColumns.foreach(f => {
-  //      if (colNum == 0) {
-  //        select += f.asInstanceOf[String]
-  //      }
-  //      else {
-  //        select += "|" + f.asInstanceOf[String]
-  //      }
-  //      colNum += 1
-  //    })
-  //
-  //    var single = false
-  //    if (colNum == 1 && valueFilter != null) {
-  //      if (select.equals(valueFilter.getSinglePath)) {
-  //        single = true
-  //      }
-  //    }
-  //    val timeFilterStr = timeFilterToString(timeFilter)
-  //    val valueFilterStr = valueFilterToString(valueFilter, single)
-  //    new QueryConfig(select, timeFilterStr, "null", valueFilterStr)
-  //  }
+  /**
+    * Transform sparkSQL's filter binary tree to filter expression.
+    *
+    * @param requiredSchema to get relative columns' dataType information
+    * @param node           filter tree's node
+    * @return TSFile filter expression
+    */
+  private def transformFilter(requiredSchema: StructType, node: Filter): IExpression = {
+    var filter: IExpression = null
+    node match {
+      case node: Not =>
+        throw new Exception("i haven't got any valid idea about how to handle NOT:" + node.toString)
+      //        val child = node.child
+      //        val ltfilter = new SingleSeriesExpression(new Path(), ValueFilter.lt(node.value.toString))
+      //
+      //      // filter = BinaryExpression.or()
 
+      case node: And =>
+        filter = BinaryExpression.and(transformFilter(requiredSchema, node.left), transformFilter(requiredSchema, node.right))
+        filter
 
-  //  /**
-  //    * Convert a time filter to QueryConfig's timeFilter parameter.
-  //    *
-  //    * @param operator time filter
-  //    * @return QueryConfig's timeFilter parameter
-  //    */
-  //  private def timeFilterToString(operator: FilterOperator): String = {
-  //    if (operator == null)
-  //      return "null"
-  //
-  //    "0," + timeFilterToPartString(operator)
-  //  }
+      case node: Or =>
+        filter = BinaryExpression.or(transformFilter(requiredSchema, node.left), transformFilter(requiredSchema, node.right))
+        filter
 
+      case node: EqualTo =>
+        if (SQLConstant.isReservedPath(node.attribute.toLowerCase())) { //time
+          filter = new GlobalTimeExpression(TimeFilter.eq(node.value.asInstanceOf[java.lang.Long]))
+        } else {
+          filter = constructEqFilter(requiredSchema, node.attribute, node.value)
+        }
+        filter
+      case node: LessThan =>
+        if (SQLConstant.isReservedPath(node.attribute.toLowerCase())) { //time
+          filter = new GlobalTimeExpression(TimeFilter.lt(node.value.asInstanceOf[java.lang.Long]))
+        } else {
+          filter = constructLtFilter(requiredSchema, node.attribute, node.value)
+        }
+        filter
 
-  //  /**
-  //    * Used in timeFilterToString to construct specified string format.
-  //    *
-  //    * @param operator time filter
-  //    * @return QueryConfig's partial timeFilter parameter
-  //    */
-  //  private def timeFilterToPartString(operator: FilterOperator): String = {
-  //    val token = operator.getTokenIntType
-  //    token match {
-  //      case SQLConstant.KW_AND =>
-  //        "(" + timeFilterToPartString(operator.getChildren()(0)) + ")&(" +
-  //          timeFilterToPartString(operator.getChildren()(1)) + ")"
-  //      case SQLConstant.KW_OR =>
-  //        "(" + timeFilterToPartString(operator.getChildren()(0)) + ")|(" +
-  //          timeFilterToPartString(operator.getChildren()(1)) + ")"
-  //      case _ =>
-  //        val basicOperator = operator.asInstanceOf[BasicOperator]
-  //        basicOperator.getTokenSymbol + basicOperator.getSeriesValue
-  //    }
-  //  }
+      case node: LessThanOrEqual =>
+        if (SQLConstant.isReservedPath(node.attribute.toLowerCase())) { //time
+          filter = new GlobalTimeExpression(TimeFilter.ltEq(node.value.asInstanceOf[java.lang.Long]))
+        } else {
+          filter = constructLtEqFilter(requiredSchema, node.attribute, node.value)
+        }
+        filter
 
+      case node: GreaterThan =>
+        if (SQLConstant.isReservedPath(node.attribute.toLowerCase())) { //time
+          filter = new GlobalTimeExpression(TimeFilter.gt(node.value.asInstanceOf[java.lang.Long]))
+        } else {
+          filter = constructGtFilter(requiredSchema, node.attribute, node.value)
+        }
+        filter
 
-  //  /**
-  //    * Convert a value filter to QueryConfig's valueFilter parameter. Each query is a cross query.
-  //    *
-  //    * @param operator value filter
-  //    * @param single   single series query
-  //    * @return QueryConfig's valueFilter parameter
-  //    */
-  //  private def valueFilterToString(operator: FilterOperator, single: Boolean): String = {
-  //    if (operator == null)
-  //      return "null"
-  //
-  //    val token = operator.getTokenIntType
-  //    token match {
-  //      case SQLConstant.KW_AND =>
-  //        "[" + valueFilterToString(operator.getChildren()(0), single = true) + "]&[" +
-  //          valueFilterToString(operator.getChildren()(1), single = true) + "]"
-  //      case SQLConstant.KW_OR =>
-  //        "[" + valueFilterToString(operator.getChildren()(0), single = true) + "]|[" +
-  //          valueFilterToString(operator.getChildren()(1), single = true) + "]"
-  //      case _ =>
-  //        val basicOperator = operator.asInstanceOf[BasicOperator]
-  //        val path = basicOperator.getSinglePath
-  //        val res = new StringBuilder
-  //        if (single) {
-  //          res.append("2," + path + "," +
-  //            basicOperator.getTokenSymbol + basicOperator.getSeriesValue)
-  //        }
-  //        else {
-  //          res.append("[2," + path + "," +
-  //            basicOperator.getTokenSymbol + basicOperator.getSeriesValue + "]")
-  //        }
-  //        res.toString()
-  //    }
-  //  }
-  //
-  //
-  //  /**
-  //    * Transform sparkSQL's filter binary tree to filterOperator binary tree.
-  //    *
-  //    * @param node filter tree's node
-  //    * @return TSFile filterOperator binary tree
-  //    */
-  //  private def transformFilter(node: Filter): FilterOperator = {
-  //    var operator: FilterOperator = null
-  //    node match {
-  //      case node: Not =>
-  //        operator = new FilterOperator(SQLConstant.KW_NOT)
-  //        operator.addChildOPerator(transformFilter(node.child))
-  //        operator
-  //
-  //      case node: And =>
-  //        operator = new FilterOperator(SQLConstant.KW_AND)
-  //        operator.addChildOPerator(transformFilter(node.left))
-  //        operator.addChildOPerator(transformFilter(node.right))
-  //        operator
-  //
-  //      case node: Or =>
-  //        operator = new FilterOperator(SQLConstant.KW_OR)
-  //        operator.addChildOPerator(transformFilter(node.left))
-  //        operator.addChildOPerator(transformFilter(node.right))
-  //        operator
-  //
-  //      case node: EqualTo =>
-  //        operator = new BasicOperator(SQLConstant.EQUAL, node.attribute, node.value.toString)
-  //        operator
-  //
-  //      case node: LessThan =>
-  //        operator = new BasicOperator(SQLConstant.LESSTHAN, node.attribute, node.value.toString)
-  //        operator
-  //
-  //      case node: LessThanOrEqual =>
-  //        operator = new BasicOperator(SQLConstant.LESSTHANOREQUALTO, node.attribute, node.value.toString)
-  //        operator
-  //
-  //      case node: GreaterThan =>
-  //        operator = new BasicOperator(SQLConstant.GREATERTHAN, node.attribute, node.value.toString)
-  //        operator
-  //
-  //      case node: GreaterThanOrEqual =>
-  //        operator = new BasicOperator(SQLConstant.GREATERTHANOREQUALTO, node.attribute, node.value.toString)
-  //        operator
-  //
-  //      case _ =>
-  //        throw new Exception("unsupported filter:" + node.toString)
-  //    }
-  //  }
+      case node: GreaterThanOrEqual =>
+        if (SQLConstant.isReservedPath(node.attribute.toLowerCase())) { //time
+          filter = new GlobalTimeExpression(TimeFilter.gtEq(node.value.asInstanceOf[java.lang.Long]))
+        } else {
+          filter = constructGtEqFilter(requiredSchema, node.attribute, node.value)
+        }
+        filter
+
+      case _ =>
+        throw new Exception("unsupported filter:" + node.toString)
+    }
+  }
+
+  def constructEqFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
+    val fieldNames = requiredSchema.fieldNames
+    val index = fieldNames.indexOf(nodeName)
+    if (index == -1) {
+      throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
+    }
+
+    val dataType = requiredSchema.get(index).dataType
+
+    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
+
+    dataType match {
+      case IntegerType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Integer]))
+        filter
+      case LongType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Long]))
+        filter
+      case FloatType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Float]))
+        filter
+      case DoubleType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Double]))
+        filter
+      case StringType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.eq(nodeValue.asInstanceOf[java.lang.String]))
+        filter
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+  }
+
+  def constructGtFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
+    val fieldNames = requiredSchema.fieldNames
+    val index = fieldNames.indexOf(nodeName)
+    if (index == -1) {
+      throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
+    }
+    val dataType = requiredSchema.get(index).dataType
+
+    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
+
+    dataType match {
+      case IntegerType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Integer]))
+        filter
+      case LongType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Long]))
+        filter
+      case FloatType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Float]))
+        filter
+      case DoubleType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Double]))
+        filter
+      case StringType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gt(nodeValue.asInstanceOf[java.lang.String]))
+        filter
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+  }
+
+  def constructGtEqFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
+    val fieldNames = requiredSchema.fieldNames
+    val index = fieldNames.indexOf(nodeName.replaceFirst(".", "__")) //TODO @getUnionSeries提到的dot问题
+    if (index == -1) {
+      throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
+    }
+    val dataType = requiredSchema.get(index).dataType
+
+    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
+
+    dataType match {
+      case IntegerType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Integer]))
+        filter
+      case LongType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Long]))
+        filter
+      case FloatType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Float]))
+        filter
+      case DoubleType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Double]))
+        filter
+      case StringType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.String]))
+        filter
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+  }
+
+  def constructLtFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
+    val fieldNames = requiredSchema.fieldNames
+    val index = fieldNames.indexOf(nodeName.replaceFirst(".", "__")) //TODO @getUnionSeries提到的dot问题
+    if (index == -1) {
+      throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
+    }
+    val dataType = requiredSchema.get(index).dataType
+
+    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
+
+    dataType match {
+      case IntegerType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Integer]))
+        filter
+      case LongType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Long]))
+        filter
+      case FloatType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Float]))
+        filter
+      case DoubleType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Double]))
+        filter
+      case StringType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.lt(nodeValue.asInstanceOf[java.lang.String]))
+        filter
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+  }
+
+  def constructLtEqFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
+    val fieldNames = requiredSchema.fieldNames
+    val index = fieldNames.indexOf(nodeName.replaceFirst(".", "__")) //TODO @getUnionSeries提到的dot问题
+    if (index == -1) {
+      throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
+    }
+    val dataType = requiredSchema.get(index).dataType
+
+    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
+
+    dataType match {
+      case IntegerType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Integer]))
+        filter
+      case LongType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Long]))
+        filter
+      case FloatType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Float]))
+        filter
+      case DoubleType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Double]))
+        filter
+      case StringType =>
+        val filter = new SingleSeriesExpression(new Path(name),
+          ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.String]))
+        filter
+      case other => throw new UnsupportedOperationException(s"Unsupported type $other")
+    }
+  }
 
   class SparkSqlFilterException(message: String, cause: Throwable)
     extends Exception(message, cause) {

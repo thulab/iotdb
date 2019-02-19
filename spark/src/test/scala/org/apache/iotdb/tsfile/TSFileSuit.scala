@@ -71,15 +71,20 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
 
   test("mytest") {
     val df = spark.read.tsfile("D:\\github\\debt\\iotdb\\test.tsfile") // inferSchema
-    df.show()
-    val path = "D:\\github\\debt\\iotdb\\spark\\src\\test\\resources\\output"
-    df.write.tsfile (path)
-    val newDf = spark.read.tsfile(path)
-    newDf.show()
-
-    //    df.createOrReplaceTempView("tsfile_table")
+//    df.show()
+    df.createOrReplaceTempView("tsfile_table")
     //    spark.sql("select time from tsfile_table where deviceId = 'd1' and carId = 'car' and time < 10").show()
-    //    spark.sql("select * from tsfile_table").show()
+//    spark.sql("select * from tsfile_table").show()
+//    spark.sql("select time,device_1__sensor_1 from tsfile_table ").show()
+    spark.sql("select * from tsfile_table where device_1__sensor_1>2 or Time<9").show()
+    //TODO 由于实现，光select time 是返回空结果的，因为会对requiredSchema过滤time后传给select Path
+//    spark.sql("select * from tsfile_table where 'device_1.sensor  _3' > 2").show()
+
+//    val path = "D:\\github\\debt\\iotdb\\spark\\src\\test\\resources\\output"
+//    df.write.tsfile (path)
+//    val newDf = spark.read.tsfile(path)
+//    newDf.show()
+
   }
 
 
@@ -107,7 +112,7 @@ class TSFileSuit extends FunSuite with BeforeAndAfterAll {
     //    df.show()
     df.createOrReplaceTempView("tsfile_table")
     //    spark.sql("select time from tsfile_table where deviceId = 'd1' and carId = 'car' and time < 10").show()
-    spark.sql("select * from tsfile_table").show()
+    spark.sql("select device_1+sensor_1 from tsfile_table").show()
 
     //    val newDf = spark.sql("select * from tsfile_table where deviceId = 'd1'")
     //    Assert.assertEquals(4, newDf.count())
