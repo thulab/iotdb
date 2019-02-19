@@ -1,27 +1,26 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements.  See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership.  The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with the License.  You may obtain
+ * a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.iotdb.tsfile.read.query.executor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
@@ -79,6 +78,58 @@ public class ExecutorWithTimeGenerator implements QueryExecutor {
         continue;
       }
 
+      SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(chunkLoader,
+          chunkMetaDataList);
+      readersOfSelectedSeries.add(seriesReader);
+    }
+
+    return new DataSetWithTimeGenerator(selectedPathList, cached, dataTypes, timeGenerator,
+        readersOfSelectedSeries);
+  }
+
+  /**
+   * All leaf nodes of queryFilter in queryExpression are SeriesFilters, We use a TimeGenerator to
+   * control query processing. for more information, see DataSetWithTimeGenerator
+   *
+   * @param queryExpression query expression
+   * @param parameters partitioned file information
+   * @return DataSet with TimeGenerator
+   */
+  public DataSetWithTimeGenerator execute(QueryExpression queryExpression,
+      HashMap<String, Long> parameters) throws IOException {
+
+    IExpression expression = queryExpression.getExpression();
+    List<Path> selectedPathList = queryExpression.getSelectedSeries();
+
+    // get TimeGenerator by IExpression
+    TimeGenerator timeGenerator = new TimeGeneratorImpl(expression, chunkLoader, metadataQuerier);
+
+    // the size of hasFilter is equal to selectedPathList, if a series has a filter, it is true,
+    // otherwise false
+    List<Boolean> cached = removeFilteredPaths(expression, selectedPathList);
+    List<SeriesReaderByTimestamp> readersOfSelectedSeries = new ArrayList<>();
+    List<TSDataType> dataTypes = new ArrayList<>();
+
+    Iterator<Boolean> cachedIterator = cached.iterator();
+    Iterator<Path> selectedPathIterator = selectedPathList.iterator();
+    while (cachedIterator.hasNext()) {
+      boolean cachedValue = cachedIterator.next();
+      Path selectedPath = selectedPathIterator.next();
+
+      List<ChunkMetaData> chunkMetaDataList = metadataQuerier
+          .getChunkMetaDataList(selectedPath, parameters);
+      if (chunkMetaDataList.size() != 0) {
+        dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
+      } else {
+        selectedPathIterator.remove();
+        cachedIterator.remove();
+        continue;
+      }
+
+      if (cachedValue) {
+        readersOfSelectedSeries.add(null);
+        continue;
+      }
       SeriesReaderByTimestamp seriesReader = new SeriesReaderByTimestamp(chunkLoader,
           chunkMetaDataList);
       readersOfSelectedSeries.add(seriesReader);

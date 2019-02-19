@@ -1,26 +1,25 @@
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
  *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements.  See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership.  The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with the License.  You may obtain
+ * a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.iotdb.tsfile.read.query.executor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.iotdb.tsfile.exception.filter.QueryFilterOptimizationException;
 import org.apache.iotdb.tsfile.file.metadata.ChunkMetaData;
@@ -75,6 +74,33 @@ public class TsFileExecutor implements QueryExecutor {
     }
   }
 
+  public QueryDataSet execute(QueryExpression queryExpression, HashMap<String, Long> parameters)
+      throws IOException {
+
+    metadataQuerier.loadChunkMetaDatas(queryExpression.getSelectedSeries());
+
+    if (queryExpression.hasQueryFilter()) {
+      try {
+        IExpression expression = queryExpression.getExpression();
+        IExpression regularIExpression = ExpressionOptimizer.getInstance().optimize(expression,
+            queryExpression.getSelectedSeries());
+        queryExpression.setExpression(regularIExpression);
+
+        if (regularIExpression instanceof GlobalTimeExpression) {
+          return execute(queryExpression.getSelectedSeries(),
+              (GlobalTimeExpression) regularIExpression, parameters);
+        } else {
+          return new ExecutorWithTimeGenerator(metadataQuerier, chunkLoader)
+              .execute(queryExpression, parameters);
+        }
+      } catch (QueryFilterOptimizationException e) {
+        throw new IOException(e);
+      }
+    } else {
+      return execute(queryExpression.getSelectedSeries(), parameters);
+    }
+  }
+
   /**
    * no filter, can use multi-way merge.
    *
@@ -94,6 +120,36 @@ public class TsFileExecutor implements QueryExecutor {
     }
     return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
   }
+
+  /**
+   * no filter, can use multi-way merge.
+   *
+   * @param selectedPathList all selected paths
+   * @param parameters partitioned file information
+   * @return DataSet without TimeGenerator
+   */
+  private QueryDataSet execute(List<Path> selectedPathList, HashMap<String, Long> parameters)
+      throws IOException {
+    List<FileSeriesReader> readersOfSelectedSeries = new ArrayList<>();
+    List<TSDataType> dataTypes = new ArrayList<>();
+
+    Iterator<Path> selectedPathIterator = selectedPathList.iterator();
+    while (selectedPathIterator.hasNext()) {
+      Path path = selectedPathIterator.next();
+      List<ChunkMetaData> chunkMetaDataList = metadataQuerier
+          .getChunkMetaDataList(path, parameters);
+      FileSeriesReader seriesReader = new FileSeriesReaderWithoutFilter(chunkLoader,
+          chunkMetaDataList);
+      readersOfSelectedSeries.add(seriesReader);
+      if (chunkMetaDataList.size() != 0) {
+        dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
+      } else {
+        selectedPathIterator.remove();
+      }
+    }
+    return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
+  }
+
 
   /**
    * has a GlobalTimeExpression, can use multi-way merge.
@@ -117,5 +173,37 @@ public class TsFileExecutor implements QueryExecutor {
 
     return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
   }
+
+  /**
+   * has a GlobalTimeExpression, can use multi-way merge.
+   *
+   * @param selectedPathList all selected paths
+   * @param timeFilter GlobalTimeExpression that takes effect to all selected paths
+   * @param parameters partitioned file information
+   * @return DataSet without TimeGenerator
+   */
+  private QueryDataSet execute(List<Path> selectedPathList, GlobalTimeExpression timeFilter,
+      HashMap<String, Long> parameters) throws IOException {
+    List<FileSeriesReader> readersOfSelectedSeries = new ArrayList<>();
+    List<TSDataType> dataTypes = new ArrayList<>();
+
+    Iterator<Path> selectedPathIterator = selectedPathList.iterator();
+    while (selectedPathIterator.hasNext()) {
+      Path path = selectedPathIterator.next();
+      List<ChunkMetaData> chunkMetaDataList = metadataQuerier
+          .getChunkMetaDataList(path, parameters);
+      FileSeriesReader seriesReader = new FileSeriesReaderWithFilter(chunkLoader, chunkMetaDataList,
+          timeFilter.getFilter());
+      readersOfSelectedSeries.add(seriesReader);
+      if (chunkMetaDataList.size() != 0) {
+        dataTypes.add(chunkMetaDataList.get(0).getTsDataType());
+      } else {
+        selectedPathIterator.remove();
+      }
+    }
+
+    return new DataSetWithoutTimeGenerator(selectedPathList, dataTypes, readersOfSelectedSeries);
+  }
+
 
 }

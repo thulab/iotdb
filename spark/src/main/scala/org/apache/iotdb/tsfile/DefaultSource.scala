@@ -91,10 +91,10 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       val conf = broadcastedConf.value.value
       val in = new HDFSInput(new Path(new URI(file.filePath)), conf)
 
-//      val reader: TsFileSequenceReader = new TsFileSequenceReader(in)
-//      val readTsFile: ReadOnlyTsFile = new ReadOnlyTsFile(reader)
-      val reader: TsFileSequenceReader = new TsFileSequenceReader("D:\\github\\debt\\iotdb\\test.tsfile") //TODO 这里没用hdfsinputstream因为没接口
+      val reader: TsFileSequenceReader = new TsFileSequenceReader(in)
       val readTsFile: ReadOnlyTsFile = new ReadOnlyTsFile(reader)
+      //      val reader: TsFileSequenceReader = new TsFileSequenceReader("D:\\github\\debt\\iotdb\\test.tsfile") //TODO 这里没用hdfsinputstream因为没接口
+      //      val readTsFile: ReadOnlyTsFile = new ReadOnlyTsFile(reader)
 
       Option(TaskContext.get()).foreach { taskContext => {
         taskContext.addTaskCompletionListener { _ => in.close() }
@@ -106,10 +106,10 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       parameters.put(QueryConstant.PARTITION_START_OFFSET, file.start.asInstanceOf[java.lang.Long])
       parameters.put(QueryConstant.PARTITION_END_OFFSET, (file.start + file.length).asInstanceOf[java.lang.Long])
 
-      //TODO convert filters to queryExpression
+      //convert filters to queryExpression
       val queryExpression = Converter.toQueryExpression(requiredSchema, filters)
 
-      val queryDataSet = readTsFile.query(queryExpression)
+      val queryDataSet = readTsFile.query(queryExpression, parameters) //TODO PARTITION
 
       new Iterator[InternalRow] {
         private val rowBuffer = Array.fill[Any](requiredSchema.length)(null)
@@ -130,7 +130,6 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
           val fields = new scala.collection.mutable.HashMap[String, Field]()
           for (i <- 0 until curRecord.getFields.size()) {
             val field = curRecord.getFields.get(i)
-//            fields.put(queryDataSet.getPaths.get(i).getFullPath, field) //TODO
             fields.put(queryDataSet.getPaths.get(i).getFullPath, field) //TODO @getUnionseries中提到的dot问题
           }
 
@@ -140,7 +139,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
             if (field.name == SQLConstant.RESERVED_TIME) {
               rowBuffer(index) = curRecord.getTimestamp
             } else {
-              val tmp = field.name.replaceFirst("__",".")//TODO @getUnionseries中提到的dot问题
+              val tmp = field.name.replaceFirst("__", ".") //TODO @getUnionseries中提到的dot问题
               rowBuffer(index) = Converter.toSqlValue(fields.getOrElse(tmp, null))
             }
             index += 1
