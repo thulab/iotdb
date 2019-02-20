@@ -74,7 +74,7 @@ object Converter {
         val d = devices.next()
         while (measurements.hasNext) {
           val s = measurements.next()
-          val fullPath = d + "__" + s._1 //device.measurement TODO "."会在查询的之后遇到can't resolve问题
+          val fullPath = d + "." + s._1
           if (!seriesSet.contains(fullPath)) {
             seriesSet += fullPath
             //            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, null.asInstanceOf[TSEncoding])
@@ -380,27 +380,25 @@ object Converter {
 
     val dataType = requiredSchema.get(index).dataType
 
-    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
-
     dataType match {
       case IntegerType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Integer]))
         filter
       case LongType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Long]))
         filter
       case FloatType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Float]))
         filter
       case DoubleType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.eq(nodeValue.asInstanceOf[java.lang.Double]))
         filter
       case StringType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.eq(nodeValue.asInstanceOf[java.lang.String]))
         filter
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
@@ -415,27 +413,25 @@ object Converter {
     }
     val dataType = requiredSchema.get(index).dataType
 
-    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
-
     dataType match {
       case IntegerType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Integer]))
         filter
       case LongType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Long]))
         filter
       case FloatType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Float]))
         filter
       case DoubleType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gt(nodeValue.asInstanceOf[java.lang.Double]))
         filter
       case StringType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gt(nodeValue.asInstanceOf[java.lang.String]))
         filter
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
@@ -444,33 +440,31 @@ object Converter {
 
   def constructGtEqFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
     val fieldNames = requiredSchema.fieldNames
-    val index = fieldNames.indexOf(nodeName.replaceFirst(".", "__")) //TODO @getUnionSeries提到的dot问题
+    val index = fieldNames.indexOf(nodeName)
     if (index == -1) {
       throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
     }
     val dataType = requiredSchema.get(index).dataType
 
-    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
-
     dataType match {
       case IntegerType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Integer]))
         filter
       case LongType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Long]))
         filter
       case FloatType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Float]))
         filter
       case DoubleType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.Double]))
         filter
       case StringType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.gtEq(nodeValue.asInstanceOf[java.lang.String]))
         filter
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
@@ -479,33 +473,31 @@ object Converter {
 
   def constructLtFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
     val fieldNames = requiredSchema.fieldNames
-    val index = fieldNames.indexOf(nodeName.replaceFirst(".", "__")) //TODO @getUnionSeries提到的dot问题
+    val index = fieldNames.indexOf(nodeName)
     if (index == -1) {
       throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
     }
     val dataType = requiredSchema.get(index).dataType
 
-    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
-
     dataType match {
       case IntegerType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Integer]))
         filter
       case LongType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Long]))
         filter
       case FloatType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Float]))
         filter
       case DoubleType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.lt(nodeValue.asInstanceOf[java.lang.Double]))
         filter
       case StringType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.lt(nodeValue.asInstanceOf[java.lang.String]))
         filter
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")
@@ -514,33 +506,31 @@ object Converter {
 
   def constructLtEqFilter(requiredSchema: StructType, nodeName: String, nodeValue: Any): IExpression = {
     val fieldNames = requiredSchema.fieldNames
-    val index = fieldNames.indexOf(nodeName.replaceFirst(".", "__")) //TODO @getUnionSeries提到的dot问题
+    val index = fieldNames.indexOf(nodeName)
     if (index == -1) {
       throw new Exception("requiredSchema does not contain nodeName:" + nodeName)
     }
     val dataType = requiredSchema.get(index).dataType
 
-    val name = nodeName.replaceFirst("__", ".") // TODO @GETUNIONseries提到的dot问题
-
     dataType match {
       case IntegerType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Integer]))
         filter
       case LongType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Long]))
         filter
       case FloatType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Float]))
         filter
       case DoubleType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.Double]))
         filter
       case StringType =>
-        val filter = new SingleSeriesExpression(new Path(name),
+        val filter = new SingleSeriesExpression(new Path(nodeName),
           ValueFilter.ltEq(nodeValue.asInstanceOf[java.lang.String]))
         filter
       case other => throw new UnsupportedOperationException(s"Unsupported type $other")

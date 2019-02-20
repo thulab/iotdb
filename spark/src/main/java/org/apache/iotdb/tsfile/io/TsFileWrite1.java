@@ -1,4 +1,4 @@
-package org.apache.iotdb.tsfile;
+package org.apache.iotdb.tsfile.io;
 
 /**
  * Copyright © 2019 Apache IoTDB(incubating) (dev@iotdb.apache.org)
@@ -38,7 +38,7 @@ import org.apache.iotdb.tsfile.write.schema.MeasurementSchema;
 /**
  * An example of writing data to TsFile
  */
-public class TsFileWrite {
+public class TsFileWrite1 {
 
   public static void main(String args[]) {
     try {

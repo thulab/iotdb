@@ -130,7 +130,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
           val fields = new scala.collection.mutable.HashMap[String, Field]()
           for (i <- 0 until curRecord.getFields.size()) {
             val field = curRecord.getFields.get(i)
-            fields.put(queryDataSet.getPaths.get(i).getFullPath, field) //TODO @getUnionseries中提到的dot问题
+            fields.put(queryDataSet.getPaths.get(i).getFullPath, field)
           }
 
           //index in one required row
@@ -139,8 +139,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
             if (field.name == SQLConstant.RESERVED_TIME) {
               rowBuffer(index) = curRecord.getTimestamp
             } else {
-              val tmp = field.name.replaceFirst("__", ".") //TODO @getUnionseries中提到的dot问题
-              rowBuffer(index) = Converter.toSqlValue(fields.getOrElse(tmp, null))
+              rowBuffer(index) = Converter.toSqlValue(fields.getOrElse(field.name, null))
             }
             index += 1
           })
