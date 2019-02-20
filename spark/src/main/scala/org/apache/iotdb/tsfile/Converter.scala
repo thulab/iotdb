@@ -191,13 +191,12 @@ object Converter {
     new MeasurementSchema(measurement, dataType, encoding)
   }
 
-  def toQueryExpression(requiredSchema: StructType, filters: Seq[Filter]): QueryExpression = {
-    //convert requiredSchema to paths //TODO 自动的requiredSchema是会包含select和where后面的所有涉及项
+  def toQueryExpression(schema: StructType, filters: Seq[Filter]): QueryExpression = {
+    //get selected paths from schema //TODO 自动的requiredSchema是会包含select和where后面的所有涉及项
     val paths = new util.ArrayList[org.apache.iotdb.tsfile.read.common.Path]
-    requiredSchema.foreach(f => {
+    schema.foreach(f => {
       if (!SQLConstant.isReservedPath(f.name)) {
         paths.add(new org.apache.iotdb.tsfile.read.common.Path(f.name))
-        // TODO @getUnionSeries中提到的用dot.的问题
       }
     })
 
@@ -219,7 +218,7 @@ object Converter {
       }
 
       //convert filterTree to FilterOperator
-      val finalFilter = transformFilter(requiredSchema, filterTree)
+      val finalFilter = transformFilter(schema, filterTree)
 
       val queryExpression = QueryExpression.create(paths, finalFilter)
       queryExpression
@@ -333,7 +332,7 @@ object Converter {
     var filter: IExpression = null
     node match {
       case node: Not =>
-        throw new Exception("i haven't got any valid idea about how to handle NOT:" + node.toString)
+        throw new Exception("unsupported NOT filter")
       //        val child = node.child
       //        val ltfilter = new SingleSeriesExpression(new Path(), ValueFilter.lt(node.value.toString))
       //
