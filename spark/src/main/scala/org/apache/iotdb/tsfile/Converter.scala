@@ -68,31 +68,51 @@ object Converter {
       //TODO 不知这样直接读file不用那种HDFSInputStream其实好像也是file:///并没用hdfs://
       val reader = new TsFileSequenceReader(in)
       val tsFileMetaData = reader.readFileMetadata
-      val devices = tsFileMetaData.getDeviceMap.keySet().iterator()
-      val measurements = tsFileMetaData.getMeasurementSchema.iterator
-      while (devices.hasNext) {
-        val d = devices.next()
-        while (measurements.hasNext) {
-          val s = measurements.next()
-          val fullPath = d + "." + s._1
+      val devices = tsFileMetaData.getDeviceMap.keySet()
+      val measurements = tsFileMetaData.getMeasurementSchema
+
+      devices.foreach(d => {
+        measurements.foreach(m => {
+          val fullPath = d + "." + m._1
           if (!seriesSet.contains(fullPath)) {
             seriesSet += fullPath
             //            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, null.asInstanceOf[TSEncoding])
-            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, s._2.getEncodingType)
+            unionSeries.add(new MeasurementSchema(fullPath, m._2.getType, m._2.getEncodingType)
             )
           }
-        }
-      }
+        })
+      })
+    })
 
-      //      val in = new HDFSInput(f.getPath, conf)
-      //      val queryEngine = new QueryEngine(in)
-      //      val series = queryEngine.getAllSeriesSchema
-      //      series.foreach(s => {
-      //        if (!seriesSet.contains(s.name)) {
-      //          seriesSet += s.name
-      //          unionSeries.add(s)
-      //        }
-      //      })
+    unionSeries
+  }
+
+  /**
+    * Get union series in all tsfiles
+    * e.g. (tsfile1:s1,s2) & (tsfile2:s2,s3) = s1,s2,s3
+    *
+    * @param reader TsFile SequenceReader
+    * @param conf   hadoop configuration
+    * @return union series
+    */
+  def getUnionSeries(reader: TsFileSequenceReader, conf: Configuration): util.ArrayList[MeasurementSchema] = {
+    val unionSeries = new util.ArrayList[MeasurementSchema]()
+    var seriesSet: mutable.Set[String] = mutable.Set()
+
+    val tsFileMetaData = reader.readFileMetadata
+    val devices = tsFileMetaData.getDeviceMap.keySet()
+    val measurements = tsFileMetaData.getMeasurementSchema
+
+    devices.foreach(d => {
+      measurements.foreach(m => {
+        val fullPath = d + "." + m._1
+        if (!seriesSet.contains(fullPath)) {
+          seriesSet += fullPath
+          //            unionSeries.add(new MeasurementSchema(fullPath, s._2.getType, null.asInstanceOf[TSEncoding])
+          unionSeries.add(new MeasurementSchema(fullPath, m._2.getType, m._2.getEncodingType)
+          )
+        }
+      })
     })
 
     unionSeries
@@ -104,7 +124,7 @@ object Converter {
     * @param tsfileSchema all time series information in TSFile
     * @return sparkSQL table schema
     */
-  def toSqlSchema(tsfileSchema: util.ArrayList[MeasurementSchema]): Option[StructType] = {
+  def toSqlSchema(tsfileSchema: util.ArrayList[MeasurementSchema]): StructType = {
     val fields = new ListBuffer[StructField]()
     fields += StructField(SQLConstant.RESERVED_TIME, LongType, nullable = false)
 
@@ -121,7 +141,7 @@ object Converter {
     })
 
     SchemaType(StructType(fields.toList), nullable = false).dataType match {
-      case t: StructType => Some(t)
+      case t: StructType => t
       case _ => throw new RuntimeException(
         s"""TSFile schema cannot be converted to a Spark SQL StructType:
            |${tsfileSchema.toString}
@@ -176,7 +196,7 @@ object Converter {
     val paths = new util.ArrayList[org.apache.iotdb.tsfile.read.common.Path]
     requiredSchema.foreach(f => {
       if (!SQLConstant.isReservedPath(f.name)) {
-        paths.add(new org.apache.iotdb.tsfile.read.common.Path(f.name.replaceFirst("__", ".")))
+        paths.add(new org.apache.iotdb.tsfile.read.common.Path(f.name))
         // TODO @getUnionSeries中提到的用dot.的问题
       }
     })

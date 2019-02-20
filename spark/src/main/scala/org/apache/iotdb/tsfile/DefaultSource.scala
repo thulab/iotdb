@@ -40,7 +40,7 @@ import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.execution.datasources.{FileFormat, OutputWriterFactory, PartitionedFile}
 import org.apache.spark.sql.sources.{DataSourceRegister, Filter}
-import org.apache.spark.sql.types.{StructField, StructType}
+import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
 
 private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
@@ -62,7 +62,7 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
     //get union series in TsFile
     val tsfileSchema = Converter.getUnionSeries(files, conf)
 
-    Converter.toSqlSchema(tsfileSchema)
+    Some(Converter.toSqlSchema(tsfileSchema))
   }
 
   override def isSplitable(
@@ -106,8 +106,17 @@ private[tsfile] class DefaultSource extends FileFormat with DataSourceRegister {
       parameters.put(QueryConstant.PARTITION_START_OFFSET, file.start.asInstanceOf[java.lang.Long])
       parameters.put(QueryConstant.PARTITION_END_OFFSET, (file.start + file.length).asInstanceOf[java.lang.Long])
 
+      var finalSchema : StructType = requiredSchema
+      if (requiredSchema.isEmpty ||
+        (requiredSchema.size == 1 && requiredSchema.iterator.next().name == SQLConstant.RESERVED_TIME)) {
+        // eg1: select count(*) from table
+        // eg2: select time from table; select count(*) from table where time > 10
+        val fileSchema = Converter.getUnionSeries(reader, conf)
+        finalSchema = Converter.toSqlSchema(fileSchema)
+      }
+
       //convert filters to queryExpression
-      val queryExpression = Converter.toQueryExpression(requiredSchema, filters)
+      val queryExpression = Converter.toQueryExpression(finalSchema, filters)
 
       val queryDataSet = readTsFile.query(queryExpression, parameters) //TODO PARTITION
 
