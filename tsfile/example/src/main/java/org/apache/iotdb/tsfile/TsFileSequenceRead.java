@@ -43,7 +43,7 @@ import org.apache.iotdb.tsfile.read.reader.page.PageReader;
 public class TsFileSequenceRead {
 
   public static void main(String[] args) throws IOException {
-    TsFileSequenceReader reader = new TsFileSequenceReader("test.tsfile");
+    TsFileSequenceReader reader = new TsFileSequenceReader("/Users/East/Desktop/tsfile/12272464235000-1550256931390");
     System.out.println("file length: " + new File("test.tsfile").length());
     System.out.println("file magic head: " + reader.readHeadMagic());
     System.out.println("file magic tail: " + reader.readTailMagic());
@@ -75,19 +75,19 @@ public class TsFileSequenceRead {
             System.out.println("\t\tPage data position: " + reader.position());
             System.out.println("\t\tpoints in the page: " + pageHeader.getNumOfValues());
             ByteBuffer pageData = reader.readPage(pageHeader, header.getCompressionType());
-            System.out
-                .println("\t\tUncompressed page data size: " + pageHeader.getUncompressedSize());
-            PageReader reader1 = new PageReader(pageData, header.getDataType(), valueDecoder,
-                defaultTimeDecoder);
-            while (reader1.hasNextBatch()) {
-              BatchData batchData = reader1.nextBatch();
-              while (batchData.hasNext()) {
-                System.out.println(
-                    "\t\t\ttime, value: " + batchData.currentTime() + ", " + batchData
-                        .currentValue());
-                batchData.next();
-              }
-            }
+//            System.out
+//                .println("\t\tUncompressed page data size: " + pageHeader.getUncompressedSize());
+//            PageReader reader1 = new PageReader(pageData, header.getDataType(), valueDecoder,
+//                defaultTimeDecoder);
+//            while (reader1.hasNextBatch()) {
+//              BatchData batchData = reader1.nextBatch();
+//              while (batchData.hasNext()) {
+//                System.out.println(
+//                    "\t\t\ttime, value: " + batchData.currentTime() + ", " + batchData
+//                        .currentValue());
+//                batchData.next();
+//              }
+//            }
           }
           break;
         case MetaMarker.CHUNK_GROUP_FOOTER:

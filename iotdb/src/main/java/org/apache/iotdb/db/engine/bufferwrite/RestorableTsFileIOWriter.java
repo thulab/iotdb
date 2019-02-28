@@ -133,6 +133,14 @@ public class RestorableTsFileIOWriter extends TsFileIOWriter {
 
   }
 
+  public static int getTsPositionByteSize() {
+    return TS_POSITION_BYTE_SIZE;
+  }
+
+  public static String getRestoreSuffix() {
+    return RESTORE_SUFFIX;
+  }
+
   private void recoverMetadata(List<ChunkGroupMetaData> rowGroupMetaDatas) {
     // TODO it is better if we can consider the problem caused by deletion
     // and re-create time series here.

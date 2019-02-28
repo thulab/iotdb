@@ -134,6 +134,11 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <outputDirectory>${project.basedir}/iotdb/lib</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.apache.iotdb.db.utils.TsFileChecker</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <!--using `mvn test` to run UT, `mvn verify` to run ITs
@@ -162,6 +167,29 @@
                     <skipTests>${iotdb.test.skip}</skipTests>
                     <skipITs>${iotdb.it.skip}</skipITs>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.apache.iotdb.db.utils.TsFileChecker</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- Might require this in Eclipse -->
             <!--plugin>

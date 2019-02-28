@@ -127,9 +127,9 @@ public class ChunkGroupMetaData {
     ChunkGroupMetaData chunkGroupMetaData = new ChunkGroupMetaData();
 
     chunkGroupMetaData.deviceID = ReadWriteIOUtils.readString(buffer);
-    chunkGroupMetaData.startOffsetOfChunkGroup = ReadWriteIOUtils.readLong(buffer);
-    chunkGroupMetaData.endOffsetOfChunkGroup = ReadWriteIOUtils.readLong(buffer);
-    chunkGroupMetaData.version = ReadWriteIOUtils.readLong(buffer);
+//    chunkGroupMetaData.startOffsetOfChunkGroup = ReadWriteIOUtils.readLong(buffer);
+//    chunkGroupMetaData.endOffsetOfChunkGroup = ReadWriteIOUtils.readLong(buffer);
+//    chunkGroupMetaData.version = ReadWriteIOUtils.readLong(buffer);
 
     int size = ReadWriteIOUtils.readInt(buffer);
 

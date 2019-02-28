@@ -267,6 +267,10 @@ public class TsFileSequenceReader {
     return tsFileInput.position();
   }
 
+  public void position(long position) throws IOException {
+    tsFileInput.position(position);
+  }
+
   public ByteBuffer readPage(PageHeader header, CompressionType type) throws IOException {
     return readPage(header, type, -1);
   }
