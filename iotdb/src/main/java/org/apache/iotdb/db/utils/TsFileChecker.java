@@ -127,9 +127,9 @@ public class TsFileChecker {
 
       return 1;
     } catch (Exception ex) {
-//      System.out.println(ex);
+      System.out.println(ex);
       try {
-        if (reader != null || reader.position() > lastPosition) {
+        if (reader != null && reader.position() > lastPosition) {
           return 3;
         } else {
           return 0;
@@ -217,7 +217,7 @@ public class TsFileChecker {
   }
 
   public static void main(String[] args) throws Exception {
-//    args = new String[]{"/Users/East/Desktop/tsfile"};
+//    args = new String[]{"/Users/East/Desktop/长测TsFile分析/tsfile"};
 
     if (args == null || args.length < 1) {
       System.out.println("Please input root dir!");
@@ -249,13 +249,14 @@ public class TsFileChecker {
     int num = fileList.size();
     System.out.println("Num of file: " + num);
     for (int i = 0; i < fileList.size(); i++) {
-      System.out.println("Check No." + (i + 1));
       String filePath = fileList.get(i).getAbsolutePath();
+      System.out.println("Check No." + (i + 1) + ": " + filePath);
       if (filePath.endsWith(RestorableTsFileIOWriter.getRestoreSuffix())) {
         num--;
         continue;
       }
       int status = TsFileChecker.checkTsFile(filePath);
+      System.out.println(status);
       tsfileStatusMap.get(status).add(filePath);
     }
     System.out.println("Num of TsFile: " + num);
