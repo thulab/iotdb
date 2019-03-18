@@ -1,5 +1,6 @@
 package cn.edu.tsinghua.iotdb.conf;
 
+import cn.edu.tsinghua.iotdb.api.IoTDBOptions;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -256,6 +257,30 @@ public class TsfileDBConfig {
 	public String ipWhiteList = "0.0.0.0/0";
 
 	public TsfileDBConfig() {}
+
+	public void updateOptions(IoTDBOptions options) {
+		this.periodTimeForFlush = options.getPeriodTimeForFlush();
+		this.periodTimeForMerge = options.getPeriodTimeForMerge();
+
+		this.bufferwriteMetaSizeThreshold = options.getBufferwriteMetaSizeThreshold();
+		this.bufferwriteFileSizeThreshold = options.getBufferwriteFileSizeThreshold();
+
+		this.overflowMetaSizeThreshold = options.getOverflowMetaSizeThreshold();
+		this.overflowFileSizeThreshold = options.getOverflowFileSizeThreshold();
+	}
+
+	public void updateConfigForPath() {
+		// bufferwrite
+		bufferWriteDirs[0] = new File(this.dataDir, "bufferwrite").getPath();
+		// overflowwrite
+		overflowDataDir = new File(this.dataDir, "overflow").getPath();
+		// system
+		sysDir = new File(this.dataDir, "system").getPath();
+		// filenode
+		fileNodeDir = new File(this.dataDir, "filenode").getPath();
+		// metadata
+		metadataDir = new File(this.dataDir, "metadata").getPath();
+	}
 
 	public void updatePath() {
 		confirmMultDirStrategy();
