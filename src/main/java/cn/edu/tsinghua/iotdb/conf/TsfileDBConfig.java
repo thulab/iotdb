@@ -23,7 +23,7 @@ public class TsfileDBConfig {
 	/**
 	 * Is write ahead log enable
 	 */
-	public boolean enableWal = false;
+	public boolean enableWal = true;
 
 	/**
 	 * When a certain amount of write ahead log is reached, it will be flushed to
