@@ -163,7 +163,7 @@ public class MultiThreadWrite {
       e.printStackTrace();
     }
     // query data
-    Iterator<QueryDataSet> dataSet = engine.query("root.beijing.d0.s0", 0, 2);
+    Iterator<QueryDataSet> dataSet = engine.query("root.beijing.d0.s0", 0, 5000);
     int count = 0;
     while (dataSet.hasNext()) {
       QueryDataSet queryDataSet = dataSet.next();

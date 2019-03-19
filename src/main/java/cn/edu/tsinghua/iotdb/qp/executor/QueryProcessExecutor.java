@@ -51,6 +51,8 @@ public abstract class QueryProcessExecutor {
         new Path("time"), Long.toString(endTime));
     filterOperator.addChildOperator(t1);
     filterOperator.addChildOperator(t2);
+    filterOperator.setIsSingle(true);
+    filterOperator.setSinglePath(new Path("time"));
     SingleQueryPlan singleQueryPlan = new SingleQueryPlan(paths, filterOperator, null, null, this,
         null);
     ArrayList<SingleQueryPlan> selectPlans = new ArrayList<>();
